@@ -9,7 +9,7 @@
         "ext-pdo": "*",
         "filament/filament": "^4.0",
         "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.44",
         "laravel/nightwatch": "^1.21",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8"
