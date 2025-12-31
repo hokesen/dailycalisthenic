@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ExerciseProgression extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'exercise_id',
         'easier_exercise_id',
@@ -29,7 +30,7 @@ class ExerciseProgression extends Model
         return $this->belongsTo(Exercise::class, 'easier_exercise_id');
     }
 
-    public function hardierExercise(): BelongsTo
+    public function harderExercise(): BelongsTo
     {
         return $this->belongsTo(Exercise::class, 'harder_exercise_id');
     }

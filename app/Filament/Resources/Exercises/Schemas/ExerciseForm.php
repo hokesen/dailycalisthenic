@@ -33,6 +33,7 @@ class ExerciseForm
                                 'core' => 'Core',
                                 'full_body' => 'Full Body',
                                 'cardio' => 'Cardio',
+                                'flexibility' => 'Flexibility',
                             ])
                             ->placeholder('Select a category'),
                         Select::make('difficulty_level')

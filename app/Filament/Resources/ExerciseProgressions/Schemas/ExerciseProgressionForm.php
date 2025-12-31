@@ -17,8 +17,8 @@ class ExerciseProgressionForm
                     ->required(),
                 Select::make('easier_exercise_id')
                     ->relationship('easierExercise', 'name'),
-                TextInput::make('harder_exercise_id')
-                    ->numeric(),
+                Select::make('harder_exercise_id')
+                    ->relationship('harderExercise', 'name'),
                 TextInput::make('order')
                     ->required()
                     ->numeric()

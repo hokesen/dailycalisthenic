@@ -18,9 +18,8 @@ class ExerciseProgressionsTable
                     ->searchable(),
                 TextColumn::make('easierExercise.name')
                     ->searchable(),
-                TextColumn::make('harder_exercise_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('harderExercise.name')
+                    ->searchable(),
                 TextColumn::make('order')
                     ->numeric()
                     ->sortable(),
