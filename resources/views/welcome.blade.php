@@ -84,7 +84,7 @@
             }
 
             .benefit-card:hover {
-                transform: translateY(-5px);
+                transform: translateY(-2px);
                 background: rgba(255, 255, 255, 0.15);
             }
 
@@ -144,19 +144,19 @@
             <div class="benefits">
                 <div class="benefit-card">
                     <div class="icon">💪</div>
-                    <h3>Build Real Strength</h3>
+                    <h3>Get Strong</h3>
                     <p>Develop functional strength using your own bodyweight. No equipment needed, just dedication and consistency.</p>
                 </div>
 
                 <div class="benefit-card">
                     <div class="icon">🎯</div>
-                    <h3>Daily Progress</h3>
-                    <p>Track your journey with daily exercises. Small, consistent actions lead to remarkable transformations.</p>
+                    <h3>Track Progress</h3>
+                    <p>Journal your progress.</p>
                 </div>
 
                 <div class="benefit-card">
                     <div class="icon">🌟</div>
-                    <h3>Flexible & Free</h3>
+                    <h3>Anytime, Anywhere</h3>
                     <p>Train anywhere, anytime. No gym membership required. Your body is the only equipment you need.</p>
                 </div>
 
