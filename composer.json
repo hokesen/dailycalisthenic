@@ -13,10 +13,13 @@
         "laravel/framework": "^11.0",
         "laravel/nightwatch": "^1.21",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.8"
+        "laravel/tinker": "^2.8",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
+        "laravel/boost": "^1.8",
+        "laravel/breeze": "^2.3",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
@@ -31,7 +34,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 0
     },
     "extra": {
         "laravel": {
@@ -53,6 +57,9 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
+        "dev": [
+            "@php artisan serve"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
