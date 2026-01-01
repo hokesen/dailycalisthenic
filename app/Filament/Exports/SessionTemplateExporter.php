@@ -22,6 +22,23 @@ class SessionTemplateExporter extends Exporter
             ExportColumn::make('notes'),
             ExportColumn::make('estimated_duration_minutes'),
             ExportColumn::make('default_rest_seconds'),
+            ExportColumn::make('exercises')
+                ->state(function (SessionTemplate $record): string {
+                    $exercises = $record->exercises->map(function ($exercise) {
+                        return [
+                            'exercise_id' => $exercise->id,
+                            'exercise_name' => $exercise->name,
+                            'order' => $exercise->pivot->order,
+                            'duration_seconds' => $exercise->pivot->duration_seconds,
+                            'rest_after_seconds' => $exercise->pivot->rest_after_seconds,
+                            'sets' => $exercise->pivot->sets,
+                            'reps' => $exercise->pivot->reps,
+                            'notes' => $exercise->pivot->notes,
+                        ];
+                    })->toArray();
+
+                    return json_encode($exercises);
+                }),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];

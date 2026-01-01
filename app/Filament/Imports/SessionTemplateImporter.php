@@ -2,6 +2,7 @@
 
 namespace App\Filament\Imports;
 
+use App\Models\Exercise;
 use App\Models\SessionTemplate;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
@@ -28,6 +29,20 @@ class SessionTemplateImporter extends Importer
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required']),
+            ImportColumn::make('exercises')
+                ->castStateUsing(function (?string $state): ?array {
+                    if (blank($state)) {
+                        return null;
+                    }
+
+                    $decoded = json_decode($state, true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        return null;
+                    }
+
+                    return $decoded;
+                }),
         ];
     }
 
@@ -36,6 +51,41 @@ class SessionTemplateImporter extends Importer
         return SessionTemplate::firstOrNew([
             'name' => $this->data['name'],
         ]);
+    }
+
+    protected function afterSave(): void
+    {
+        if (empty($this->data['exercises'])) {
+            return;
+        }
+
+        $exercisesData = $this->data['exercises'];
+        $pivotData = [];
+
+        foreach ($exercisesData as $exerciseData) {
+            if (empty($exerciseData['exercise_id'])) {
+                continue;
+            }
+
+            $exercise = Exercise::find($exerciseData['exercise_id']);
+
+            if (! $exercise) {
+                continue;
+            }
+
+            $pivotData[$exercise->id] = [
+                'order' => $exerciseData['order'] ?? 0,
+                'duration_seconds' => $exerciseData['duration_seconds'] ?? null,
+                'rest_after_seconds' => $exerciseData['rest_after_seconds'] ?? null,
+                'sets' => $exerciseData['sets'] ?? null,
+                'reps' => $exerciseData['reps'] ?? null,
+                'notes' => $exerciseData['notes'] ?? null,
+            ];
+        }
+
+        if (! empty($pivotData)) {
+            $this->record->exercises()->sync($pivotData);
+        }
     }
 
     public static function getCompletedNotificationBody(Import $import): string
