@@ -41,50 +41,69 @@ class SessionTemplateImporter extends Importer
                         return null;
                     }
 
+                    if (! is_array($decoded)) {
+                        return null;
+                    }
+
                     return $decoded;
-                }),
+                })
+                ->fillRecordUsing(function () {
+                    // Don't fill this into the model - it's handled in afterSave()
+                })
+                ->rules(['nullable']),
         ];
     }
 
     public function resolveRecord(): SessionTemplate
     {
-        return SessionTemplate::firstOrNew([
-            'name' => $this->data['name'],
-        ]);
+        return new SessionTemplate;
     }
 
     protected function afterSave(): void
     {
-        if (empty($this->data['exercises'])) {
+        if (! isset($this->data['exercises']) || empty($this->data['exercises'])) {
             return;
         }
 
-        $exercisesData = $this->data['exercises'];
-        $pivotData = [];
+        try {
+            $exercisesData = $this->data['exercises'];
 
-        foreach ($exercisesData as $exerciseData) {
-            if (empty($exerciseData['exercise_id'])) {
-                continue;
+            if (! is_array($exercisesData)) {
+                return;
             }
 
-            $exercise = Exercise::find($exerciseData['exercise_id']);
+            $pivotData = [];
 
-            if (! $exercise) {
-                continue;
+            foreach ($exercisesData as $exerciseData) {
+                if (! is_array($exerciseData) || empty($exerciseData['exercise_id'])) {
+                    continue;
+                }
+
+                $exercise = Exercise::find($exerciseData['exercise_id']);
+
+                if (! $exercise) {
+                    continue;
+                }
+
+                $pivotData[$exercise->id] = [
+                    'order' => $exerciseData['order'] ?? 0,
+                    'duration_seconds' => $exerciseData['duration_seconds'] ?? null,
+                    'rest_after_seconds' => $exerciseData['rest_after_seconds'] ?? null,
+                    'sets' => $exerciseData['sets'] ?? null,
+                    'reps' => $exerciseData['reps'] ?? null,
+                    'notes' => $exerciseData['notes'] ?? null,
+                ];
             }
 
-            $pivotData[$exercise->id] = [
-                'order' => $exerciseData['order'] ?? 0,
-                'duration_seconds' => $exerciseData['duration_seconds'] ?? null,
-                'rest_after_seconds' => $exerciseData['rest_after_seconds'] ?? null,
-                'sets' => $exerciseData['sets'] ?? null,
-                'reps' => $exerciseData['reps'] ?? null,
-                'notes' => $exerciseData['notes'] ?? null,
-            ];
-        }
-
-        if (! empty($pivotData)) {
-            $this->record->exercises()->sync($pivotData);
+            if (! empty($pivotData)) {
+                $this->record->exercises()->sync($pivotData);
+            }
+        } catch (\Throwable $e) {
+            logger()->error('Failed to import session template exercises', [
+                'session_template_id' => $this->record->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 

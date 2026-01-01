@@ -129,6 +129,11 @@ class SessionTemplateImportExportTest extends TestCase
         ]);
 
         $template = $importer->resolveRecord();
+        $template->fill([
+            'name' => 'Leg Day',
+            'description' => 'Lower body workout',
+            'default_rest_seconds' => 60,
+        ]);
         $template->save();
 
         $recordProperty = $reflection->getProperty('record');
@@ -185,6 +190,10 @@ class SessionTemplateImportExportTest extends TestCase
         ]);
 
         $template = $importer->resolveRecord();
+        $template->fill([
+            'name' => 'Empty Template',
+            'default_rest_seconds' => 60,
+        ]);
         $template->save();
 
         $recordProperty = $reflection->getProperty('record');
@@ -241,6 +250,10 @@ class SessionTemplateImportExportTest extends TestCase
         ]);
 
         $template = $importer->resolveRecord();
+        $template->fill([
+            'name' => 'Test Template',
+            'default_rest_seconds' => 60,
+        ]);
         $template->save();
 
         $recordProperty = $reflection->getProperty('record');
@@ -253,5 +266,95 @@ class SessionTemplateImportExportTest extends TestCase
 
         $this->assertCount(1, $template->exercises);
         $this->assertEquals($validExercise->id, $template->exercises->first()->id);
+    }
+
+    public function test_import_with_production_data_format(): void
+    {
+        $user = User::factory()->create();
+
+        $exercise1 = Exercise::factory()->create(['name' => 'Squat']);
+        $exercise2 = Exercise::factory()->create(['name' => 'Wall Push-Up']);
+        $exercise3 = Exercise::factory()->create(['name' => 'Plank']);
+
+        $exercisesJson = json_encode([
+            [
+                'exercise_id' => $exercise1->id,
+                'exercise_name' => 'Squat',
+                'order' => 1,
+                'duration_seconds' => 90,
+                'rest_after_seconds' => 15,
+                'sets' => null,
+                'reps' => null,
+                'notes' => null,
+            ],
+            [
+                'exercise_id' => $exercise2->id,
+                'exercise_name' => 'Wall Push-Up',
+                'order' => 2,
+                'duration_seconds' => 60,
+                'rest_after_seconds' => 20,
+                'sets' => null,
+                'reps' => null,
+                'notes' => null,
+            ],
+            [
+                'exercise_id' => $exercise3->id,
+                'exercise_name' => 'Plank',
+                'order' => 3,
+                'duration_seconds' => 60,
+                'rest_after_seconds' => 20,
+                'sets' => null,
+                'reps' => null,
+                'notes' => null,
+            ],
+        ]);
+
+        $import = Import::create([
+            'user_id' => $user->id,
+            'file_name' => 'test.csv',
+            'file_path' => 'test.csv',
+            'importer' => SessionTemplateImporter::class,
+            'total_rows' => 1,
+            'processed_rows' => 0,
+            'successful_rows' => 0,
+        ]);
+
+        $importer = new SessionTemplateImporter($import, [], []);
+
+        $reflection = new \ReflectionClass($importer);
+        $dataProperty = $reflection->getProperty('data');
+        $dataProperty->setValue($importer, [
+            'name' => 'Cali 101',
+            'notes' => null,
+            'user_id' => null,
+            'description' => null,
+            'default_rest_seconds' => 30,
+            'estimated_duration_minutes' => 15,
+            'exercises' => json_decode($exercisesJson, true),
+        ]);
+
+        $template = $importer->resolveRecord();
+        $template->fill([
+            'name' => 'Cali 101',
+            'notes' => null,
+            'user_id' => null,
+            'description' => null,
+            'default_rest_seconds' => 30,
+            'estimated_duration_minutes' => 15,
+        ]);
+        $template->save();
+
+        $recordProperty = $reflection->getProperty('record');
+        $recordProperty->setValue($importer, $template);
+
+        $method = $reflection->getMethod('afterSave');
+        $method->invoke($importer);
+
+        $template->refresh();
+
+        $this->assertCount(3, $template->exercises);
+        $this->assertEquals('Cali 101', $template->name);
+        $this->assertEquals(30, $template->default_rest_seconds);
+        $this->assertEquals(15, $template->estimated_duration_minutes);
     }
 }
