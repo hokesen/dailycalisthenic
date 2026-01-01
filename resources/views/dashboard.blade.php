@@ -16,7 +16,7 @@
                     @else
                         <div class="space-y-4">
                             <h4 class="text-lg font-semibold text-gray-700">Available Templates</h4>
-                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
                                 @foreach ($templates as $template)
                                     <div class="border border-gray-200 rounded-lg p-4 flex flex-col" x-data="{ editingName: false }">
                                         <div class="mb-2">
