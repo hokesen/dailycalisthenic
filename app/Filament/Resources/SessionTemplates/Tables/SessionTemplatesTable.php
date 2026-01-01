@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\SessionTemplates\Tables;
 
+use App\Filament\Exports\SessionTemplateExporter;
+use App\Filament\Imports\SessionTemplateImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -39,8 +44,16 @@ class SessionTemplatesTable
             ->recordActions([
                 EditAction::make(),
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(SessionTemplateExporter::class),
+                ImportAction::make()
+                    ->importer(SessionTemplateImporter::class),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exporter(SessionTemplateExporter::class),
                     DeleteBulkAction::make(),
                 ]),
             ]);

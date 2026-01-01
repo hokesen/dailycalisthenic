@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\Exercises\Tables;
 
+use App\Filament\Exports\ExerciseExporter;
+use App\Filament\Imports\ExerciseImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -116,8 +121,16 @@ class ExercisesTable
             ->recordActions([
                 EditAction::make(),
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(ExerciseExporter::class),
+                ImportAction::make()
+                    ->importer(ExerciseImporter::class),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exporter(ExerciseExporter::class),
                     DeleteBulkAction::make(),
                 ]),
             ])

@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\ExerciseProgressions\Tables;
 
+use App\Filament\Exports\ExerciseProgressionExporter;
+use App\Filament\Imports\ExerciseProgressionImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -40,8 +45,16 @@ class ExerciseProgressionsTable
             ->recordActions([
                 EditAction::make(),
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(ExerciseProgressionExporter::class),
+                ImportAction::make()
+                    ->importer(ExerciseProgressionImporter::class),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exporter(ExerciseProgressionExporter::class),
                     DeleteBulkAction::make(),
                 ]),
             ]);

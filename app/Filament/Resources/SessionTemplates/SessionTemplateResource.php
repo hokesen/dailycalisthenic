@@ -44,7 +44,7 @@ class SessionTemplateResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ExercisesRelationManager::class,
         ];
     }
 
