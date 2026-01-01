@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Exercises\Schemas;
 
+use App\Enums\ExerciseCategory;
+use App\Enums\ExerciseDifficulty;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -26,23 +28,10 @@ class ExerciseForm
                             ->placeholder('Leave empty for system exercise')
                             ->helperText('System exercises (NULL user) are available to all users'),
                         Select::make('category')
-                            ->options([
-                                'push' => 'Push',
-                                'pull' => 'Pull',
-                                'legs' => 'Legs',
-                                'core' => 'Core',
-                                'full_body' => 'Full Body',
-                                'cardio' => 'Cardio',
-                                'flexibility' => 'Flexibility',
-                            ])
+                            ->options(ExerciseCategory::options())
                             ->placeholder('Select a category'),
                         Select::make('difficulty_level')
-                            ->options([
-                                'beginner' => 'Beginner',
-                                'intermediate' => 'Intermediate',
-                                'advanced' => 'Advanced',
-                                'expert' => 'Expert',
-                            ])
+                            ->options(ExerciseDifficulty::options())
                             ->placeholder('Select difficulty'),
                         TextInput::make('default_duration_seconds')
                             ->numeric()

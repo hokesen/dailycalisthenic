@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\SessionStatus;
+use App\Models\Concerns\PivotColumns;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Session extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'session_template_id',
@@ -25,6 +28,7 @@ class Session extends Model
     protected $casts = [
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'status' => SessionStatus::class,
     ];
 
     public function user(): BelongsTo
@@ -40,7 +44,7 @@ class Session extends Model
     public function exercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'session_exercises')
-            ->withPivot(['order', 'duration_seconds', 'notes', 'difficulty_rating', 'started_at', 'completed_at'])
+            ->withPivot(PivotColumns::SESSION_EXERCISES)
             ->withTimestamps()
             ->orderByPivot('order');
     }
@@ -52,7 +56,7 @@ class Session extends Model
 
     public function scopeCompleted($query)
     {
-        return $query->where('status', 'completed')->whereNotNull('completed_at');
+        return $query->where('status', SessionStatus::Completed)->whereNotNull('completed_at');
     }
 
     public function scopeOnDate($query, $date)

@@ -329,7 +329,6 @@ class SessionTemplateImportExportTest extends TestCase
             'user_id' => null,
             'description' => null,
             'default_rest_seconds' => 30,
-            'estimated_duration_minutes' => 15,
             'exercises' => json_decode($exercisesJson, true),
         ]);
 
@@ -340,7 +339,6 @@ class SessionTemplateImportExportTest extends TestCase
             'user_id' => null,
             'description' => null,
             'default_rest_seconds' => 30,
-            'estimated_duration_minutes' => 15,
         ]);
         $template->save();
 
@@ -355,6 +353,7 @@ class SessionTemplateImportExportTest extends TestCase
         $this->assertCount(3, $template->exercises);
         $this->assertEquals('Cali 101', $template->name);
         $this->assertEquals(30, $template->default_rest_seconds);
-        $this->assertEquals(15, $template->estimated_duration_minutes);
+        // Duration calculated from exercises: (90+15) + (60+20) + (60+20) = 265 seconds = 5 minutes
+        $this->assertEquals(5, $template->calculateDurationMinutes());
     }
 }

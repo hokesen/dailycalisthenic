@@ -4,6 +4,7 @@ namespace App\Filament\Imports;
 
 use App\Models\Exercise;
 use App\Models\SessionTemplate;
+use App\Support\PivotDataBuilder;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
@@ -85,14 +86,7 @@ class SessionTemplateImporter extends Importer
                     continue;
                 }
 
-                $pivotData[$exercise->id] = [
-                    'order' => $exerciseData['order'] ?? 0,
-                    'duration_seconds' => $exerciseData['duration_seconds'] ?? null,
-                    'rest_after_seconds' => $exerciseData['rest_after_seconds'] ?? null,
-                    'sets' => $exerciseData['sets'] ?? null,
-                    'reps' => $exerciseData['reps'] ?? null,
-                    'notes' => $exerciseData['notes'] ?? null,
-                ];
+                $pivotData[$exercise->id] = PivotDataBuilder::buildSessionTemplateExercisePivot($exerciseData);
             }
 
             if (! empty($pivotData)) {

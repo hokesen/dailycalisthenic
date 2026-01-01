@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sessions\Schemas;
 
+use App\Enums\SessionStatus;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -33,14 +34,8 @@ class SessionForm
                             ->placeholder('Custom session name'),
                         Select::make('status')
                             ->required()
-                            ->default('planned')
-                            ->options([
-                                'planned' => 'Planned',
-                                'in_progress' => 'In Progress',
-                                'completed' => 'Completed',
-                                'skipped' => 'Skipped',
-                                'forgiven' => 'Forgiven',
-                            ])
+                            ->default(SessionStatus::Planned->value)
+                            ->options(SessionStatus::options())
                             ->native(false),
                     ])->columns(2),
                 Section::make('Timing')

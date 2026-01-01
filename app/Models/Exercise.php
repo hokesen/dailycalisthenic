@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ExerciseCategory;
+use App\Enums\ExerciseDifficulty;
+use App\Models\Concerns\HasProgressionVariations;
+use App\Models\Concerns\PivotColumns;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Exercise extends Model
 {
-    use HasFactory;
+    use HasFactory, HasProgressionVariations;
 
     protected $fillable = [
         'user_id',
@@ -23,7 +27,10 @@ class Exercise extends Model
         'default_duration_seconds',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'category' => ExerciseCategory::class,
+        'difficulty_level' => ExerciseDifficulty::class,
+    ];
 
     public function user(): BelongsTo
     {
@@ -38,7 +45,7 @@ class Exercise extends Model
     public function sessionTemplates(): BelongsToMany
     {
         return $this->belongsToMany(SessionTemplate::class, 'session_template_exercises')
-            ->withPivot(['order', 'duration_seconds', 'rest_after_seconds', 'sets', 'reps', 'notes'])
+            ->withPivot(PivotColumns::SESSION_TEMPLATE_EXERCISES)
             ->withTimestamps()
             ->orderByPivot('order');
     }
@@ -46,7 +53,7 @@ class Exercise extends Model
     public function sessions(): BelongsToMany
     {
         return $this->belongsToMany(Session::class, 'session_exercises')
-            ->withPivot(['order', 'duration_seconds', 'notes', 'difficulty_rating', 'started_at', 'completed_at'])
+            ->withPivot(PivotColumns::SESSION_EXERCISES)
             ->withTimestamps()
             ->orderByPivot('order');
     }
@@ -67,33 +74,5 @@ class Exercise extends Model
             $q->whereNull('user_id')
                 ->orWhere('user_id', $user->id);
         });
-    }
-
-    public function getEasierVariations(): array
-    {
-        $variations = [];
-        $current = $this;
-
-        while ($current->progression && $current->progression->easierExercise) {
-            $easier = $current->progression->easierExercise;
-            $variations[] = $easier;
-            $current = $easier;
-        }
-
-        return $variations;
-    }
-
-    public function getHarderVariations(): array
-    {
-        $variations = [];
-        $current = $this;
-
-        while ($current->progression && $current->progression->harderExercise) {
-            $harder = $current->progression->harderExercise;
-            $variations[] = $harder;
-            $current = $harder;
-        }
-
-        return $variations;
     }
 }

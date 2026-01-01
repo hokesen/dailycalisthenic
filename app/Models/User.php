@@ -90,4 +90,12 @@ class User extends Authenticatable implements FilamentUser
             ->withPivot(['best_sets', 'best_reps', 'best_duration_seconds', 'started_at'])
             ->withTimestamps();
     }
+
+    /**
+     * Send the password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \Illuminate\Auth\Notifications\ResetPassword($token));
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\SessionExerciseData;
+use App\Enums\SessionStatus;
 use App\Http\Requests\UpdateSessionRequest;
 use App\Models\Session;
 use App\Models\SessionTemplate;
@@ -15,7 +17,7 @@ class GoController extends Controller
     {
         $templateId = $request->query('template');
         $template = null;
-        $exercises = collect();
+        $exercisesData = [];
         $session = null;
 
         if ($templateId) {
@@ -32,23 +34,10 @@ class GoController extends Controller
                 'user_id' => auth()->id(),
                 'session_template_id' => $template->id,
                 'name' => $template->name,
-                'status' => 'planned',
+                'status' => SessionStatus::Planned->value,
             ]);
 
-            $exercisesData = $exercises->map(function ($ex) use ($template) {
-                return [
-                    'id' => $ex->id,
-                    'name' => $ex->name,
-                    'description' => $ex->description,
-                    'sets' => $ex->pivot->sets,
-                    'reps' => $ex->pivot->reps,
-                    'duration_seconds' => $ex->pivot->duration_seconds ?? 0,
-                    'rest_after_seconds' => $ex->pivot->rest_after_seconds ?? ($template->default_rest_seconds ?? 30),
-                    'order' => $ex->pivot->order,
-                ];
-            })->values();
-        } else {
-            $exercisesData = [];
+            $exercisesData = $exercises->map(fn ($ex) => SessionExerciseData::fromTemplateExercise($ex, $template)->toArray())->values();
         }
 
         $templates = SessionTemplate::query()
@@ -61,7 +50,7 @@ class GoController extends Controller
 
         return view('go', [
             'template' => $template,
-            'exercises' => $exercises,
+            'exercises' => $template?->exercises ?? collect(),
             'exercisesData' => $exercisesData,
             'templates' => $templates,
             'session' => $session,
@@ -78,11 +67,11 @@ class GoController extends Controller
             $updateData['total_duration_seconds'] = $request->validated('total_duration_seconds');
         }
 
-        if ($request->validated('status') === 'in_progress' && $session->started_at === null) {
+        if ($request->validated('status') === SessionStatus::InProgress->value && $session->started_at === null) {
             $updateData['started_at'] = now();
         }
 
-        if ($request->validated('status') === 'completed' && $session->completed_at === null) {
+        if ($request->validated('status') === SessionStatus::Completed->value && $session->completed_at === null) {
             $updateData['completed_at'] = now();
         }
 

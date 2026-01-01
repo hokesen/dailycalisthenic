@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Exercises\Tables;
 
+use App\Enums\ExerciseCategory;
+use App\Enums\ExerciseDifficulty;
 use App\Filament\Exports\ExerciseExporter;
 use App\Filament\Imports\ExerciseImporter;
 use Filament\Actions\BulkActionGroup;
@@ -44,29 +46,15 @@ class ExercisesTable
                     ->tooltip(fn ($record) => $record->user_id ? 'User Exercise' : 'System Exercise'),
                 TextColumn::make('category')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'push' => 'danger',
-                        'pull' => 'success',
-                        'legs' => 'warning',
-                        'core' => 'info',
-                        'full_body' => 'primary',
-                        'cardio' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => str($state)->title()->replace('_', ' '))
+                    ->color(fn (?string $state): string => $state ? ExerciseCategory::from($state)->color() : 'gray')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ExerciseCategory::from($state)->label() : '-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('difficulty_level')
                     ->label('Difficulty')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'beginner' => 'success',
-                        'intermediate' => 'warning',
-                        'advanced' => 'danger',
-                        'expert' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (?string $state): string => $state ? str($state)->title() : '-')
+                    ->color(fn (?string $state): string => $state ? ExerciseDifficulty::from($state)->color() : 'gray')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ExerciseDifficulty::from($state)->label() : '-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('default_duration_seconds')
@@ -86,21 +74,9 @@ class ExercisesTable
             ])
             ->filters([
                 SelectFilter::make('category')
-                    ->options([
-                        'push' => 'Push',
-                        'pull' => 'Pull',
-                        'legs' => 'Legs',
-                        'core' => 'Core',
-                        'full_body' => 'Full Body',
-                        'cardio' => 'Cardio',
-                    ]),
+                    ->options(ExerciseCategory::options()),
                 SelectFilter::make('difficulty_level')
-                    ->options([
-                        'beginner' => 'Beginner',
-                        'intermediate' => 'Intermediate',
-                        'advanced' => 'Advanced',
-                        'expert' => 'Expert',
-                    ]),
+                    ->options(ExerciseDifficulty::options()),
                 SelectFilter::make('type')
                     ->label('Exercise Type')
                     ->options([

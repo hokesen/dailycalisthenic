@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PivotColumns;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,7 @@ class SessionTemplate extends Model
     public function exercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'session_template_exercises')
-            ->withPivot(['order', 'duration_seconds', 'rest_after_seconds', 'sets', 'reps', 'notes'])
+            ->withPivot(PivotColumns::SESSION_TEMPLATE_EXERCISES)
             ->withTimestamps()
             ->orderByPivot('order');
     }

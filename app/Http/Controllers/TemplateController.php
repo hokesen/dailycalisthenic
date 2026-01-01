@@ -10,10 +10,14 @@ use App\Http\Requests\UpdateExerciseRequest;
 use App\Http\Requests\UpdateTemplateNameRequest;
 use App\Models\Exercise;
 use App\Models\SessionTemplate;
+use App\Services\TemplateReplicationService;
+use App\Support\PivotDataBuilder;
 use Illuminate\Http\RedirectResponse;
 
 class TemplateController extends Controller
 {
+    public function __construct(public TemplateReplicationService $replicationService) {}
+
     public function swapExercise(SwapExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
@@ -24,14 +28,7 @@ class TemplateController extends Controller
             return back()->with('error', 'Exercise not found in template');
         }
 
-        $pivotData = [
-            'order' => $exercise->pivot->order,
-            'duration_seconds' => $exercise->pivot->duration_seconds,
-            'rest_after_seconds' => $exercise->pivot->rest_after_seconds,
-            'sets' => $exercise->pivot->sets,
-            'reps' => $exercise->pivot->reps,
-            'notes' => $exercise->pivot->notes,
-        ];
+        $pivotData = PivotDataBuilder::fromSessionTemplateExercisePivot($exercise->pivot);
 
         $template->exercises()->detach($request->exercise_id);
         $template->exercises()->attach($request->new_exercise_id, $pivotData);
@@ -56,14 +53,10 @@ class TemplateController extends Controller
 
         $maxOrder = $template->exercises()->max('session_template_exercises.order') ?? 0;
 
-        $template->exercises()->attach($request->exercise_id, [
-            'order' => $maxOrder + 1,
-            'duration_seconds' => null,
-            'rest_after_seconds' => $template->default_rest_seconds,
-            'sets' => null,
-            'reps' => null,
-            'notes' => null,
-        ]);
+        $template->exercises()->attach(
+            $request->exercise_id,
+            PivotDataBuilder::defaultSessionTemplateExercisePivot($maxOrder + 1, $template->default_rest_seconds)
+        );
 
         return redirect()->route('dashboard')->with('success', 'Exercise added successfully');
     }
@@ -79,14 +72,10 @@ class TemplateController extends Controller
 
         $maxOrder = $template->exercises()->max('session_template_exercises.order') ?? 0;
 
-        $template->exercises()->attach($exercise->id, [
-            'order' => $maxOrder + 1,
-            'duration_seconds' => null,
-            'rest_after_seconds' => $template->default_rest_seconds,
-            'sets' => null,
-            'reps' => null,
-            'notes' => null,
-        ]);
+        $template->exercises()->attach(
+            $exercise->id,
+            PivotDataBuilder::defaultSessionTemplateExercisePivot($maxOrder + 1, $template->default_rest_seconds)
+        );
 
         return redirect()->route('dashboard')->with('success', 'Custom exercise created and added successfully');
     }
@@ -119,27 +108,7 @@ class TemplateController extends Controller
 
     protected function ensureUserOwnsTemplate(SessionTemplate $template): SessionTemplate
     {
-        if ($template->user_id === auth()->id()) {
-            return $template;
-        }
-
-        $newTemplate = $template->replicate();
-        $newTemplate->user_id = auth()->id();
-        $newTemplate->name = auth()->user()->name."'s ".$template->name;
-        $newTemplate->save();
-
-        foreach ($template->exercises as $exercise) {
-            $newTemplate->exercises()->attach($exercise->id, [
-                'order' => $exercise->pivot->order,
-                'duration_seconds' => $exercise->pivot->duration_seconds,
-                'rest_after_seconds' => $exercise->pivot->rest_after_seconds,
-                'sets' => $exercise->pivot->sets,
-                'reps' => $exercise->pivot->reps,
-                'notes' => $exercise->pivot->notes,
-            ]);
-        }
-
-        return $newTemplate;
+        return $this->replicationService->ensureOwnership($template, auth()->user());
     }
 
     protected function reorderExercises(SessionTemplate $template): void
