@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AddCustomExerciseRequest;
 use App\Http\Requests\AddExerciseRequest;
+use App\Http\Requests\DeleteTemplateRequest;
 use App\Http\Requests\RemoveExerciseRequest;
 use App\Http\Requests\SwapExerciseRequest;
 use App\Http\Requests\UpdateExerciseRequest;
@@ -104,6 +105,13 @@ class TemplateController extends Controller
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Template name updated successfully');
+    }
+
+    public function destroy(DeleteTemplateRequest $request, SessionTemplate $template): RedirectResponse
+    {
+        $template->delete();
+
+        return redirect()->route('dashboard')->with('success', 'Template deleted successfully');
     }
 
     protected function ensureUserOwnsTemplate(SessionTemplate $template): SessionTemplate

@@ -23,9 +23,15 @@ Route::get('/dashboard', function () {
         ->orderBy('name')
         ->get();
 
+    $user = auth()->user();
+    $pastWeek = $user->getPastDaysWithSessions(7);
+    $currentStreak = $user->getCurrentStreak();
+
     return view('dashboard', [
         'templates' => $templates,
         'allExercises' => $allExercises,
+        'pastWeek' => $pastWeek,
+        'currentStreak' => $currentStreak,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -43,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/{template}/add-custom-exercise', [\App\Http\Controllers\TemplateController::class, 'addCustomExercise'])->name('templates.add-custom-exercise');
     Route::patch('/templates/{template}/update-exercise', [\App\Http\Controllers\TemplateController::class, 'updateExercise'])->name('templates.update-exercise');
     Route::patch('/templates/{template}/update-name', [\App\Http\Controllers\TemplateController::class, 'updateName'])->name('templates.update-name');
+    Route::delete('/templates/{template}', [\App\Http\Controllers\TemplateController::class, 'destroy'])->name('templates.destroy');
 });
 
 require __DIR__.'/auth.php';

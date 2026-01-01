@@ -98,4 +98,56 @@ class User extends Authenticatable implements FilamentUser
     {
         $this->notify(new \Illuminate\Auth\Notifications\ResetPassword($token));
     }
+
+    /**
+     * Get the past N days with session completion status.
+     *
+     * @return array<int, array{date: \Carbon\Carbon, hasSession: bool, dayName: string}>
+     */
+    public function getPastDaysWithSessions(int $days = 7): array
+    {
+        $result = [];
+        $today = now()->startOfDay();
+
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = $today->copy()->subDays($i);
+            $hasSession = $this->sessions()
+                ->completed()
+                ->onDate($date)
+                ->exists();
+
+            $result[] = [
+                'date' => $date,
+                'hasSession' => $hasSession,
+                'dayName' => $date->format('D'),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the current streak of consecutive days with completed sessions.
+     */
+    public function getCurrentStreak(): int
+    {
+        $streak = 0;
+        $currentDate = now()->startOfDay();
+
+        while (true) {
+            $hasSession = $this->sessions()
+                ->completed()
+                ->onDate($currentDate)
+                ->exists();
+
+            if (! $hasSession) {
+                break;
+            }
+
+            $streak++;
+            $currentDate = $currentDate->copy()->subDay();
+        }
+
+        return $streak;
+    }
 }

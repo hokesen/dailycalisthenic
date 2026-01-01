@@ -7,6 +7,41 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Activity Calendar -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Your Activity</h3>
+
+                    <!-- Current Streak -->
+                    <div class="mb-6">
+                        <div class="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-4 py-2">
+                            <span class="text-2xl">🔥</span>
+                            <div>
+                                <div class="font-bold text-orange-800 text-xl">{{ $currentStreak }} {{ Str::plural('day', $currentStreak) }}</div>
+                                <div class="text-sm text-orange-600">Current Streak</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Week Calendar -->
+                    <div class="grid grid-cols-7 gap-2">
+                        @foreach ($pastWeek as $day)
+                            <div class="flex flex-col items-center">
+                                <div class="text-xs font-medium text-gray-600 mb-2">{{ $day['dayName'] }}</div>
+                                <div class="w-12 h-12 rounded-lg border-2 flex items-center justify-center {{ $day['hasSession'] ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-300' }}">
+                                    @if ($day['hasSession'])
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    @endif
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">{{ $day['date']->format('j') }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-2xl font-bold mb-6">Welcome, {{ auth()->user()->name }}!</h3>
@@ -26,20 +61,34 @@
                                                     <button @click="editingName = true" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
                                                 @endif
                                             </div>
-                                            <form x-show="editingName" action="{{ route('templates.update-name', $template) }}" method="POST" class="flex gap-2" @submit.prevent="
-                                                const formData = new FormData($el);
-                                                fetch($el.action, {
-                                                    method: 'PATCH',
-                                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ name: formData.get('name') })
-                                                }).then(() => location.reload())
-                                            ">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="text" name="name" value="{{ $template->name }}" class="flex-grow border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:border-blue-500 focus:outline-none">
-                                                <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 font-medium text-sm">Save</button>
-                                                <button type="button" @click="editingName = false" class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-300 font-medium text-sm">Cancel</button>
-                                            </form>
+                                            <div x-show="editingName" class="space-y-2">
+                                                <form action="{{ route('templates.update-name', $template) }}" method="POST" class="flex gap-2" @submit.prevent="
+                                                    const formData = new FormData($el);
+                                                    fetch($el.action, {
+                                                        method: 'PATCH',
+                                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ name: formData.get('name') })
+                                                    }).then(() => location.reload())
+                                                ">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="text" name="name" value="{{ $template->name }}" class="flex-grow border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:border-blue-500 focus:outline-none">
+                                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 font-medium text-sm">Save</button>
+                                                    <button type="button" @click="editingName = false" class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-300 font-medium text-sm">Cancel</button>
+                                                </form>
+                                                <form action="{{ route('templates.destroy', $template) }}" method="POST" @submit.prevent="
+                                                    if(confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
+                                                        fetch($el.action, {
+                                                            method: 'DELETE',
+                                                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                                                        }).then(() => location.reload())
+                                                    }
+                                                ">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="w-full bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 font-medium text-sm transition-colors">Delete Template</button>
+                                                </form>
+                                            </div>
                                         </div>
                                         @if ($template->description)
                                             <p class="text-sm text-gray-600 mb-2">{{ $template->description }}</p>

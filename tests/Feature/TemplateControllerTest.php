@@ -229,6 +229,7 @@ class TemplateControllerTest extends TestCase
         $this->post(route('templates.add-exercise', $template))->assertRedirect('/login');
         $this->patch(route('templates.update-exercise', $template))->assertRedirect('/login');
         $this->patch(route('templates.update-name', $template))->assertRedirect('/login');
+        $this->delete(route('templates.destroy', $template))->assertRedirect('/login');
     }
 
     public function test_user_can_edit_own_template_name(): void
@@ -349,5 +350,87 @@ class TemplateControllerTest extends TestCase
         $template = SessionTemplate::factory()->create();
 
         $this->post(route('templates.add-custom-exercise', $template))->assertRedirect('/login');
+    }
+
+    public function test_user_can_delete_own_template(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Template']);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete(route('templates.destroy', $template));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseMissing('session_templates', [
+            'id' => $template->id,
+        ]);
+    }
+
+    public function test_user_cannot_delete_system_template(): void
+    {
+        $user = User::factory()->create();
+        $systemTemplate = SessionTemplate::factory()->create(['user_id' => null, 'name' => 'System Template']);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete(route('templates.destroy', $systemTemplate));
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('session_templates', [
+            'id' => $systemTemplate->id,
+            'name' => 'System Template',
+        ]);
+    }
+
+    public function test_user_cannot_delete_another_users_template(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user1->id, 'name' => 'User 1 Template']);
+
+        $response = $this
+            ->actingAs($user2)
+            ->delete(route('templates.destroy', $template));
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('session_templates', [
+            'id' => $template->id,
+            'name' => 'User 1 Template',
+        ]);
+    }
+
+    public function test_deleting_template_requires_authentication(): void
+    {
+        $template = SessionTemplate::factory()->create(['user_id' => User::factory()->create()->id]);
+
+        $this->delete(route('templates.destroy', $template))->assertRedirect('/login');
+    }
+
+    public function test_deleting_template_also_removes_associated_exercises(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
+        $exercise = Exercise::factory()->create();
+
+        $template->exercises()->attach($exercise->id, [
+            'order' => 1,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $template->id,
+            'exercise_id' => $exercise->id,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete(route('templates.destroy', $template));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseMissing('session_template_exercises', [
+            'session_template_id' => $template->id,
+        ]);
     }
 }

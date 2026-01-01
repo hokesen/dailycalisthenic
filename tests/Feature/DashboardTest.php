@@ -137,4 +137,72 @@ class DashboardTest extends TestCase
         $response->assertSee('120s');
         $response->assertSee('Rest: 45s');
     }
+
+    public function test_dashboard_displays_activity_calendar_section(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Your Activity');
+        $response->assertSee('Current Streak');
+    }
+
+    public function test_dashboard_displays_current_streak(): void
+    {
+        $user = User::factory()->create();
+
+        // Create sessions for the last 3 days
+        for ($i = 0; $i < 3; $i++) {
+            \App\Models\Session::factory()->create([
+                'user_id' => $user->id,
+                'status' => \App\Enums\SessionStatus::Completed,
+                'completed_at' => now()->subDays($i),
+            ]);
+        }
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('3 days');
+        $response->assertSee('Current Streak');
+    }
+
+    public function test_dashboard_displays_zero_streak_when_no_recent_sessions(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('0 days');
+        $response->assertSee('Current Streak');
+    }
+
+    public function test_dashboard_displays_past_week_calendar(): void
+    {
+        $user = User::factory()->create();
+
+        // Create a session for today
+        \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        // Check for day names (Mon, Tue, etc.)
+        $response->assertSee(now()->format('D'));
+    }
 }

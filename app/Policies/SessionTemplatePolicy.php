@@ -42,4 +42,13 @@ class SessionTemplatePolicy
     {
         return $sessionTemplate->user_id === null || $sessionTemplate->user_id === $user->id;
     }
+
+    /**
+     * Determine whether the user can delete the model.
+     * Only user-owned templates can be deleted, not system templates.
+     */
+    public function delete(User $user, SessionTemplate $sessionTemplate): bool
+    {
+        return $sessionTemplate->user_id === $user->id;
+    }
 }
