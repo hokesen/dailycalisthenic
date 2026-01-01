@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Exercise extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'name',
@@ -66,5 +67,33 @@ class Exercise extends Model
             $q->whereNull('user_id')
                 ->orWhere('user_id', $user->id);
         });
+    }
+
+    public function getEasierVariations(): array
+    {
+        $variations = [];
+        $current = $this;
+
+        while ($current->progression && $current->progression->easierExercise) {
+            $easier = $current->progression->easierExercise;
+            $variations[] = $easier;
+            $current = $easier;
+        }
+
+        return $variations;
+    }
+
+    public function getHarderVariations(): array
+    {
+        $variations = [];
+        $current = $this;
+
+        while ($current->progression && $current->progression->harderExercise) {
+            $harder = $current->progression->harderExercise;
+            $variations[] = $harder;
+            $current = $harder;
+        }
+
+        return $variations;
     }
 }

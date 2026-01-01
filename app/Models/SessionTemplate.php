@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SessionTemplate extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'name',
         'description',
         'notes',
-        'estimated_duration_minutes',
         'default_rest_seconds',
     ];
 
@@ -51,5 +51,21 @@ class SessionTemplate extends Model
             $q->whereNull('user_id')
                 ->orWhere('user_id', $user->id);
         });
+    }
+
+    public function calculateDurationMinutes(): int
+    {
+        if ($this->exercises->isEmpty()) {
+            return 0;
+        }
+
+        $totalSeconds = $this->exercises->sum(function ($exercise) {
+            $duration = $exercise->pivot->duration_seconds ?? 0;
+            $rest = $exercise->pivot->rest_after_seconds ?? 0;
+
+            return $duration + $rest;
+        });
+
+        return (int) ceil($totalSeconds / 60);
     }
 }

@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SessionTemplate>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Session>
  */
-class SessionTemplateFactory extends Factory
+class SessionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,11 +17,14 @@ class SessionTemplateFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => null,
+            'user_id' => \App\Models\User::factory(),
+            'session_template_id' => null,
             'name' => fake()->words(3, true),
-            'description' => fake()->sentence(),
             'notes' => fake()->optional()->paragraph(),
-            'default_rest_seconds' => fake()->randomElement([30, 45, 60, 90]),
+            'started_at' => null,
+            'completed_at' => null,
+            'total_duration_seconds' => null,
+            'status' => 'planned',
         ];
     }
 }
