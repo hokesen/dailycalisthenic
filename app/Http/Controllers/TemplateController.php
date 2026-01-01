@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddCustomExerciseRequest;
+use App\Http\Requests\AddExerciseRequest;
+use App\Http\Requests\RemoveExerciseRequest;
+use App\Http\Requests\SwapExerciseRequest;
+use App\Http\Requests\UpdateExerciseRequest;
+use App\Http\Requests\UpdateTemplateNameRequest;
 use App\Models\Exercise;
 use App\Models\SessionTemplate;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
-    public function swapExercise(Request $request, SessionTemplate $template): RedirectResponse
+    public function swapExercise(SwapExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'exercise_id' => 'required|exists:exercises,id',
-            'new_exercise_id' => 'required|exists:exercises,id',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $exercise = $template->exercises()->where('exercise_id', $request->exercise_id)->first();
@@ -39,12 +39,8 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Exercise swapped successfully');
     }
 
-    public function removeExercise(Request $request, SessionTemplate $template): RedirectResponse
+    public function removeExercise(RemoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'exercise_id' => 'required|exists:exercises,id',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $template->exercises()->detach($request->exercise_id);
@@ -54,12 +50,8 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Exercise removed successfully');
     }
 
-    public function addExercise(Request $request, SessionTemplate $template): RedirectResponse
+    public function addExercise(AddExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'exercise_id' => 'required|exists:exercises,id',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $maxOrder = $template->exercises()->max('session_template_exercises.order') ?? 0;
@@ -76,12 +68,8 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Exercise added successfully');
     }
 
-    public function addCustomExercise(Request $request, SessionTemplate $template): RedirectResponse
+    public function addCustomExercise(AddCustomExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $exercise = Exercise::create([
@@ -103,17 +91,8 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Custom exercise created and added successfully');
     }
 
-    public function updateExercise(Request $request, SessionTemplate $template): RedirectResponse
+    public function updateExercise(UpdateExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'exercise_id' => 'required|exists:exercises,id',
-            'duration_seconds' => 'nullable|integer|min:0',
-            'rest_after_seconds' => 'nullable|integer|min:0',
-            'sets' => 'nullable|integer|min:1',
-            'reps' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $template->exercises()->updateExistingPivot($request->exercise_id, [
@@ -127,12 +106,8 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Exercise updated successfully');
     }
 
-    public function updateName(Request $request, SessionTemplate $template): RedirectResponse
+    public function updateName(UpdateTemplateNameRequest $request, SessionTemplate $template): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
         $template = $this->ensureUserOwnsTemplate($template);
 
         $template->update([

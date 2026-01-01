@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateSessionRequest;
 use App\Models\Session;
 use App\Models\SessionTemplate;
 use Illuminate\Http\JsonResponse;
@@ -67,30 +68,21 @@ class GoController extends Controller
         ]);
     }
 
-    public function update(Request $request, Session $session): JsonResponse
+    public function update(UpdateSessionRequest $request, Session $session): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => 'required|string|in:planned,in_progress,completed,cancelled',
-            'total_duration_seconds' => 'nullable|integer|min:0',
-        ]);
-
-        if ($session->user_id !== auth()->id()) {
-            abort(403);
-        }
-
         $updateData = [
-            'status' => $validated['status'],
+            'status' => $request->validated('status'),
         ];
 
-        if (isset($validated['total_duration_seconds'])) {
-            $updateData['total_duration_seconds'] = $validated['total_duration_seconds'];
+        if ($request->has('total_duration_seconds')) {
+            $updateData['total_duration_seconds'] = $request->validated('total_duration_seconds');
         }
 
-        if ($validated['status'] === 'in_progress' && $session->started_at === null) {
+        if ($request->validated('status') === 'in_progress' && $session->started_at === null) {
             $updateData['started_at'] = now();
         }
 
-        if ($validated['status'] === 'completed' && $session->completed_at === null) {
+        if ($request->validated('status') === 'completed' && $session->completed_at === null) {
             $updateData['completed_at'] = now();
         }
 
