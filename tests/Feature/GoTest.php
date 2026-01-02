@@ -285,4 +285,179 @@ class GoTest extends TestCase
         $response->assertSee('90s');
         $response->assertSee('Rest: 60s');
     }
+
+    public function test_go_page_creates_session_exercise_records(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['name' => 'Test Workout']);
+        $exercise1 = Exercise::factory()->create(['name' => 'Push-ups']);
+        $exercise2 = Exercise::factory()->create(['name' => 'Squats']);
+
+        $template->exercises()->attach($exercise1->id, [
+            'order' => 1,
+            'duration_seconds' => 60,
+        ]);
+
+        $template->exercises()->attach($exercise2->id, [
+            'order' => 2,
+            'duration_seconds' => 90,
+        ]);
+
+        $this->assertDatabaseCount('session_exercises', 0);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/go?template='.$template->id);
+
+        $response->assertOk();
+        $this->assertDatabaseCount('session_exercises', 2);
+
+        $session = Session::query()->latest()->first();
+
+        $this->assertDatabaseHas('session_exercises', [
+            'session_id' => $session->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+            'duration_seconds' => 60,
+        ]);
+
+        $this->assertDatabaseHas('session_exercises', [
+            'session_id' => $session->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+            'duration_seconds' => 90,
+        ]);
+    }
+
+    public function test_update_session_with_exercise_completion_data(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create();
+        $exercise1 = Exercise::factory()->create(['name' => 'Push-ups']);
+        $exercise2 = Exercise::factory()->create(['name' => 'Squats']);
+
+        $template->exercises()->attach($exercise1->id, [
+            'order' => 1,
+            'duration_seconds' => 60,
+        ]);
+
+        $template->exercises()->attach($exercise2->id, [
+            'order' => 2,
+            'duration_seconds' => 90,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->get('/go?template='.$template->id);
+
+        $session = Session::query()->latest()->first();
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/go/'.$session->id.'/update', [
+                'status' => 'completed',
+                'total_duration_seconds' => 150,
+                'exercise_completion' => [
+                    [
+                        'exercise_id' => $exercise1->id,
+                        'order' => 1,
+                        'status' => 'completed',
+                    ],
+                    [
+                        'exercise_id' => $exercise2->id,
+                        'order' => 2,
+                        'status' => 'skipped',
+                    ],
+                ],
+            ]);
+
+        $response->assertOk();
+
+        $sessionExercise1 = $session->sessionExercises()
+            ->where('exercise_id', $exercise1->id)
+            ->first();
+
+        $sessionExercise2 = $session->sessionExercises()
+            ->where('exercise_id', $exercise2->id)
+            ->first();
+
+        $this->assertNotNull($sessionExercise1->completed_at);
+        $this->assertNull($sessionExercise2->completed_at);
+    }
+
+    public function test_update_individual_exercise_completion_in_real_time(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create();
+        $exercise1 = Exercise::factory()->create(['name' => 'Push-ups']);
+        $exercise2 = Exercise::factory()->create(['name' => 'Squats']);
+
+        $template->exercises()->attach($exercise1->id, [
+            'order' => 1,
+            'duration_seconds' => 60,
+        ]);
+
+        $template->exercises()->attach($exercise2->id, [
+            'order' => 2,
+            'duration_seconds' => 90,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->get('/go?template='.$template->id);
+
+        $session = Session::query()->latest()->first();
+
+        // Simulate completing first exercise
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/go/'.$session->id.'/update', [
+                'status' => 'in_progress',
+                'total_duration_seconds' => 60,
+                'exercise_completion' => [
+                    [
+                        'exercise_id' => $exercise1->id,
+                        'order' => 1,
+                        'status' => 'completed',
+                    ],
+                ],
+            ]);
+
+        $response->assertOk();
+
+        $sessionExercise1 = $session->sessionExercises()
+            ->where('exercise_id', $exercise1->id)
+            ->first();
+
+        $sessionExercise2 = $session->sessionExercises()
+            ->where('exercise_id', $exercise2->id)
+            ->first();
+
+        // First exercise should be marked completed
+        $this->assertNotNull($sessionExercise1->completed_at);
+        // Second exercise should still be null (not completed yet)
+        $this->assertNull($sessionExercise2->completed_at);
+
+        // Now skip the second exercise
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/go/'.$session->id.'/update', [
+                'status' => 'in_progress',
+                'total_duration_seconds' => 65,
+                'exercise_completion' => [
+                    [
+                        'exercise_id' => $exercise2->id,
+                        'order' => 2,
+                        'status' => 'skipped',
+                    ],
+                ],
+            ]);
+
+        $response->assertOk();
+
+        $sessionExercise2->refresh();
+
+        // Second exercise should still be null because it was skipped
+        $this->assertNull($sessionExercise2->completed_at);
+    }
 }

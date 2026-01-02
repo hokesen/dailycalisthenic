@@ -86,6 +86,7 @@ Alpine.data('workoutTimer', (config) => ({
     handleTimerComplete() {
         if (!this.isResting) {
             this.exerciseCompletionStatus[this.currentExerciseIndex] = 'completed';
+            this.updateExerciseCompletion(this.currentExerciseIndex, 'completed');
             if (this.currentExercise.rest_after_seconds > 0 && this.currentExerciseIndex < this.exercises.length - 1) {
                 this.isResting = true;
                 this.timeRemaining = this.currentExercise.rest_after_seconds;
@@ -111,14 +112,40 @@ Alpine.data('workoutTimer', (config) => ({
     skipToNext() {
         if (!this.isResting && !this.exerciseCompletionStatus[this.currentExerciseIndex]) {
             this.exerciseCompletionStatus[this.currentExerciseIndex] = 'skipped';
+            this.updateExerciseCompletion(this.currentExerciseIndex, 'skipped');
         }
         this.handleTimerComplete();
     },
 
     markCompleted() {
         this.exerciseCompletionStatus[this.currentExerciseIndex] = 'marked_completed';
+        this.updateExerciseCompletion(this.currentExerciseIndex, 'marked_completed');
         this.isResting = false;
         this.moveToNextExercise();
+    },
+
+    updateExerciseCompletion(exerciseIndex, status) {
+        const exercise = this.exercises[exerciseIndex];
+        if (!exercise) {
+            return;
+        }
+
+        fetch(`/go/${this.sessionId}/update`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: this.state === 'completed' ? 'completed' : 'in_progress',
+                total_duration_seconds: this.totalElapsedSeconds,
+                exercise_completion: [{
+                    exercise_id: exercise.id,
+                    order: exercise.order,
+                    status: status
+                }]
+            })
+        });
     },
 
     completeWorkout() {

@@ -37,6 +37,15 @@ class GoController extends Controller
                 'status' => SessionStatus::Planned->value,
             ]);
 
+            // Create session_exercises records to preserve the exact exercises in this session
+            foreach ($exercises as $exercise) {
+                $session->sessionExercises()->create([
+                    'exercise_id' => $exercise->id,
+                    'order' => $exercise->pivot->order,
+                    'duration_seconds' => $exercise->pivot->duration_seconds ?? 0,
+                ]);
+            }
+
             $exercisesData = $exercises->map(fn ($ex) => SessionExerciseData::fromTemplateExercise($ex, $template)->toArray())->values();
         }
 
@@ -76,6 +85,29 @@ class GoController extends Controller
         }
 
         $session->update($updateData);
+
+        // Update session_exercises with completion status
+        if ($request->has('exercise_completion')) {
+            $exerciseCompletions = $request->validated('exercise_completion');
+            $now = now();
+
+            foreach ($exerciseCompletions as $completion) {
+                $sessionExercise = $session->sessionExercises()
+                    ->where('exercise_id', $completion['exercise_id'])
+                    ->where('order', $completion['order'])
+                    ->first();
+
+                if ($sessionExercise) {
+                    $updateExerciseData = [];
+
+                    if ($completion['status'] === 'completed') {
+                        $updateExerciseData['completed_at'] = $now;
+                    }
+
+                    $sessionExercise->update($updateExerciseData);
+                }
+            }
+        }
 
         return response()->json(['success' => true]);
     }
