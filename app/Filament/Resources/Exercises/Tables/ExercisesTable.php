@@ -46,15 +46,15 @@ class ExercisesTable
                     ->tooltip(fn ($record) => $record->user_id ? 'User Exercise' : 'System Exercise'),
                 TextColumn::make('category')
                     ->badge()
-                    ->color(fn (?string $state): string => $state ? ExerciseCategory::from($state)->color() : 'gray')
-                    ->formatStateUsing(fn (?string $state): string => $state ? ExerciseCategory::from($state)->label() : '-')
+                    ->color(fn ($state): string => $state ? ($state instanceof ExerciseCategory ? $state : ExerciseCategory::from($state))->color() : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state ? ($state instanceof ExerciseCategory ? $state : ExerciseCategory::from($state))->label() : '-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('difficulty_level')
                     ->label('Difficulty')
                     ->badge()
-                    ->color(fn (?string $state): string => $state ? ExerciseDifficulty::from($state)->color() : 'gray')
-                    ->formatStateUsing(fn (?string $state): string => $state ? ExerciseDifficulty::from($state)->label() : '-')
+                    ->color(fn ($state): string => $state ? ($state instanceof ExerciseDifficulty ? $state : ExerciseDifficulty::from($state))->color() : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state ? ($state instanceof ExerciseDifficulty ? $state : ExerciseDifficulty::from($state))->label() : '-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('default_duration_seconds')

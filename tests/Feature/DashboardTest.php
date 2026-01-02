@@ -35,7 +35,8 @@ class DashboardTest extends TestCase
             ->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee('Available Templates');
+        $response->assertSee('Your Templates');
+        $response->assertSee('Default Templates');
         $response->assertSee('System Template');
         $response->assertSee('User Template');
         $response->assertDontSee($otherUserTemplate->name);
