@@ -112,7 +112,7 @@
 
                                     <!-- Exercise Info -->
                                     <div class="text-center space-y-2">
-                                        <h3 class="text-2xl font-bold text-gray-900" x-text="currentExercise?.name"></h3>
+                                        <h3 class="text-5xl font-bold text-gray-900" x-text="currentExercise?.name"></h3>
                                         <div x-show="currentExercise?.description" class="text-gray-600" x-text="currentExercise?.description"></div>
                                         <div class="flex gap-4 justify-center text-sm text-gray-500">
                                             <span x-show="currentExercise?.sets && currentExercise?.reps">
