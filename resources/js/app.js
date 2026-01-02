@@ -14,6 +14,7 @@ Alpine.data('workoutTimer', (config) => ({
     timeRemaining: 0,
     totalElapsedSeconds: 0,
     intervalId: null,
+    exerciseCompletionStatus: [],
 
     get currentExercise() {
         return this.exercises[this.currentExerciseIndex] || {};
@@ -25,6 +26,17 @@ Alpine.data('workoutTimer', (config) => ({
             return 1;
         }
         return 1 - (this.timeRemaining / total);
+    },
+
+    get completedExercises() {
+        return this.exercises.filter((_, index) => this.exerciseCompletionStatus[index] === 'completed');
+    },
+
+    get skippedExercises() {
+        return this.exercises.filter((_, index) =>
+            this.exerciseCompletionStatus[index] === 'skipped' ||
+            this.exerciseCompletionStatus[index] === 'marked_completed'
+        );
     },
 
     init() {
@@ -73,6 +85,7 @@ Alpine.data('workoutTimer', (config) => ({
 
     handleTimerComplete() {
         if (!this.isResting) {
+            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'completed';
             if (this.currentExercise.rest_after_seconds > 0 && this.currentExerciseIndex < this.exercises.length - 1) {
                 this.isResting = true;
                 this.timeRemaining = this.currentExercise.rest_after_seconds;
@@ -96,10 +109,14 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     skipToNext() {
+        if (!this.isResting && !this.exerciseCompletionStatus[this.currentExerciseIndex]) {
+            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'skipped';
+        }
         this.handleTimerComplete();
     },
 
     markCompleted() {
+        this.exerciseCompletionStatus[this.currentExerciseIndex] = 'marked_completed';
         this.isResting = false;
         this.moveToNextExercise();
     },

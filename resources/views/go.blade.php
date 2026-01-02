@@ -23,6 +23,42 @@
                                     <div class="text-6xl mb-4">🎉</div>
                                     <h2 class="text-3xl font-bold text-gray-900 mb-2">Workout Complete!</h2>
                                     <p class="text-gray-600 mb-6">Total time: <span x-text="formatTime(totalElapsedSeconds)"></span></p>
+
+                                    <!-- Exercise Summary -->
+                                    <div class="max-w-xl mx-auto mb-8">
+                                        <div class="bg-gray-50 rounded-lg p-6 space-y-6">
+                                            <!-- Completed Exercises -->
+                                            <div x-show="completedExercises.length > 0">
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                                                    <span class="text-green-600">✓</span>
+                                                    <span>Completed (<span x-text="completedExercises.length"></span>)</span>
+                                                </h3>
+                                                <div class="space-y-2">
+                                                    <template x-for="exercise in completedExercises" :key="exercise.id">
+                                                        <div class="text-gray-700 bg-white rounded p-2 text-sm">
+                                                            <span x-text="exercise.name"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- Skipped Exercises -->
+                                            <div x-show="skippedExercises.length > 0">
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                                                    <span class="text-yellow-600">⊘</span>
+                                                    <span>Skipped (<span x-text="skippedExercises.length"></span>)</span>
+                                                </h3>
+                                                <div class="space-y-2">
+                                                    <template x-for="exercise in skippedExercises" :key="exercise.id">
+                                                        <div class="text-gray-700 bg-white rounded p-2 text-sm">
+                                                            <span x-text="exercise.name"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="flex gap-4 justify-center">
                                         <a href="{{ route('dashboard') }}">
                                             <x-primary-button type="button">
