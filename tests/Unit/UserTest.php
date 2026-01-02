@@ -179,4 +179,84 @@ class UserTest extends TestCase
 
         $this->assertEquals(0, $streak);
     }
+
+    public function test_sessions_are_grouped_by_user_timezone(): void
+    {
+        $user = User::factory()->create(['timezone' => 'America/Los_Angeles']); // PST/PDT (UTC-8/-7)
+
+        // Create a session completed at 11:30 PM PST on Jan 1 (which is 7:30 AM UTC on Jan 2)
+        $pstDate = \Carbon\Carbon::create(2026, 1, 1, 23, 30, 0, 'America/Los_Angeles');
+        Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => SessionStatus::Completed,
+            'completed_at' => $pstDate->copy()->timezone('UTC'), // Store as UTC
+        ]);
+
+        // Check if the session shows up on Jan 1 in PST (not Jan 2)
+        $jan1Pst = \Carbon\Carbon::create(2026, 1, 1, 0, 0, 0, 'America/Los_Angeles');
+        $hasSessionOnJan1 = $user->sessions()
+            ->completed()
+            ->onDate($jan1Pst, 'America/Los_Angeles')
+            ->exists();
+
+        $this->assertTrue($hasSessionOnJan1, 'Session should appear on Jan 1 in PST timezone');
+
+        // Verify it does NOT show up on Jan 2 in PST
+        $jan2Pst = \Carbon\Carbon::create(2026, 1, 2, 0, 0, 0, 'America/Los_Angeles');
+        $hasSessionOnJan2 = $user->sessions()
+            ->completed()
+            ->onDate($jan2Pst, 'America/Los_Angeles')
+            ->exists();
+
+        $this->assertFalse($hasSessionOnJan2, 'Session should NOT appear on Jan 2 in PST timezone');
+    }
+
+    public function test_streak_calculation_uses_user_timezone(): void
+    {
+        $user = User::factory()->create(['timezone' => 'America/Los_Angeles']);
+
+        // Create sessions for 3 consecutive days in PST late at night
+        // These would be different days in UTC, but should be consecutive in PST
+        for ($i = 0; $i < 3; $i++) {
+            $pstDate = \Carbon\Carbon::create(2026, 1, 1 + $i, 23, 30, 0, 'America/Los_Angeles');
+            Session::factory()->create([
+                'user_id' => $user->id,
+                'status' => SessionStatus::Completed,
+                'completed_at' => $pstDate->copy()->timezone('UTC'),
+            ]);
+        }
+
+        // Mock "now" to be Jan 3 in PST
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::create(2026, 1, 3, 12, 0, 0, 'America/Los_Angeles'));
+
+        $streak = $user->getCurrentStreak();
+
+        $this->assertEquals(3, $streak, 'Streak should be 3 days when counted in PST timezone');
+
+        \Carbon\Carbon::setTestNow(); // Reset
+    }
+
+    public function test_weekly_breakdown_uses_user_timezone(): void
+    {
+        // Set test time FIRST to Jan 7 in UTC to avoid timezone issues with database inserts
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::create(2026, 1, 7, 20, 0, 0, 'UTC')); // This is 12:00 PM PST
+
+        $user = User::factory()->create(['timezone' => 'America/Los_Angeles']);
+
+        // Create a session at 11:30 PM PST on Jan 1 (which is 7:30 AM UTC on Jan 2)
+        $utcCompletedAt = \Carbon\Carbon::create(2026, 1, 2, 7, 30, 0, 'UTC');
+        Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => SessionStatus::Completed,
+            'completed_at' => $utcCompletedAt,
+        ]);
+
+        $breakdown = $user->getWeeklyExerciseBreakdown(7);
+
+        // The session should appear on Jan 1 (index 0), not Jan 2 (index 1)
+        $this->assertTrue($breakdown[0]['hasSession'], 'Session should appear on Jan 1 in PST');
+        $this->assertFalse($breakdown[1]['hasSession'], 'Session should NOT appear on Jan 2 in PST');
+
+        \Carbon\Carbon::setTestNow(); // Reset
+    }
 }

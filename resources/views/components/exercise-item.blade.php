@@ -43,20 +43,20 @@
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Sets</label>
-                            <input type="number" name="sets" placeholder="Sets" value="{{ $exercise->pivot->sets }}" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-base focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sets</label>
+                            <input type="number" name="sets" placeholder="Sets" value="{{ $exercise->pivot->sets }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Reps</label>
-                            <input type="number" name="reps" placeholder="Reps" value="{{ $exercise->pivot->reps }}" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-base focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Reps</label>
+                            <input type="number" name="reps" placeholder="Reps" value="{{ $exercise->pivot->reps }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Duration (seconds)</label>
-                            <input type="number" name="duration_seconds" placeholder="Duration" value="{{ $exercise->pivot->duration_seconds }}" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-base focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Duration (seconds)</label>
+                            <input type="number" name="duration_seconds" placeholder="Duration" value="{{ $exercise->pivot->duration_seconds }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Rest (seconds)</label>
-                            <input type="number" name="rest_after_seconds" placeholder="Rest" value="{{ $exercise->pivot->rest_after_seconds }}" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-base focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Rest (seconds)</label>
+                            <input type="number" name="rest_after_seconds" placeholder="Rest" value="{{ $exercise->pivot->rest_after_seconds }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -80,7 +80,7 @@
                         ">
                             @csrf
                             <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                            <select name="new_exercise_id" @change="if($event.target.value) $event.target.form.requestSubmit()" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none">
+                            <select name="new_exercise_id" @change="if($event.target.value) $event.target.form.requestSubmit()" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
                                 <option value="">Select exercise...</option>
                                 @if (count($easierVariations) > 0)
                                     <optgroup label="Easier">

@@ -59,8 +59,16 @@ class Session extends Model
         return $query->where('status', SessionStatus::Completed)->whereNotNull('completed_at');
     }
 
-    public function scopeOnDate($query, $date)
+    public function scopeOnDate($query, $date, $timezone = 'America/Los_Angeles')
     {
-        return $query->whereDate('completed_at', $date);
+        // Convert the date to the user's timezone if needed
+        $dateInTimezone = $date instanceof \Carbon\Carbon
+            ? $date->copy()->timezone($timezone)
+            : \Carbon\Carbon::parse($date, $timezone);
+
+        $startOfDay = $dateInTimezone->copy()->startOfDay()->timezone('UTC');
+        $endOfDay = $dateInTimezone->copy()->endOfDay()->timezone('UTC');
+
+        return $query->whereBetween('completed_at', [$startOfDay, $endOfDay]);
     }
 }

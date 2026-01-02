@@ -9,7 +9,7 @@
         }).then(() => location.reload())
     ">
         @csrf
-        <select name="exercise_id" @change="if($event.target.value === 'custom') { showCustom = true; $event.target.value = ''; } else { $event.target.form.requestSubmit(); }" class="w-full border-2 border-gray-300 rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none">
+        <select name="exercise_id" @change="if($event.target.value === 'custom') { showCustom = true; $event.target.value = ''; } else { $event.target.form.requestSubmit(); }" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
             <option value="">+ Add Exercise</option>
             <option value="custom">+ Create Custom Exercise</option>
             @foreach ($allExercises as $allEx)
@@ -25,7 +25,7 @@
         }).then(() => location.reload())
     ">
         @csrf
-        <input type="text" name="name" x-model="customName" placeholder="Exercise name..." class="flex-grow border-2 border-gray-300 rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none" required>
+        <input type="text" name="name" x-model="customName" placeholder="Exercise name..." class="flex-grow border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none" required>
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-base">Add</button>
         <button type="button" @click="showCustom = false; customName = ''" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 font-medium text-base">Cancel</button>
     </form>

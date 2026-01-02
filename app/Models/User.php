@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'timezone',
     ];
 
     /**
@@ -45,6 +46,14 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
     ];
+
+    /**
+     * Get current time in user's timezone.
+     */
+    public function now(): \Carbon\Carbon
+    {
+        return now()->timezone($this->timezone ?? 'America/Los_Angeles');
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -107,13 +116,13 @@ class User extends Authenticatable implements FilamentUser
     public function getPastDaysWithSessions(int $days = 7): array
     {
         $result = [];
-        $today = now()->startOfDay();
+        $today = $this->now()->startOfDay();
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = $today->copy()->subDays($i);
             $hasSession = $this->sessions()
                 ->completed()
-                ->onDate($date)
+                ->onDate($date, $this->timezone ?? 'America/Los_Angeles')
                 ->exists();
 
             $result[] = [
@@ -132,12 +141,12 @@ class User extends Authenticatable implements FilamentUser
     public function getCurrentStreak(): int
     {
         $streak = 0;
-        $currentDate = now()->startOfDay();
+        $currentDate = $this->now()->startOfDay();
 
         while (true) {
             $hasSession = $this->sessions()
                 ->completed()
-                ->onDate($currentDate)
+                ->onDate($currentDate, $this->timezone ?? 'America/Los_Angeles')
                 ->exists();
 
             if (! $hasSession) {
@@ -158,23 +167,36 @@ class User extends Authenticatable implements FilamentUser
      */
     public function getWeeklyExerciseBreakdown(int $days = 7): array
     {
-        $startDate = now()->subDays($days - 1)->startOfDay();
-        $endDate = now()->endOfDay();
+        $userNow = $this->now();
+        $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
+        $endDate = $userNow->copy()->endOfDay();
+
+        // Convert to UTC for database query
+        $startDateUtc = $startDate->copy()->timezone('UTC');
+        $endDateUtc = $endDate->copy()->timezone('UTC');
 
         // Single query to fetch all completed sessions with exercises
         $sessions = $this->sessions()
             ->completed()
-            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
             ->with(['sessionExercises.exercise'])
             ->get();
 
         // Build daily breakdown
         $breakdown = [];
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->startOfDay();
+        $timezone = $this->timezone ?? 'America/Los_Angeles';
 
-            $daySessions = $sessions->filter(function ($session) use ($date) {
-                return $session->completed_at->isSameDay($date);
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = $userNow->copy()->subDays($i)->startOfDay();
+
+            $daySessions = $sessions->filter(function ($session) use ($date, $timezone) {
+                // Get the raw timestamp and create a new Carbon instance in user timezone
+                // This works around issues with setTestNow affecting timezone conversions
+                $timestamp = $session->completed_at->getTimestamp();
+                $sessionInTz = \Carbon\Carbon::createFromTimestamp($timestamp, $timezone);
+
+                // Compare using date strings to ensure timezone is respected
+                return $sessionInTz->toDateString() === $date->toDateString();
             });
 
             $exercises = [];
