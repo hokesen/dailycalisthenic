@@ -36,14 +36,16 @@ Route::get('/dashboard', function () {
         ->get();
 
     $user = auth()->user();
-    $pastWeek = $user->getPastDaysWithSessions(7);
+    $weeklyBreakdown = $user->getWeeklyExerciseBreakdown(7);
+    $progressionSummary = $user->getWeeklyProgressionSummary(7);
     $currentStreak = $user->getCurrentStreak();
 
     return view('dashboard', [
         'userTemplates' => $userTemplates,
         'systemTemplates' => $systemTemplates,
         'allExercises' => $allExercises,
-        'pastWeek' => $pastWeek,
+        'weeklyBreakdown' => $weeklyBreakdown,
+        'progressionSummary' => $progressionSummary,
         'currentStreak' => $currentStreak,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');

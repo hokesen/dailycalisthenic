@@ -18,22 +18,27 @@
                         </div>
                     </div>
 
-                    <!-- Week Calendar -->
-                    <div class="grid grid-cols-7 gap-2">
-                        @foreach ($pastWeek as $day)
-                            <div class="flex flex-col items-center">
-                                <div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">{{ $day['dayName'] }}</div>
-                                <div class="w-12 h-12 rounded-lg border-2 flex items-center justify-center {{ $day['hasSession'] ? 'bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-600' : 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700' }}">
-                                    @if ($day['hasSession'])
-                                        <svg class="w-6 h-6 text-green-600 dark:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    @endif
-                                </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $day['date']->format('j') }}</div>
-                            </div>
-                        @endforeach
+                    <!-- Past Week -->
+                    <div class="mb-6">
+                        <h4 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-3">Past Week</h4>
+                        <div class="grid grid-cols-7 gap-2">
+                            @foreach ($weeklyBreakdown as $day)
+                                <x-activity-day-card :day="$day" />
+                            @endforeach
+                        </div>
                     </div>
+
+                    @if (count($progressionSummary) > 0)
+                        <!-- Weekly Progression Summary -->
+                        <div>
+                            <h4 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Progression Summary</h4>
+                            <div class="space-y-4">
+                                @foreach ($progressionSummary as $progression)
+                                    <x-progression-summary-card :progression="$progression" />
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 

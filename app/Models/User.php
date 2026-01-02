@@ -150,4 +150,122 @@ class User extends Authenticatable implements FilamentUser
 
         return $streak;
     }
+
+    /**
+     * Get weekly exercise breakdown with minutes per exercise for each day.
+     *
+     * @return array<int, array{date: \Carbon\Carbon, dayName: string, hasSession: bool, exercises: array}>
+     */
+    public function getWeeklyExerciseBreakdown(int $days = 7): array
+    {
+        $startDate = now()->subDays($days - 1)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        // Single query to fetch all completed sessions with exercises
+        $sessions = $this->sessions()
+            ->completed()
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->with(['sessionExercises.exercise'])
+            ->get();
+
+        // Build daily breakdown
+        $breakdown = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->startOfDay();
+
+            $daySessions = $sessions->filter(function ($session) use ($date) {
+                return $session->completed_at->isSameDay($date);
+            });
+
+            $exercises = [];
+            foreach ($daySessions as $session) {
+                foreach ($session->sessionExercises as $sessionExercise) {
+                    $exerciseId = $sessionExercise->exercise_id;
+                    if (! isset($exercises[$exerciseId])) {
+                        $exercises[$exerciseId] = [
+                            'name' => $sessionExercise->exercise->name,
+                            'total_seconds' => 0,
+                        ];
+                    }
+                    $exercises[$exerciseId]['total_seconds'] += $sessionExercise->duration_seconds ?? 0;
+                }
+            }
+
+            $breakdown[] = [
+                'date' => $date,
+                'dayName' => $date->format('D'),
+                'hasSession' => $daySessions->isNotEmpty(),
+                'exercises' => array_values($exercises),
+            ];
+        }
+
+        return $breakdown;
+    }
+
+    /**
+     * Get weekly progression summary showing exercises worked on and their harder variations.
+     *
+     * @return array<int, array{path_name: string, exercises: array}>
+     */
+    public function getWeeklyProgressionSummary(int $days = 7): array
+    {
+        $startDate = now()->subDays($days - 1)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        // Fetch weekly session data
+        $sessionExercises = SessionExercise::query()
+            ->whereHas('session', function ($query) use ($startDate, $endDate) {
+                $query->where('user_id', $this->id)
+                    ->completed()
+                    ->whereBetween('completed_at', [$startDate, $endDate]);
+            })
+            ->with(['exercise.progression'])
+            ->get();
+
+        if ($sessionExercises->isEmpty()) {
+            return [];
+        }
+
+        // Group session data by exercise_id
+        $sessionDataByExercise = $sessionExercises->groupBy('exercise_id');
+
+        // Get unique exercises with progressions from this week's sessions
+        $workedExercises = $sessionExercises
+            ->pluck('exercise')
+            ->unique('id')
+            ->filter(fn ($exercise) => $exercise->progression && $exercise->progression->progression_path_name);
+
+        // Build progression paths
+        $progressionPaths = [];
+
+        foreach ($workedExercises as $exercise) {
+            $pathName = $exercise->progression->progression_path_name;
+
+            if (isset($progressionPaths[$pathName])) {
+                continue; // Already processed this path
+            }
+
+            // Get this exercise + all harder variations
+            $exercisesInPath = [$exercise];
+            $harderVariations = $exercise->getHarderVariations();
+            $exercisesInPath = array_merge($exercisesInPath, $harderVariations);
+
+            $exerciseData = [];
+            foreach ($exercisesInPath as $ex) {
+                $totalSeconds = $sessionDataByExercise->get($ex->id)?->sum('duration_seconds') ?? 0;
+
+                $exerciseData[] = [
+                    'name' => $ex->name,
+                    'total_seconds' => $totalSeconds,
+                ];
+            }
+
+            $progressionPaths[$pathName] = [
+                'path_name' => $pathName,
+                'exercises' => $exerciseData,
+            ];
+        }
+
+        return array_values($progressionPaths);
+    }
 }

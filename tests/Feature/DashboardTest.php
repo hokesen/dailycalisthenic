@@ -206,4 +206,220 @@ class DashboardTest extends TestCase
         // Check for day names (Mon, Tue, etc.)
         $response->assertSee(now()->format('D'));
     }
+
+    public function test_weekly_exercise_breakdown_returns_correct_structure(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Plank']);
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        $breakdown = $user->getWeeklyExerciseBreakdown(7);
+
+        $this->assertCount(7, $breakdown);
+        foreach ($breakdown as $day) {
+            $this->assertArrayHasKey('date', $day);
+            $this->assertArrayHasKey('dayName', $day);
+            $this->assertArrayHasKey('hasSession', $day);
+            $this->assertArrayHasKey('exercises', $day);
+        }
+    }
+
+    public function test_weekly_exercise_breakdown_aggregates_multiple_exercises_same_day(): void
+    {
+        $user = User::factory()->create();
+        $exercise1 = \App\Models\Exercise::factory()->create(['name' => 'Plank']);
+        $exercise2 = \App\Models\Exercise::factory()->create(['name' => 'Push-ups']);
+
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise1->id,
+            'duration_seconds' => 300,
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise2->id,
+            'duration_seconds' => 180,
+        ]);
+
+        $breakdown = $user->getWeeklyExerciseBreakdown(7);
+        $today = collect($breakdown)->first(fn ($day) => $day['hasSession']);
+
+        $this->assertCount(2, $today['exercises']);
+        $this->assertEquals('Plank', $today['exercises'][0]['name']);
+        $this->assertEquals(300, $today['exercises'][0]['total_seconds']);
+        $this->assertEquals('Push-ups', $today['exercises'][1]['name']);
+        $this->assertEquals(180, $today['exercises'][1]['total_seconds']);
+    }
+
+    public function test_weekly_progression_summary_shows_worked_exercise_and_harder_variations(): void
+    {
+        $user = User::factory()->create();
+        $exercise1 = \App\Models\Exercise::factory()->create(['name' => 'Kneeling Push-ups']);
+        $exercise2 = \App\Models\Exercise::factory()->create(['name' => 'Regular Push-ups']);
+        $exercise3 = \App\Models\Exercise::factory()->create(['name' => 'Pike Push-ups']);
+
+        // Create progression chain: exercise1 -> exercise2 -> exercise3
+        $progression1 = \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $exercise1->id,
+            'harder_exercise_id' => $exercise2->id,
+            'progression_path_name' => 'push-ups',
+        ]);
+
+        $progression2 = \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $exercise2->id,
+            'easier_exercise_id' => $exercise1->id,
+            'harder_exercise_id' => $exercise3->id,
+            'progression_path_name' => 'push-ups',
+        ]);
+
+        $progression3 = \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $exercise3->id,
+            'easier_exercise_id' => $exercise2->id,
+            'progression_path_name' => 'push-ups',
+        ]);
+
+        // Create session data for only exercise1
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise1->id,
+            'duration_seconds' => 900,
+        ]);
+
+        $summary = $user->getWeeklyProgressionSummary(7);
+
+        $this->assertCount(1, $summary);
+        $this->assertEquals('push-ups', $summary[0]['path_name']);
+        $this->assertCount(3, $summary[0]['exercises']); // Worked exercise + 2 harder variations
+        $this->assertEquals('Kneeling Push-ups', $summary[0]['exercises'][0]['name']);
+        $this->assertEquals(900, $summary[0]['exercises'][0]['total_seconds']);
+        $this->assertEquals('Regular Push-ups', $summary[0]['exercises'][1]['name']);
+        $this->assertEquals(0, $summary[0]['exercises'][1]['total_seconds']); // Not worked on
+        $this->assertEquals('Pike Push-ups', $summary[0]['exercises'][2]['name']);
+        $this->assertEquals(0, $summary[0]['exercises'][2]['total_seconds']); // Not worked on
+    }
+
+    public function test_weekly_progression_summary_only_shows_worked_on_paths(): void
+    {
+        $user = User::factory()->create();
+        $workedExercise = \App\Models\Exercise::factory()->create(['name' => 'Plank']);
+        $notWorkedExercise = \App\Models\Exercise::factory()->create(['name' => 'Squats']);
+
+        \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $workedExercise->id,
+            'progression_path_name' => 'plank',
+        ]);
+
+        \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $notWorkedExercise->id,
+            'progression_path_name' => 'squats',
+        ]);
+
+        // Create session for plank only
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $workedExercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        $summary = $user->getWeeklyProgressionSummary(7);
+
+        $this->assertCount(1, $summary);
+        $this->assertEquals('plank', $summary[0]['path_name']);
+    }
+
+    public function test_dashboard_renders_with_new_activity_data(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Test Exercise']);
+
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Past Week');
+    }
+
+    public function test_dashboard_displays_progression_summary_when_available(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Kneeling Plank']);
+
+        \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $exercise->id,
+            'progression_path_name' => 'plank',
+        ]);
+
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Weekly Progression Summary');
+        $response->assertSee('Plank Progression');
+    }
+
+    public function test_dashboard_hides_progression_summary_when_no_progressions(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertDontSee('Weekly Progression Summary');
+    }
 }
