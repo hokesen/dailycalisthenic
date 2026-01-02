@@ -99,6 +99,11 @@ Alpine.data('workoutTimer', (config) => ({
         this.handleTimerComplete();
     },
 
+    markCompleted() {
+        this.isResting = false;
+        this.moveToNextExercise();
+    },
+
     completeWorkout() {
         this.stopTimer();
         this.state = 'completed';

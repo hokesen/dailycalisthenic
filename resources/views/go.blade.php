@@ -109,6 +109,11 @@
                                             class="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors">
                                             Skip
                                         </button>
+
+                                        <button x-show="state === 'running' || state === 'paused'" @click="markCompleted"
+                                            class="px-8 py-4 bg-purple-600 text-white rounded-lg font-semibold text-lg hover:bg-purple-700 transition-colors">
+                                            Mark Completed
+                                        </button>
                                     </div>
 
                                     <!-- Exercise List -->
