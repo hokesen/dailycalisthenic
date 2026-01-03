@@ -114,23 +114,25 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
-            <button @click="showSwap = !showSwap" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-medium text-base transition-colors">Swap</button>
-            <button @click="showEdit = !showEdit" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 font-medium text-base transition-colors">Edit</button>
-            <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
-                if(confirm('Remove this exercise?')) {
-                    fetch($el.action, {
-                        method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
-                    }).then(() => location.reload())
-                }
-            ">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                <button type="submit" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 font-bold text-lg transition-colors">✕</button>
-            </form>
-        </div>
+        @if ($template->user_id === auth()->id())
+            <div class="flex gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
+                <button @click="showSwap = !showSwap" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-medium text-base transition-colors">Swap</button>
+                <button @click="showEdit = !showEdit" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 font-medium text-base transition-colors">Edit</button>
+                <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
+                    if(confirm('Remove this exercise?')) {
+                        fetch($el.action, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
+                        }).then(() => location.reload())
+                    }
+                ">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
+                    <button type="submit" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 font-bold text-lg transition-colors">✕</button>
+                </form>
+            </div>
+        @endif
     </div>
 </div>

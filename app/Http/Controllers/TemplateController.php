@@ -114,6 +114,13 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Template deleted successfully');
     }
 
+    public function copy(SessionTemplate $template): RedirectResponse
+    {
+        $this->replicationService->replicateForUser($template, auth()->user());
+
+        return redirect()->route('dashboard')->with('success', 'Template copied successfully');
+    }
+
     protected function ensureUserOwnsTemplate(SessionTemplate $template): SessionTemplate
     {
         return $this->replicationService->ensureOwnership($template, auth()->user());

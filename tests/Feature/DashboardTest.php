@@ -25,21 +25,42 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_displays_available_templates(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $otherUser = User::factory()->create(['name' => 'Jane Smith']);
         $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
         $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
-        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => User::factory()->create()->id]);
+        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template']);
 
         $response = $this
             ->actingAs($user)
             ->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee('Your Templates');
-        $response->assertSee('Default Templates');
+        $response->assertSee('Templates');
         $response->assertSee('System Template');
+        $response->assertSee('Default Template');
         $response->assertSee('User Template');
-        $response->assertDontSee($otherUserTemplate->name);
+        $response->assertSee('by John Doe');
+        $response->assertSee('Other Template');
+        $response->assertSee('by Jane Smith');
+    }
+
+    public function test_dashboard_shows_copy_button_for_non_owned_templates(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $otherUser = User::factory()->create(['name' => 'Jane Smith']);
+        $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
+        $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
+        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template']);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee(route('templates.copy', $systemTemplate));
+        $response->assertSee(route('templates.copy', $otherUserTemplate));
+        $response->assertDontSee(route('templates.copy', $userTemplate));
     }
 
     public function test_dashboard_shows_message_when_no_templates_available(): void

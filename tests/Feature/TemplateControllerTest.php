@@ -229,6 +229,7 @@ class TemplateControllerTest extends TestCase
         $this->post(route('templates.add-exercise', $template))->assertRedirect('/login');
         $this->patch(route('templates.update-exercise', $template))->assertRedirect('/login');
         $this->patch(route('templates.update-name', $template))->assertRedirect('/login');
+        $this->post(route('templates.copy', $template))->assertRedirect('/login');
         $this->delete(route('templates.destroy', $template))->assertRedirect('/login');
     }
 
@@ -432,5 +433,86 @@ class TemplateControllerTest extends TestCase
         $this->assertDatabaseMissing('session_template_exercises', [
             'session_template_id' => $template->id,
         ]);
+    }
+
+    public function test_user_can_copy_system_template(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $systemTemplate = SessionTemplate::factory()->create(['user_id' => null, 'name' => 'Beginner Workout']);
+        $exercise = Exercise::factory()->create();
+
+        $systemTemplate->exercises()->attach($exercise->id, [
+            'order' => 1,
+            'sets' => 3,
+            'reps' => 10,
+            'duration_seconds' => 60,
+            'rest_after_seconds' => 30,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('templates.copy', $systemTemplate));
+
+        $response->assertRedirect(route('dashboard'));
+
+        $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
+        $this->assertNotNull($userTemplate);
+        $this->assertEquals("John Doe's Beginner Workout", $userTemplate->name);
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $userTemplate->id,
+            'exercise_id' => $exercise->id,
+            'sets' => 3,
+            'reps' => 10,
+            'duration_seconds' => 60,
+            'rest_after_seconds' => 30,
+        ]);
+    }
+
+    public function test_user_can_copy_another_users_template(): void
+    {
+        $user1 = User::factory()->create(['name' => 'Jane Smith']);
+        $user2 = User::factory()->create(['name' => 'John Doe']);
+        $user1Template = SessionTemplate::factory()->create(['user_id' => $user1->id, 'name' => 'Advanced Workout']);
+        $exercise = Exercise::factory()->create();
+
+        $user1Template->exercises()->attach($exercise->id, [
+            'order' => 1,
+            'sets' => 5,
+            'reps' => 15,
+        ]);
+
+        $response = $this
+            ->actingAs($user2)
+            ->post(route('templates.copy', $user1Template));
+
+        $response->assertRedirect(route('dashboard'));
+
+        $user2Template = SessionTemplate::where('user_id', $user2->id)->first();
+        $this->assertNotNull($user2Template);
+        $this->assertEquals("John Doe's Advanced Workout", $user2Template->name);
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $user2Template->id,
+            'exercise_id' => $exercise->id,
+            'sets' => 5,
+            'reps' => 15,
+        ]);
+    }
+
+    public function test_copying_own_template_creates_duplicate(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Workout']);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('templates.copy', $template));
+
+        $response->assertRedirect(route('dashboard'));
+
+        $this->assertEquals(2, SessionTemplate::where('user_id', $user->id)->count());
+        $copiedTemplate = SessionTemplate::where('user_id', $user->id)
+            ->where('name', "John Doe's My Workout")
+            ->first();
+        $this->assertNotNull($copiedTemplate);
     }
 }

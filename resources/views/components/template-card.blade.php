@@ -3,9 +3,26 @@
 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col" x-data="{ editingName: false }">
     <div class="mb-2">
         <div x-show="!editingName" class="flex items-center justify-between gap-2">
-            <h5 class="font-semibold text-gray-900 dark:text-white text-lg">{{ $template->name }}</h5>
+            <div class="flex-grow">
+                <h5 class="font-semibold text-gray-900 dark:text-white text-lg">{{ $template->name }}</h5>
+                @if ($template->user)
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">by {{ $template->user->name }}</p>
+                @elseif ($template->user_id === null)
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Default Template</p>
+                @endif
+            </div>
             @if ($template->user_id === auth()->id())
                 <button @click="editingName = true" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">Edit</button>
+            @else
+                <form action="{{ route('templates.copy', $template) }}" method="POST" @submit.prevent="
+                    fetch($el.action, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    }).then(() => location.reload())
+                ">
+                    @csrf
+                    <button type="submit" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">Copy</button>
+                </form>
             @endif
         </div>
         <div x-show="editingName" class="space-y-2">
@@ -50,7 +67,9 @@
                 @endforeach
             </div>
 
-            <x-add-exercise :template="$template" :allExercises="$allExercises" />
+            @if ($template->user_id === auth()->id())
+                <x-add-exercise :template="$template" :allExercises="$allExercises" />
+            @endif
         </div>
         @php
             $duration = $template->calculateDurationMinutes();
@@ -62,7 +81,9 @@
         <div class="mb-4 flex-grow">
             <p class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Exercises:</p>
             <p class="text-base text-gray-500 dark:text-gray-400 mb-4">No exercises yet</p>
-            <x-add-exercise :template="$template" :allExercises="$allExercises" />
+            @if ($template->user_id === auth()->id())
+                <x-add-exercise :template="$template" :allExercises="$allExercises" />
+            @endif
         </div>
     @endif
 

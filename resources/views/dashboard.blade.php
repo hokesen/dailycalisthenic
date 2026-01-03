@@ -44,33 +44,18 @@
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    @if ($userTemplates->isEmpty() && $systemTemplates->isEmpty())
+                    @if ($allTemplates->isEmpty())
                         <p class="text-gray-600 dark:text-gray-400">No workout templates available yet.</p>
                     @else
-                        <div class="space-y-8">
-                            @if ($userTemplates->isNotEmpty())
-                                <div class="space-y-4">
-                                    <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Your Templates</h4>
-                                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                                        @foreach ($userTemplates as $template)
-                                            <x-template-card :template="$template" :allExercises="$allExercises" />
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if ($systemTemplates->isNotEmpty())
-                                <div class="space-y-4">
-                                    <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Default Templates</h4>
-                                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                                        @foreach ($systemTemplates as $template)
-                                            <x-template-card :template="$template" :allExercises="$allExercises" />
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Templates</h4>
+                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                                @foreach ($allTemplates as $template)
+                                    <x-template-card :template="$template" :allExercises="$allExercises" />
+                                @endforeach
+                            </div>
                         </div>
-                @endif
+                    @endif
                 </div>
             </div>
         </div>

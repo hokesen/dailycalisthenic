@@ -31,7 +31,7 @@ class TemplateReplicationService
     /**
      * Replicate template for user
      */
-    protected function replicateForUser(SessionTemplate $template, User $user): SessionTemplate
+    public function replicateForUser(SessionTemplate $template, User $user): SessionTemplate
     {
         $newTemplate = $template->replicate();
         $newTemplate->user_id = $user->id;

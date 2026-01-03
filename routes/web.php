@@ -12,21 +12,15 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $userTemplates = SessionTemplate::query()
-        ->where('user_id', auth()->id())
-        ->with(['exercises' => function ($query) {
-            $query->with(['progression.easierExercise', 'progression.harderExercise'])
-                ->orderByPivot('order');
-        }])
-        ->orderBy('name')
-        ->get();
-
-    $systemTemplates = SessionTemplate::query()
-        ->whereNull('user_id')
-        ->with(['exercises' => function ($query) {
-            $query->with(['progression.easierExercise', 'progression.harderExercise'])
-                ->orderByPivot('order');
-        }])
+    $allTemplates = SessionTemplate::query()
+        ->with([
+            'user',
+            'exercises' => function ($query) {
+                $query->with(['progression.easierExercise', 'progression.harderExercise'])
+                    ->orderByPivot('order');
+            },
+        ])
+        ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [auth()->id()])
         ->orderBy('name')
         ->get();
 
@@ -41,8 +35,7 @@ Route::get('/dashboard', function () {
     $currentStreak = $user->getCurrentStreak();
 
     return view('dashboard', [
-        'userTemplates' => $userTemplates,
-        'systemTemplates' => $systemTemplates,
+        'allTemplates' => $allTemplates,
         'allExercises' => $allExercises,
         'weeklyBreakdown' => $weeklyBreakdown,
         'progressionSummary' => $progressionSummary,
@@ -64,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/{template}/add-custom-exercise', [TemplateController::class, 'addCustomExercise'])->name('templates.add-custom-exercise');
     Route::patch('/templates/{template}/update-exercise', [TemplateController::class, 'updateExercise'])->name('templates.update-exercise');
     Route::patch('/templates/{template}/update-name', [TemplateController::class, 'updateName'])->name('templates.update-name');
+    Route::post('/templates/{template}/copy', [TemplateController::class, 'copy'])->name('templates.copy');
     Route::delete('/templates/{template}', [TemplateController::class, 'destroy'])->name('templates.destroy');
 });
 
