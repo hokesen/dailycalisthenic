@@ -53,18 +53,17 @@ Route::get('/dashboard', function () {
         ]);
     }
 
-    // Get top template for each other user who has recent activity
+    // Get all other users who have templates
     $otherUsers = \App\Models\User::query()
         ->where('id', '!=', auth()->id())
         ->with('activeGoal')
-        ->whereHas('sessions', function ($query) use ($startDateUtc, $endDateUtc) {
-            $query->completed()
-                ->whereBetween('completed_at', [$startDateUtc, $endDateUtc]);
-        })
+        ->whereHas('sessionTemplates')
         ->get();
 
     foreach ($otherUsers as $user) {
+        // Try to get top template based on recent activity
         $topTemplate = \App\Models\SessionTemplate::query()
+            ->where('user_id', $user->id)
             ->whereHas('sessions', function ($query) use ($user, $startDateUtc, $endDateUtc) {
                 $query->where('user_id', $user->id)
                     ->completed()
@@ -84,6 +83,21 @@ Route::get('/dashboard', function () {
             }], 'total_duration_seconds')
             ->orderByDesc('sessions_sum_total_duration_seconds')
             ->first();
+
+        // If no recent activity, get most recently created/updated template
+        if (! $topTemplate) {
+            $topTemplate = \App\Models\SessionTemplate::query()
+                ->where('user_id', $user->id)
+                ->with([
+                    'user',
+                    'exercises' => function ($query) {
+                        $query->with(['progression.easierExercise', 'progression.harderExercise'])
+                            ->orderByPivot('order');
+                    },
+                ])
+                ->orderByDesc('updated_at')
+                ->first();
+        }
 
         if ($topTemplate) {
             $userCarouselData->push([
