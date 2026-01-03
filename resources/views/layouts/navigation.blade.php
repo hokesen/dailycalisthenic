@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('go.index')" :active="request()->routeIs('go.*')">
                         {{ __('Go') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('progressions')" :active="request()->routeIs('progressions')">
+                        {{ __('Progressions') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -75,6 +78,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('go.index')" :active="request()->routeIs('go.*')">
                 {{ __('Go') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('progressions')" :active="request()->routeIs('progressions')">
+                {{ __('Progressions') }}
             </x-responsive-nav-link>
         </div>
 
