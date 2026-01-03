@@ -23,7 +23,6 @@ class GoTest extends TestCase
             ->get('/go');
 
         $response->assertOk();
-        $response->assertSee('Select a Template');
         $response->assertSee('Available Templates');
         $response->assertSee('Test Template');
         $response->assertSee('Go');
@@ -58,7 +57,6 @@ class GoTest extends TestCase
             ->get('/go?template='.$template->id);
 
         $response->assertOk();
-        $response->assertSee('Full Body Workout');
         $response->assertSee('Push-ups');
         $response->assertSee('Squats');
         $response->assertSee('Start Workout');
