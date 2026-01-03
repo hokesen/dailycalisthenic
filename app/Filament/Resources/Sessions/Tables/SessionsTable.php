@@ -47,7 +47,7 @@ class SessionsTable
                     ->label('Completed')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
-                    ->default('-')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('total_duration_seconds')
                     ->label('Duration')
