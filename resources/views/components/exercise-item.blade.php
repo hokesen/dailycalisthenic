@@ -74,6 +74,7 @@
                                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     exercise_id: {{ $exercise->id }},
+                                    order: {{ $exercise->pivot->order }},
                                     new_exercise_id: $el.querySelector('select').value
                                 })
                             }).then(() => location.reload())

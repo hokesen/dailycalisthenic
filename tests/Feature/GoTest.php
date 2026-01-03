@@ -460,4 +460,48 @@ class GoTest extends TestCase
         // Second exercise should still be null because it was skipped
         $this->assertNull($sessionExercise2->completed_at);
     }
+
+    public function test_marked_completed_exercises_are_recorded_with_1_second_duration(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create();
+        $exercise = Exercise::factory()->create(['name' => 'Push-ups']);
+
+        $template->exercises()->attach($exercise->id, [
+            'order' => 1,
+            'duration_seconds' => 60,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->get('/go?template='.$template->id);
+
+        $session = Session::query()->latest()->first();
+
+        // Mark the exercise as completed without running the timer
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/go/'.$session->id.'/update', [
+                'status' => 'in_progress',
+                'total_duration_seconds' => 5,
+                'exercise_completion' => [
+                    [
+                        'exercise_id' => $exercise->id,
+                        'order' => 1,
+                        'status' => 'marked_completed',
+                    ],
+                ],
+            ]);
+
+        $response->assertOk();
+
+        $sessionExercise = $session->sessionExercises()
+            ->where('exercise_id', $exercise->id)
+            ->first();
+
+        // Exercise should be marked as completed
+        $this->assertNotNull($sessionExercise->completed_at);
+        // Duration should be set to 1 second
+        $this->assertEquals(1, $sessionExercise->duration_seconds);
+    }
 }

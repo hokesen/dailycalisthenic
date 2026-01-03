@@ -62,7 +62,7 @@
                                         @endphp
                                         <div x-show="currentIndex === {{ $index }}" x-transition class="{{ $borderClass }}">
                                             <h5 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                                Template
+                                                <!--Template-->
                                                 @if ($isTopTemplate && $isCurrentUser)
                                                     <span class="text-xs font-normal text-yellow-600 dark:text-yellow-400">(Top - Publicly Visible)</span>
                                                 @endif

@@ -29,13 +29,15 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     get completedExercises() {
-        return this.exercises.filter((_, index) => this.exerciseCompletionStatus[index] === 'completed');
+        return this.exercises.filter((_, index) =>
+            this.exerciseCompletionStatus[index] === 'completed' ||
+            this.exerciseCompletionStatus[index] === 'marked_completed'
+        );
     },
 
     get skippedExercises() {
         return this.exercises.filter((_, index) =>
-            this.exerciseCompletionStatus[index] === 'skipped' ||
-            this.exerciseCompletionStatus[index] === 'marked_completed'
+            this.exerciseCompletionStatus[index] === 'skipped'
         );
     },
 

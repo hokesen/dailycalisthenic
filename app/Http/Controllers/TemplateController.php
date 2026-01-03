@@ -23,7 +23,10 @@ class TemplateController extends Controller
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
-        $exercise = $template->exercises()->where('exercise_id', $request->exercise_id)->first();
+        $exercise = $template->exercises()
+            ->where('exercise_id', $request->exercise_id)
+            ->wherePivot('order', $request->order)
+            ->first();
 
         if (! $exercise) {
             return back()->with('error', 'Exercise not found in template');
@@ -31,7 +34,7 @@ class TemplateController extends Controller
 
         $pivotData = PivotDataBuilder::fromSessionTemplateExercisePivot($exercise->pivot);
 
-        $template->exercises()->detach($request->exercise_id);
+        $template->exercises()->wherePivot('order', $request->order)->detach();
         $template->exercises()->attach($request->new_exercise_id, $pivotData);
 
         return redirect()->route('dashboard')->with('success', 'Exercise swapped successfully');

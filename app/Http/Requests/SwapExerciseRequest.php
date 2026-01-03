@@ -23,6 +23,7 @@ class SwapExerciseRequest extends FormRequest
     {
         return [
             'exercise_id' => 'required|exists:exercises,id',
+            'order' => 'required|integer|min:1',
             'new_exercise_id' => 'required|exists:exercises,id',
         ];
     }

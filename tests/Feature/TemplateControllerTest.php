@@ -31,6 +31,7 @@ class TemplateControllerTest extends TestCase
             ->actingAs($user)
             ->post(route('templates.swap-exercise', $template), [
                 'exercise_id' => $exercise1->id,
+                'order' => 1,
                 'new_exercise_id' => $exercise2->id,
             ]);
 
@@ -42,6 +43,7 @@ class TemplateControllerTest extends TestCase
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $template->id,
             'exercise_id' => $exercise2->id,
+            'order' => 1,
             'sets' => 3,
             'reps' => 10,
         ]);
@@ -64,6 +66,7 @@ class TemplateControllerTest extends TestCase
             ->actingAs($user)
             ->post(route('templates.swap-exercise', $systemTemplate), [
                 'exercise_id' => $exercise1->id,
+                'order' => 1,
                 'new_exercise_id' => $exercise2->id,
             ]);
 
@@ -75,6 +78,66 @@ class TemplateControllerTest extends TestCase
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $userTemplate->id,
             'exercise_id' => $exercise2->id,
+        ]);
+    }
+
+    public function test_swapping_duplicate_exercise_swaps_correct_occurrence(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
+        $exercise1 = Exercise::factory()->create(['name' => 'Push-ups']);
+        $exercise2 = Exercise::factory()->create(['name' => 'Squats']);
+        $exercise3 = Exercise::factory()->create(['name' => 'Pull-ups']);
+
+        $template->exercises()->attach($exercise1->id, [
+            'order' => 1,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+        $template->exercises()->attach($exercise2->id, [
+            'order' => 2,
+            'sets' => 4,
+            'reps' => 12,
+        ]);
+        $template->exercises()->attach($exercise1->id, [
+            'order' => 3,
+            'sets' => 5,
+            'reps' => 15,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('templates.swap-exercise', $template), [
+                'exercise_id' => $exercise1->id,
+                'order' => 3,
+                'new_exercise_id' => $exercise3->id,
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $template->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $template->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+        ]);
+        $this->assertDatabaseHas('session_template_exercises', [
+            'session_template_id' => $template->id,
+            'exercise_id' => $exercise3->id,
+            'order' => 3,
+            'sets' => 5,
+            'reps' => 15,
+        ]);
+        $this->assertDatabaseMissing('session_template_exercises', [
+            'session_template_id' => $template->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 3,
         ]);
     }
 

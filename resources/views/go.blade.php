@@ -9,6 +9,7 @@
                         @else
                             <div
                                 x-data="workoutTimer({ sessionId: {{ $session->id }}, exercises: @js($exercisesData) })"
+                                x-effect="$dispatch('workout-state-changed', { running: state === 'running' })"
                                 class="w-full">
 
                                 <!-- Workout Complete Screen -->
@@ -67,130 +68,115 @@
                                 </div>
 
                                 <!-- Main Timer Screen -->
-                                <div x-show="state !== 'completed'" class="grid grid-cols-12 gap-4">
-                                    <!-- Previous Exercise -->
-                                    <div class="col-span-2 flex items-center justify-center">
-                                        <div x-show="currentExerciseIndex > 0" class="text-center">
-                                            <div class="text-xs text-gray-500 mb-2">Previous</div>
-                                            <div class="text-sm font-semibold text-gray-300" x-text="exercises[currentExerciseIndex - 1]?.name"></div>
+                                <div x-show="state !== 'completed'" class="grid grid-cols-12 gap-6">
+                                    <!-- Previous Exercises -->
+                                    <div class="col-span-2">
+                                        <div x-show="currentExerciseIndex > 0" class="space-y-4">
+                                            <div class="text-2xl text-gray-500 text-center mb-4">Previous</div>
+                                            <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+                                                <template x-for="(exercise, index) in exercises.slice(0, currentExerciseIndex)" :key="exercise.id">
+                                                    <div class="text-center p-2 bg-gray-700 rounded border border-gray-600 opacity-60">
+                                                        <div class="text-xs text-gray-500 mb-1" x-text="exercise.order"></div>
+                                                        <div class="text-sm font-semibold text-gray-300" x-text="exercise.name"></div>
+                                                        <div class="text-green-400 text-xs mt-1">✓</div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Main Content -->
-                                    <div class="col-span-8 space-y-8">
-                                    <!-- Status and Progress -->
-                                    <div class="text-center">
-                                        <div class="mb-2">
-                                            <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold"
-                                                :class="isResting ? 'bg-blue-900 text-blue-200' : 'bg-green-900 text-green-200'"
-                                                x-text="isResting ? 'Rest Period' : 'Exercise'">
-                                            </span>
-                                        </div>
-                                        <p class="text-sm text-gray-400">Exercise <span x-text="currentExerciseIndex + 1"></span> of <span x-text="exercises.length"></span></p>
-                                    </div>
-
-                                    <!-- Circular Progress Timer -->
-                                    <div class="flex justify-center">
-                                        <div class="relative" style="width: 280px; height: 280px;">
-                                            <svg class="transform -rotate-90" width="280" height="280">
-                                                <!-- Background circle -->
-                                                <circle cx="140" cy="140" r="120" stroke="#374151" stroke-width="20" fill="none"></circle>
-                                                <!-- Progress circle -->
-                                                <circle cx="140" cy="140" r="120"
-                                                    :stroke="isResting ? '#60a5fa' : '#34d399'"
-                                                    stroke-width="20"
-                                                    fill="none"
-                                                    stroke-linecap="round"
-                                                    :stroke-dasharray="2 * Math.PI * 120"
-                                                    :stroke-dashoffset="2 * Math.PI * 120 * (1 - progress)"
-                                                    style="transition: stroke-dashoffset 0.1s linear;">
-                                                </circle>
-                                            </svg>
-                                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div class="text-6xl font-bold text-gray-100" x-text="formatTime(timeRemaining)"></div>
-                                                <div class="text-sm text-gray-400 mt-2" x-text="isResting ? 'Rest' : 'Go'"></div>
+                                    <div class="col-span-8 flex flex-col justify-center space-y-6">
+                                        <!-- Status and Progress -->
+                                        <div class="text-center">
+                                            <div class="mb-2">
+                                                <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold"
+                                                    :class="isResting ? 'bg-blue-900 text-blue-200' : 'bg-green-900 text-green-200'"
+                                                    x-text="isResting ? 'Rest Period' : 'Exercise'">
+                                                </span>
                                             </div>
+                                            <p class="text-sm text-gray-400">Exercise <span x-text="currentExerciseIndex + 1"></span> of <span x-text="exercises.length"></span></p>
                                         </div>
-                                    </div>
 
-                                    <!-- Exercise Info -->
-                                    <div class="text-center space-y-2">
-                                        <h3 class="text-5xl font-bold text-gray-100" x-text="currentExercise?.name"></h3>
-                                        <div x-show="currentExercise?.description" class="text-gray-300" x-text="currentExercise?.description"></div>
-                                        <div class="flex gap-4 justify-center text-sm text-gray-400">
-                                            <span x-show="currentExercise?.sets && currentExercise?.reps">
-                                                <span x-text="currentExercise?.sets"></span> sets × <span x-text="currentExercise?.reps"></span> reps
-                                            </span>
-                                            <span x-show="currentExercise?.duration_seconds">
-                                                <span x-text="currentExercise?.duration_seconds"></span>s
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Controls -->
-                                    <div class="flex gap-4 justify-center">
-                                        <button x-show="state === 'ready'" @click="start"
-                                            class="px-8 py-4 bg-green-600 text-white rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
-                                            Start Workout
-                                        </button>
-
-                                        <button x-show="state === 'running'" @click="pause"
-                                            class="px-8 py-4 bg-yellow-600 text-white rounded-lg font-semibold text-lg hover:bg-yellow-700 transition-colors">
-                                            Pause
-                                        </button>
-
-                                        <button x-show="state === 'paused'" @click="resume"
-                                            class="px-8 py-4 bg-green-600 text-white rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
-                                            Resume
-                                        </button>
-
-                                        <button x-show="state === 'running' || state === 'paused'" @click="skipToNext"
-                                            class="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors">
-                                            Skip
-                                        </button>
-
-                                        <button x-show="state === 'running' || state === 'paused'" @click="markCompleted"
-                                            class="px-8 py-4 bg-purple-600 text-white rounded-lg font-semibold text-lg hover:bg-purple-700 transition-colors">
-                                            Mark Completed
-                                        </button>
-                                    </div>
-
-                                    <!-- Exercise List -->
-                                    <div class="mt-8 space-y-2">
-                                        <h4 class="text-lg font-semibold text-gray-300 mb-4">Exercises</h4>
-                                        <template x-for="(exercise, index) in exercises" :key="exercise.id">
-                                            <div class="border rounded-lg p-3"
-                                                :class="index === currentExerciseIndex ? 'border-green-500 bg-green-900' : index < currentExerciseIndex ? 'border-gray-600 bg-gray-700 opacity-60' : 'border-gray-600 bg-gray-700'">
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="text-gray-400 font-semibold" x-text="exercise.order + '.'"></span>
-                                                        <div>
-                                                            <div class="font-semibold text-gray-100" x-text="exercise.name"></div>
-                                                            <div class="text-sm text-gray-300">
-                                                                <span x-show="exercise.sets && exercise.reps">
-                                                                    <span x-text="exercise.sets"></span> × <span x-text="exercise.reps"></span>
-                                                                </span>
-                                                                <span x-show="exercise.duration_seconds">
-                                                                    <span x-text="exercise.duration_seconds"></span>s
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <span x-show="index < currentExerciseIndex" class="text-green-400 font-semibold">✓</span>
-                                                        <span x-show="index === currentExerciseIndex && state === 'running'" class="text-green-400 font-semibold">▶</span>
-                                                    </div>
+                                        <!-- Circular Progress Timer -->
+                                        <div class="flex justify-center">
+                                            <div class="relative" style="width: 240px; height: 240px;">
+                                                <svg class="transform -rotate-90" width="240" height="240">
+                                                    <!-- Background circle -->
+                                                    <circle cx="120" cy="120" r="100" stroke="#374151" stroke-width="16" fill="none"></circle>
+                                                    <!-- Progress circle -->
+                                                    <circle cx="120" cy="120" r="100"
+                                                        :stroke="isResting ? '#60a5fa' : '#34d399'"
+                                                        stroke-width="16"
+                                                        fill="none"
+                                                        stroke-linecap="round"
+                                                        :stroke-dasharray="2 * Math.PI * 100"
+                                                        :stroke-dashoffset="2 * Math.PI * 100 * (1 - progress)"
+                                                        style="transition: stroke-dashoffset 0.1s linear;">
+                                                    </circle>
+                                                </svg>
+                                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <div class="text-5xl font-bold text-gray-100" x-text="formatTime(timeRemaining)"></div>
+                                                    <div class="text-sm text-gray-400 mt-2" x-text="isResting ? 'Rest' : 'Go'"></div>
                                                 </div>
                                             </div>
-                                        </template>
-                                    </div>
+                                        </div>
+
+                                        <!-- Exercise Info -->
+                                        <div class="text-center space-y-2">
+                                            <h3 class="text-4xl font-bold text-gray-100" x-text="currentExercise?.name"></h3>
+                                            <div x-show="currentExercise?.description" class="text-gray-300" x-text="currentExercise?.description"></div>
+                                            <div class="flex gap-4 justify-center text-sm text-gray-400">
+                                                <span x-show="currentExercise?.sets && currentExercise?.reps">
+                                                    <span x-text="currentExercise?.sets"></span> sets × <span x-text="currentExercise?.reps"></span> reps
+                                                </span>
+                                                <span x-show="currentExercise?.duration_seconds">
+                                                    <span x-text="currentExercise?.duration_seconds"></span>s
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Controls -->
+                                        <div class="flex gap-4 justify-center">
+                                            <button x-show="state === 'ready'" @click="start"
+                                                class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                                Start Workout
+                                            </button>
+
+                                            <button x-show="state === 'running'" @click="pause"
+                                                class="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition-colors">
+                                                Pause
+                                            </button>
+
+                                            <button x-show="state === 'paused'" @click="resume"
+                                                class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                                Resume
+                                            </button>
+
+                                            <button x-show="state === 'running' || state === 'paused'" @click="skipToNext"
+                                                class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                                                Skip
+                                            </button>
+
+                                            <button x-show="state === 'running' || state === 'paused'" @click="markCompleted"
+                                                class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                                                Mark Completed
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <!-- Next Exercise -->
-                                    <div class="col-span-2 flex items-center justify-center">
-                                        <div x-show="currentExerciseIndex < exercises.length - 1" class="text-center">
-                                            <div class="text-xs text-gray-500 mb-2">Next</div>
-                                            <div class="text-sm font-semibold text-gray-300" x-text="exercises[currentExerciseIndex + 1]?.name"></div>
+                                    <!-- Next Exercises -->
+                                    <div class="col-span-2">
+                                        <div x-show="currentExerciseIndex < exercises.length - 1" class="space-y-4">
+                                            <div class="text-2xl text-gray-500 text-center mb-4">Next</div>
+                                            <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+                                                <template x-for="(exercise, index) in exercises.slice(currentExerciseIndex + 1)" :key="exercise.id">
+                                                    <div class="text-center p-2 bg-gray-700 rounded border border-gray-600">
+                                                        <div class="text-xs text-gray-500 mb-1" x-text="exercise.order"></div>
+                                                        <div class="text-sm font-semibold text-gray-300" x-text="exercise.name"></div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
