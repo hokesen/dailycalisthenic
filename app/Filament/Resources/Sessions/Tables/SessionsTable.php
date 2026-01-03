@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sessions\Tables;
 
+use App\Enums\SessionStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -32,15 +33,14 @@ class SessionsTable
                     ->toggleable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'planned' => 'gray',
-                        'in_progress' => 'warning',
-                        'completed' => 'success',
-                        'skipped' => 'danger',
-                        'forgiven' => 'info',
-                        default => 'gray',
+                    ->color(fn (SessionStatus $state): string => match ($state) {
+                        SessionStatus::Planned => 'gray',
+                        SessionStatus::InProgress => 'warning',
+                        SessionStatus::Completed => 'success',
+                        SessionStatus::Skipped => 'danger',
+                        SessionStatus::Forgiven => 'info',
                     })
-                    ->formatStateUsing(fn (string $state): string => str($state)->title()->replace('_', ' '))
+                    ->formatStateUsing(fn (SessionStatus $state): string => $state->label())
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('completed_at')
@@ -77,13 +77,7 @@ class SessionsTable
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->options([
-                        'planned' => 'Planned',
-                        'in_progress' => 'In Progress',
-                        'completed' => 'Completed',
-                        'skipped' => 'Skipped',
-                        'forgiven' => 'Forgiven',
-                    ]),
+                    ->options(SessionStatus::options()),
                 SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->searchable()
