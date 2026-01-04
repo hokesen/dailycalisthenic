@@ -5,13 +5,95 @@
     $harderVariations = $exercise->getHarderVariations();
 @endphp
 
-<div class="border-2 border-gray-300 rounded-lg p-4 bg-white hover:border-gray-400 transition-colors" x-data="{ showSwap: false, showEdit: false }">
+<div data-exercise-item class="border-2 border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false }">
     <div class="flex items-start justify-between gap-4">
         <div class="flex items-start gap-3 flex-grow min-w-0">
-            <span class="text-gray-500 font-bold text-lg flex-shrink-0 mt-0.5">{{ $exercise->pivot->order }}.</span>
+            @if ($template->user_id === auth()->id())
+                <div class="flex flex-col gap-1 flex-shrink-0 justify-end">
+                    <button x-show="{{ $exercise->pivot->order > 1 ? 'true' : 'false' }}" data-move-up @click="
+                        const currentItem = $el.closest('[data-exercise-item]');
+                        const previousItem = currentItem.previousElementSibling;
+
+                        fetch('{{ route('templates.move-exercise-up', $template) }}', {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Swap the items in the DOM
+                            if (previousItem) {
+                                currentItem.parentNode.insertBefore(currentItem, previousItem);
+
+                                // Update order numbers and button visibility
+                                const items = currentItem.parentNode.querySelectorAll('[data-exercise-item]');
+                                items.forEach((item, index) => {
+                                    const orderSpan = item.querySelector('[data-order-number]');
+                                    if (orderSpan) orderSpan.textContent = (index + 1) + '.';
+
+                                    // Update button visibility
+                                    const upBtn = item.querySelector('[data-move-up]');
+                                    const downBtn = item.querySelector('[data-move-down]');
+                                    if (upBtn) upBtn.style.display = index === 0 ? 'none' : 'block';
+                                    if (downBtn) downBtn.style.display = index === items.length - 1 ? 'none' : 'block';
+                                });
+                            }
+                        })
+                        .catch(error => console.error('Error:', error))
+                    " class="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors" title="Move up">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                    <button x-show="{{ $exercise->pivot->order < $template->exercises->count() ? 'true' : 'false' }}" data-move-down @click="
+                        const currentItem = $el.closest('[data-exercise-item]');
+                        const nextItem = currentItem.nextElementSibling;
+
+                        fetch('{{ route('templates.move-exercise-down', $template) }}', {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Swap the items in the DOM
+                            if (nextItem) {
+                                currentItem.parentNode.insertBefore(nextItem, currentItem);
+
+                                // Update order numbers and button visibility
+                                const items = currentItem.parentNode.querySelectorAll('[data-exercise-item]');
+                                items.forEach((item, index) => {
+                                    const orderSpan = item.querySelector('[data-order-number]');
+                                    if (orderSpan) orderSpan.textContent = (index + 1) + '.';
+
+                                    // Update button visibility
+                                    const upBtn = item.querySelector('[data-move-up]');
+                                    const downBtn = item.querySelector('[data-move-down]');
+                                    if (upBtn) upBtn.style.display = index === 0 ? 'none' : 'block';
+                                    if (downBtn) downBtn.style.display = index === items.length - 1 ? 'none' : 'block';
+                                });
+                            }
+                        })
+                        .catch(error => console.error('Error:', error))
+                    " class="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors" title="Move down">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </div>
+            @endif
+            <span class="text-gray-500 dark:text-gray-400 font-bold text-lg flex-shrink-0 mt-0.5" data-order-number>{{ $exercise->pivot->order }}.</span>
             <div class="flex-grow min-w-0">
-                <div class="font-bold text-gray-900 text-lg">{{ $exercise->name }}</div>
-                <div class="text-gray-600 mt-1.5 text-base" x-show="!showEdit">
+                <div class="font-bold text-gray-900 dark:text-gray-100 text-lg">{{ $exercise->name }}</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-1.5 text-base" x-show="!showEdit">
                     @if ($exercise->pivot->sets && $exercise->pivot->reps)
                         <span class="font-semibold">{{ $exercise->pivot->sets }} × {{ $exercise->pivot->reps }}</span>
                     @endif

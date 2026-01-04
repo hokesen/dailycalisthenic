@@ -1,7 +1,31 @@
 <x-app-layout>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 px-6 sm:px-0">Welcome, {{ auth()->user()->name }}!</h3>
+            <!-- Welcome & Changelog Card -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChangelog: false }">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome, {{ auth()->user()->name }}!</h3>
+                        <button @click="showChangelog = !showChangelog" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+                            <span x-text="showChangelog ? 'Hide Changelog' : 'Show Changelog'"></span>
+                        </button>
+                    </div>
+
+                    <!-- Changelog -->
+                    <div x-show="showChangelog" x-transition class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Changelog</h4>
+                        <div class="space-y-3">
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <div class="flex items-baseline gap-2 mb-1">
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">January 4th, 2026</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">New Feature</span>
+                                </div>
+                                <p class="text-sm text-gray-700 dark:text-gray-300">You can now re-order exercises in your templates using the up and down arrow buttons!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             @if ($userCarouselData->isEmpty())
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">

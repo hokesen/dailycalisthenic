@@ -68,16 +68,16 @@
                                 </div>
 
                                 <!-- Main Timer Screen -->
-                                <div x-show="state !== 'completed'" class="grid grid-cols-12 gap-6">
+                                <div x-show="state !== 'completed'" class="flex flex-col md:grid md:grid-cols-12 gap-6">
                                     <!-- Previous Exercises -->
-                                    <div class="col-span-2">
-                                        <div x-show="currentExerciseIndex > 0" class="space-y-4">
-                                            <div class="text-2xl text-gray-500 text-center mb-4">Previous</div>
-                                            <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+                                    <div class="md:col-span-2 order-1 md:order-none">
+                                        <div x-show="currentExerciseIndex > 0" class="space-y-2 md:space-y-4">
+                                            <div class="text-lg md:text-2xl text-gray-500 dark:text-gray-400 text-center mb-2 md:mb-4">Previous</div>
+                                            <div class="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:space-y-2 max-h-none md:max-h-[70vh] md:overflow-y-auto pb-2 md:pb-0">
                                                 <template x-for="(exercise, index) in exercises.slice(0, currentExerciseIndex)" :key="exercise.id">
-                                                    <div class="text-center p-2 bg-gray-700 rounded border border-gray-600 opacity-60">
+                                                    <div class="flex-shrink-0 w-24 md:w-auto text-center p-2 bg-gray-700 rounded border border-gray-600 opacity-60">
                                                         <div class="text-xs text-gray-500 mb-1" x-text="exercise.order"></div>
-                                                        <div class="text-sm font-semibold text-gray-300" x-text="exercise.name"></div>
+                                                        <div class="text-xs md:text-sm font-semibold text-gray-300 line-clamp-2" x-text="exercise.name"></div>
                                                         <div class="text-green-400 text-xs mt-1">✓</div>
                                                     </div>
                                                 </template>
@@ -86,7 +86,7 @@
                                     </div>
 
                                     <!-- Main Content -->
-                                    <div class="col-span-8 flex flex-col justify-center space-y-6">
+                                    <div class="md:col-span-8 flex flex-col justify-center space-y-6 order-2 md:order-none">
                                         <!-- Status and Progress -->
                                         <div class="text-center">
                                             <div class="mb-2">
@@ -166,14 +166,14 @@
                                     </div>
 
                                     <!-- Next Exercises -->
-                                    <div class="col-span-2">
-                                        <div x-show="currentExerciseIndex < exercises.length - 1" class="space-y-4">
-                                            <div class="text-2xl text-gray-500 text-center mb-4">Next</div>
-                                            <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+                                    <div class="md:col-span-2 order-3 md:order-none">
+                                        <div x-show="currentExerciseIndex < exercises.length - 1" class="space-y-2 md:space-y-4">
+                                            <div class="text-lg md:text-2xl text-gray-500 dark:text-gray-400 text-center mb-2 md:mb-4">Next</div>
+                                            <div class="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:space-y-2 max-h-none md:max-h-[70vh] md:overflow-y-auto pb-2 md:pb-0">
                                                 <template x-for="(exercise, index) in exercises.slice(currentExerciseIndex + 1)" :key="exercise.id">
-                                                    <div class="text-center p-2 bg-gray-700 rounded border border-gray-600">
+                                                    <div class="flex-shrink-0 w-24 md:w-auto text-center p-2 bg-gray-700 rounded border border-gray-600">
                                                         <div class="text-xs text-gray-500 mb-1" x-text="exercise.order"></div>
-                                                        <div class="text-sm font-semibold text-gray-300" x-text="exercise.name"></div>
+                                                        <div class="text-xs md:text-sm font-semibold text-gray-300 line-clamp-2" x-text="exercise.name"></div>
                                                     </div>
                                                 </template>
                                             </div>

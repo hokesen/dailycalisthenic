@@ -14,6 +14,7 @@ use App\Models\SessionTemplate;
 use App\Services\TemplateReplicationService;
 use App\Support\PivotDataBuilder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
@@ -122,6 +123,58 @@ class TemplateController extends Controller
         $this->replicationService->replicateForUser($template, auth()->user());
 
         return redirect()->route('dashboard')->with('success', 'Template copied successfully');
+    }
+
+    public function moveExerciseUp(Request $request, SessionTemplate $template): RedirectResponse
+    {
+        $template = $this->ensureUserOwnsTemplate($template);
+
+        $exerciseId = $request->input('exercise_id');
+
+        $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
+
+        if (! $currentExercise || $currentExercise->pivot->order <= 1) {
+            return redirect()->route('dashboard');
+        }
+
+        $currentOrder = $currentExercise->pivot->order;
+        $previousExercise = $template->exercises->firstWhere('pivot.order', $currentOrder - 1);
+
+        if ($previousExercise) {
+            // Use a temporary order to avoid unique constraint violation
+            $tempOrder = 9999;
+            $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $tempOrder]);
+            $template->exercises()->updateExistingPivot($previousExercise->id, ['order' => $currentOrder]);
+            $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $currentOrder - 1]);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Exercise moved up');
+    }
+
+    public function moveExerciseDown(Request $request, SessionTemplate $template): RedirectResponse
+    {
+        $template = $this->ensureUserOwnsTemplate($template);
+
+        $exerciseId = $request->input('exercise_id');
+
+        $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
+
+        if (! $currentExercise || $currentExercise->pivot->order >= $template->exercises->count()) {
+            return redirect()->route('dashboard');
+        }
+
+        $currentOrder = $currentExercise->pivot->order;
+        $nextExercise = $template->exercises->firstWhere('pivot.order', $currentOrder + 1);
+
+        if ($nextExercise) {
+            // Use a temporary order to avoid unique constraint violation
+            $tempOrder = 9999;
+            $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $tempOrder]);
+            $template->exercises()->updateExistingPivot($nextExercise->id, ['order' => $currentOrder]);
+            $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $currentOrder + 1]);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Exercise moved down');
     }
 
     protected function ensureUserOwnsTemplate(SessionTemplate $template): SessionTemplate

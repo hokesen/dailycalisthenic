@@ -138,6 +138,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/{template}/add-exercise', [TemplateController::class, 'addExercise'])->name('templates.add-exercise');
     Route::post('/templates/{template}/add-custom-exercise', [TemplateController::class, 'addCustomExercise'])->name('templates.add-custom-exercise');
     Route::patch('/templates/{template}/update-exercise', [TemplateController::class, 'updateExercise'])->name('templates.update-exercise');
+    Route::patch('/templates/{template}/move-exercise-up', [TemplateController::class, 'moveExerciseUp'])->name('templates.move-exercise-up');
+    Route::patch('/templates/{template}/move-exercise-down', [TemplateController::class, 'moveExerciseDown'])->name('templates.move-exercise-down');
     Route::patch('/templates/{template}/update-name', [TemplateController::class, 'updateName'])->name('templates.update-name');
     Route::post('/templates/{template}/copy', [TemplateController::class, 'copy'])->name('templates.copy');
     Route::delete('/templates/{template}', [TemplateController::class, 'destroy'])->name('templates.destroy');
