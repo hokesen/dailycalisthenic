@@ -18,9 +18,9 @@
                             <div class="border-l-4 border-blue-500 pl-4">
                                 <div class="flex items-baseline gap-2 mb-1">
                                     <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">January 4th, 2026</span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">New Feature</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">New Features</span>
                                 </div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">You can now re-order exercises in your templates using the up and down arrow buttons!</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300">1. Exercises can now be re-ordered with arrow buttons<br> 2. Go page is now full screen for better visibility<br> 3. Activity page shows everything you've done in the past week/month.</p>
                             </div>
                         </div>
                     </div>

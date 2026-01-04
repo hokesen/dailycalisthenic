@@ -290,4 +290,45 @@ class User extends Authenticatable implements FilamentUser
 
         return array_values($progressionPaths);
     }
+
+    public function getWeeklyStandaloneExercises(int $days = 7): array
+    {
+        $startDate = now()->subDays($days - 1)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        // Fetch weekly session data
+        $sessionExercises = SessionExercise::query()
+            ->whereHas('session', function ($query) use ($startDate, $endDate) {
+                $query->where('user_id', $this->id)
+                    ->completed()
+                    ->whereBetween('completed_at', [$startDate, $endDate]);
+            })
+            ->with(['exercise.progression'])
+            ->get();
+
+        if ($sessionExercises->isEmpty()) {
+            return [];
+        }
+
+        // Group session data by exercise_id
+        $sessionDataByExercise = $sessionExercises->groupBy('exercise_id');
+
+        // Get unique exercises WITHOUT progressions from this week's sessions
+        $standaloneExercises = $sessionExercises
+            ->pluck('exercise')
+            ->unique('id')
+            ->filter(fn ($exercise) => ! $exercise->progression || ! $exercise->progression->progression_path_name);
+
+        $exerciseData = [];
+        foreach ($standaloneExercises as $exercise) {
+            $totalSeconds = $sessionDataByExercise->get($exercise->id)?->sum('duration_seconds') ?? 0;
+
+            $exerciseData[] = [
+                'name' => $exercise->name,
+                'total_seconds' => $totalSeconds,
+            ];
+        }
+
+        return $exerciseData;
+    }
 }

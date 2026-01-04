@@ -499,7 +499,7 @@ class DashboardTest extends TestCase
         $response->assertSee('Streak');
     }
 
-    public function test_progressions_page_displays_progression_summary_when_available(): void
+    public function test_activity_page_displays_progression_summary_when_available(): void
     {
         $user = User::factory()->create();
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Kneeling Plank']);
@@ -523,22 +523,176 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/progressions');
+            ->get('/activity');
 
         $response->assertOk();
-        $response->assertSee('Weekly Progression Summary');
+        $response->assertSee('Your Activity');
         $response->assertSee('Plank Progression');
     }
 
-    public function test_progressions_page_hides_progression_summary_when_no_progressions(): void
+    public function test_activity_page_shows_no_activity_when_empty(): void
     {
         $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)
-            ->get('/progressions');
+            ->get('/activity');
 
         $response->assertOk();
-        $response->assertSee('No progressions this week');
+        $response->assertSee('No activity in this time period');
+    }
+
+    public function test_activity_page_displays_standalone_exercises(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Jumping Jacks']);
+
+        // No progression assigned to this exercise
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 600,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/activity');
+
+        $response->assertOk();
+        $response->assertSee('Your Activity');
+        $response->assertSee('Jumping Jacks');
+        $response->assertSee('10 min');
+    }
+
+    public function test_activity_page_displays_both_progressions_and_standalone_exercises(): void
+    {
+        $user = User::factory()->create();
+
+        // Create an exercise with a progression
+        $progressionExercise = \App\Models\Exercise::factory()->create(['name' => 'Plank']);
+        \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $progressionExercise->id,
+            'progression_path_name' => 'plank',
+        ]);
+
+        // Create a standalone exercise
+        $standaloneExercise = \App\Models\Exercise::factory()->create(['name' => 'Burpees']);
+
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $progressionExercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $standaloneExercise->id,
+            'duration_seconds' => 420,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/activity');
+
+        $response->assertOk();
+        $response->assertSee('Your Activity');
+        $response->assertSee('Plank Progression');
+        $response->assertSee('Burpees');
+    }
+
+    public function test_activity_page_filters_by_month_range(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Old Exercise']);
+
+        // Create a session from 20 days ago
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now()->subDays(20),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        // Should not show with week range
+        $weekResponse = $this
+            ->actingAs($user)
+            ->get('/activity?range=week');
+
+        $weekResponse->assertOk();
+        $weekResponse->assertSee('No activity in this time period');
+
+        // Should show with month range
+        $monthResponse = $this
+            ->actingAs($user)
+            ->get('/activity?range=month');
+
+        $monthResponse->assertOk();
+        $monthResponse->assertSee('Your Activity');
+        $monthResponse->assertSee('Old Exercise');
+    }
+
+    public function test_standalone_exercises_not_shown_in_progression_section(): void
+    {
+        $user = User::factory()->create();
+
+        // Create two exercises, one with progression and one without
+        $progressionExercise = \App\Models\Exercise::factory()->create(['name' => 'Push-ups']);
+        \App\Models\ExerciseProgression::factory()->create([
+            'exercise_id' => $progressionExercise->id,
+            'progression_path_name' => 'push-ups',
+        ]);
+
+        $standaloneExercise = \App\Models\Exercise::factory()->create(['name' => 'Mountain Climbers']);
+
+        $session = \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $progressionExercise->id,
+            'duration_seconds' => 300,
+        ]);
+
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $standaloneExercise->id,
+            'duration_seconds' => 420,
+        ]);
+
+        $progressionSummary = $user->getWeeklyProgressionSummary(7);
+        $standaloneExercises = $user->getWeeklyStandaloneExercises(7);
+
+        // Verify progression exercise is in progression summary
+        $this->assertCount(1, $progressionSummary);
+        $this->assertEquals('push-ups', $progressionSummary[0]['path_name']);
+
+        // Verify standalone exercise is NOT in progression summary
+        $progressionExerciseNames = collect($progressionSummary[0]['exercises'])->pluck('name')->toArray();
+        $this->assertNotContains('Mountain Climbers', $progressionExerciseNames);
+
+        // Verify standalone exercise IS in standalone list
+        $this->assertCount(1, $standaloneExercises);
+        $this->assertEquals('Mountain Climbers', $standaloneExercises[0]['name']);
+        $this->assertEquals(420, $standaloneExercises[0]['total_seconds']);
     }
 }

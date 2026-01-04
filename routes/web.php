@@ -4,6 +4,7 @@ use App\Http\Controllers\GoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
 use App\Models\Exercise;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -116,14 +117,20 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/progressions', function () {
+Route::get('/activity', function (Request $request) {
     $user = auth()->user();
-    $progressionSummary = $user->getWeeklyProgressionSummary(7);
+    $range = $request->input('range', 'week');
+    $days = $range === 'month' ? 30 : 7;
 
-    return view('progressions', [
+    $progressionSummary = $user->getWeeklyProgressionSummary($days);
+    $standaloneExercises = $user->getWeeklyStandaloneExercises($days);
+
+    return view('activity', [
         'progressionSummary' => $progressionSummary,
+        'standaloneExercises' => $standaloneExercises,
+        'selectedRange' => $range,
     ]);
-})->middleware(['auth', 'verified'])->name('progressions');
+})->middleware(['auth', 'verified'])->name('activity');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
