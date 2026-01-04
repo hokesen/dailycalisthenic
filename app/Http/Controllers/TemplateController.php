@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddCustomExerciseRequest;
 use App\Http\Requests\AddExerciseRequest;
 use App\Http\Requests\DeleteTemplateRequest;
+use App\Http\Requests\MoveExerciseRequest;
 use App\Http\Requests\RemoveExerciseRequest;
 use App\Http\Requests\SwapExerciseRequest;
 use App\Http\Requests\UpdateExerciseRequest;
@@ -14,7 +15,6 @@ use App\Models\SessionTemplate;
 use App\Services\TemplateReplicationService;
 use App\Support\PivotDataBuilder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
@@ -125,11 +125,11 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Template copied successfully');
     }
 
-    public function moveExerciseUp(Request $request, SessionTemplate $template): RedirectResponse
+    public function moveExerciseUp(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
-        $exerciseId = $request->input('exercise_id');
+        $exerciseId = $request->validated('exercise_id');
 
         $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
 
@@ -151,11 +151,11 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Exercise moved up');
     }
 
-    public function moveExerciseDown(Request $request, SessionTemplate $template): RedirectResponse
+    public function moveExerciseDown(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
-        $exerciseId = $request->input('exercise_id');
+        $exerciseId = $request->validated('exercise_id');
 
         $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
 

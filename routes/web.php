@@ -120,6 +120,12 @@ Route::get('/dashboard', function () {
 Route::get('/activity', function (Request $request) {
     $user = auth()->user();
     $range = $request->input('range', 'week');
+
+    // Validate range input
+    if (! in_array($range, ['week', 'month'])) {
+        $range = 'week';
+    }
+
     $days = $range === 'month' ? 30 : 7;
 
     $progressionSummary = $user->getWeeklyProgressionSummary($days);
