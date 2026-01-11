@@ -5,9 +5,9 @@
     $harderVariations = $exercise->getHarderVariations();
 @endphp
 
-<div data-exercise-item class="border-2 border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false }">
-    <div class="flex items-start justify-between gap-4">
-        <div class="flex items-start gap-3 flex-grow min-w-0">
+<div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false }">
+    <div class="flex items-start justify-between gap-2 sm:gap-3">
+        <div class="flex items-start gap-1.5 sm:gap-2 flex-grow min-w-0">
             @if ($template->user_id === auth()->id())
                 <div class="flex flex-col gap-1 flex-shrink-0 justify-end">
                     <button x-show="{{ $exercise->pivot->order > 1 ? 'true' : 'false' }}" data-move-up @click="
@@ -90,10 +90,10 @@
                     </button>
                 </div>
             @endif
-            <span class="text-gray-500 dark:text-gray-400 font-bold text-lg flex-shrink-0 mt-0.5" data-order-number>{{ $exercise->pivot->order }}.</span>
+            <span class="text-gray-500 dark:text-gray-400 font-bold text-base sm:text-lg flex-shrink-0" data-order-number>{{ $exercise->pivot->order }}.</span>
             <div class="flex-grow min-w-0">
-                <div class="font-bold text-gray-900 dark:text-gray-100 text-lg">{{ $exercise->name }}</div>
-                <div class="text-gray-600 dark:text-gray-300 mt-1.5 text-base" x-show="!showEdit">
+                <div class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg leading-tight">{{ $exercise->name }}</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base" x-show="!showEdit">
                     @if ($exercise->pivot->sets && $exercise->pivot->reps)
                         <span class="font-semibold">{{ $exercise->pivot->sets }} × {{ $exercise->pivot->reps }}</span>
                     @endif
@@ -198,9 +198,9 @@
 
         <!-- Action Buttons -->
         @if ($template->user_id === auth()->id())
-            <div class="flex gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
-                <button @click="showSwap = !showSwap" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-medium text-base transition-colors">Swap</button>
-                <button @click="showEdit = !showEdit" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 font-medium text-base transition-colors">Edit</button>
+            <div class="flex gap-1 sm:gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
+                <button @click="showSwap = !showSwap" class="bg-blue-100 text-blue-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-blue-200 transition-colors">Swap</button>
+                <button @click="showEdit = !showEdit" class="bg-green-100 text-green-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-green-200 transition-colors">Edit</button>
                 <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
                     if(confirm('Remove this exercise?')) {
                         fetch($el.action, {
@@ -213,7 +213,7 @@
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                    <button type="submit" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 font-bold text-lg transition-colors">✕</button>
+                    <button type="submit" class="bg-red-100 text-red-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-200 transition-colors">✕</button>
                 </form>
             </div>
         @endif

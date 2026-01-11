@@ -1,6 +1,6 @@
 @props(['template', 'allExercises'])
 
-<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col" x-data="{ editingName: false }">
+<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-2 sm:p-4 flex flex-col" x-data="{ editingName: false }">
     <div class="mb-2">
         <div x-show="!editingName" class="flex items-center justify-between gap-2">
             <div class="flex-grow">
@@ -61,7 +61,7 @@
     @if ($template->exercises->isNotEmpty())
         <div class="mb-4 flex-grow">
             <p class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Exercises:</p>
-            <div class="space-y-3">
+            <div class="space-y-2 sm:space-y-3">
                 @foreach ($template->exercises as $exercise)
                     <x-exercise-item :template="$template" :exercise="$exercise" :allExercises="$allExercises" />
                 @endforeach
