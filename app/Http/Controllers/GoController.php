@@ -8,60 +8,51 @@ use App\Http\Requests\UpdateSessionRequest;
 use App\Models\Session;
 use App\Models\SessionTemplate;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GoController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $templateId = $request->query('template');
-        $template = null;
-        $exercisesData = [];
-        $session = null;
 
-        if ($templateId) {
-            $template = SessionTemplate::query()
-                ->availableFor(auth()->user())
-                ->with(['exercises' => function ($query) {
-                    $query->orderByPivot('order');
-                }])
-                ->findOrFail($templateId);
-
-            $exercises = $template->exercises;
-
-            $session = Session::query()->create([
-                'user_id' => auth()->id(),
-                'session_template_id' => $template->id,
-                'name' => $template->name,
-                'status' => SessionStatus::Planned->value,
-            ]);
-
-            // Create session_exercises records to preserve the exact exercises in this session
-            foreach ($exercises as $exercise) {
-                $session->sessionExercises()->create([
-                    'exercise_id' => $exercise->id,
-                    'order' => $exercise->pivot->order,
-                    'duration_seconds' => $exercise->pivot->duration_seconds ?? 0,
-                ]);
-            }
-
-            $exercisesData = $exercises->map(fn ($ex) => SessionExerciseData::fromTemplateExercise($ex, $template)->toArray())->values();
+        if (! $templateId) {
+            return redirect()->route('dashboard');
         }
 
-        $templates = SessionTemplate::query()
+        $template = SessionTemplate::query()
             ->availableFor(auth()->user())
             ->with(['exercises' => function ($query) {
                 $query->orderByPivot('order');
             }])
-            ->orderBy('name')
-            ->get();
+            ->findOrFail($templateId);
+
+        $exercises = $template->exercises;
+
+        $session = Session::query()->create([
+            'user_id' => auth()->id(),
+            'session_template_id' => $template->id,
+            'name' => $template->name,
+            'status' => SessionStatus::Planned->value,
+        ]);
+
+        // Create session_exercises records to preserve the exact exercises in this session
+        foreach ($exercises as $exercise) {
+            $session->sessionExercises()->create([
+                'exercise_id' => $exercise->id,
+                'order' => $exercise->pivot->order,
+                'duration_seconds' => $exercise->pivot->duration_seconds ?? 0,
+            ]);
+        }
+
+        $exercisesData = $exercises->map(fn ($ex) => SessionExerciseData::fromTemplateExercise($ex, $template)->toArray())->values();
 
         return view('go', [
             'template' => $template,
-            'exercises' => $template?->exercises ?? collect(),
+            'exercises' => $exercises,
             'exercisesData' => $exercisesData,
-            'templates' => $templates,
             'session' => $session,
         ]);
     }

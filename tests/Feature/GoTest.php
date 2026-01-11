@@ -13,19 +13,15 @@ class GoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_go_page_without_template_shows_template_selector(): void
+    public function test_go_page_without_template_redirects_to_dashboard(): void
     {
         $user = User::factory()->create();
-        $template = SessionTemplate::factory()->create(['name' => 'Test Template']);
 
         $response = $this
             ->actingAs($user)
             ->get('/go');
 
-        $response->assertOk();
-        $response->assertSee('Available Templates');
-        $response->assertSee('Test Template');
-        $response->assertSee('Go');
+        $response->assertRedirect(route('dashboard'));
     }
 
     public function test_go_page_with_template_shows_exercises(): void
@@ -211,23 +207,6 @@ class GoTest extends TestCase
         $response->assertSee('No exercises in this template yet.');
     }
 
-    public function test_go_page_only_shows_available_templates(): void
-    {
-        $user = User::factory()->create();
-        $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
-        $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
-        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => User::factory()->create()->id]);
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/go');
-
-        $response->assertOk();
-        $response->assertSee('System Template');
-        $response->assertSee('User Template');
-        $response->assertDontSee($otherUserTemplate->name);
-    }
-
     public function test_go_page_returns_404_for_unavailable_template(): void
     {
         $user = User::factory()->create();
@@ -256,32 +235,6 @@ class GoTest extends TestCase
         $response = $this->get('/go');
 
         $response->assertRedirect('/login');
-    }
-
-    public function test_go_page_template_selector_displays_exercise_details(): void
-    {
-        $user = User::factory()->create();
-        $template = SessionTemplate::factory()->create(['name' => 'Strength Training']);
-        $exercise = Exercise::factory()->create(['name' => 'Dips']);
-
-        $template->exercises()->attach($exercise->id, [
-            'order' => 1,
-            'sets' => 4,
-            'reps' => 8,
-            'duration_seconds' => 90,
-            'rest_after_seconds' => 60,
-        ]);
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/go');
-
-        $response->assertOk();
-        $response->assertSee('Strength Training');
-        $response->assertSee('Dips');
-        $response->assertSee('4 × 8');
-        $response->assertSee('90s');
-        $response->assertSee('Rest: 60s');
     }
 
     public function test_go_page_creates_session_exercise_records(): void
