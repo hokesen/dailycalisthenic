@@ -15,14 +15,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <div x-show="!workoutRunning">
+        <div class="h-screen flex flex-col bg-gray-100 dark:bg-gray-900 overflow-hidden">
+            <div x-show="!workoutRunning" class="shrink-0">
                 @include('layouts.navigation')
             </div>
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
+                <header class="bg-white dark:bg-gray-800 shadow shrink-0">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -30,7 +30,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="flex-1 min-h-0 overflow-auto">
                 {{ $slot }}
             </main>
         </div>
