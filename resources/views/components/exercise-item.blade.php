@@ -191,7 +191,7 @@
                             </select>
                         </form>
                     @endif
-                    <button @click="showSwap = false" class="text-sm text-gray-600 mt-2 hover:text-gray-800 underline">Cancel</button>
+                    <button @click="showSwap = false" class="text-sm text-gray-200 mt-2 hover:text-gray-800 underline">Cancel</button>
                 </div>
             </div>
         </div>
@@ -199,8 +199,8 @@
         <!-- Action Buttons -->
         @if ($template->user_id === auth()->id())
             <div class="flex gap-1 sm:gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
-                <button @click="showSwap = !showSwap" class="bg-blue-100 text-blue-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-blue-200 transition-colors">Swap</button>
-                <button @click="showEdit = !showEdit" class="bg-green-100 text-green-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-green-200 transition-colors">Edit</button>
+                <button @click="showSwap = !showSwap" class="bg-slate-500 text-gray-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-blue-200 hover:text-gray-600 transition-colors">Swap</button>
+                <button @click="showEdit = !showEdit" class="bg-slate-500 text-gray-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-green-200 hover:text-gray-600 transition-colors">Edit</button>
                 <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
                     if(confirm('Remove this exercise?')) {
                         fetch($el.action, {
@@ -213,7 +213,7 @@
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                    <button type="submit" class="bg-red-100 text-red-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-200 transition-colors">✕</button>
+                    <button type="submit" class="bg-slate-500 text-red-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-700 hover:text-red-300 transition-colors">✕</button>
                 </form>
             </div>
         @endif
