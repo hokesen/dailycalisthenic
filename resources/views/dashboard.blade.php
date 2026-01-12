@@ -1,19 +1,55 @@
 @use('Illuminate\Support\Js')
 <x-app-layout>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Welcome & Changelog Card -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChangelog: false }">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome, {{ auth()->user()->name }}!</h3>
-                        <button @click="showChangelog = !showChangelog" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
-                            <span x-text="showChangelog ? 'Hide Changelog' : 'Show Changelog'"></span>
-                        </button>
+    <div class="py-6 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Welcome Bar with Title, Streak, User Dropdown, and Changelog -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-6" x-data="{ showChangelog: false, showUserMenu: false }">
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <!-- Left: Title and Welcome -->
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Daily Calisthenic</h1>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Welcome, {{ auth()->user()->name }}!</p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Streak, Changelog, User Menu -->
+                        <div class="flex items-center gap-3 sm:gap-4">
+                            <!-- Streak -->
+                            <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                                <span class="text-lg">🔥</span>
+                                <span class="font-bold text-orange-800 dark:text-orange-400">{{ $authUserStreak }}</span>
+                                <span class="text-xs text-orange-600 dark:text-orange-500 hidden sm:inline">day streak</span>
+                            </div>
+
+                            <!-- Changelog Toggle -->
+                            <button @click="showChangelog = !showChangelog" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hidden sm:block">
+                                <span x-text="showChangelog ? 'Hide Changelog' : 'Show Changelog'"></span>
+                            </button>
+
+                            <!-- User Dropdown -->
+                            <div class="relative" @click.outside="showUserMenu = false">
+                                <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors">
+                                    <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
+                                    <span class="sm:hidden">Menu</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="showUserMenu" x-transition x-cloak class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg">Profile</a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg">Log Out</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Changelog -->
-                    <div x-show="showChangelog" x-transition class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <!-- Changelog (Hidden by default) -->
+                    <div x-show="showChangelog" x-transition class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                         <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Changelog</h4>
                         <div class="space-y-3">
                             <div class="border-l-4 border-green-500 pl-4">
@@ -21,7 +57,7 @@
                                     <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">January 11th, 2026</span>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">Improvements & Features</span>
                                 </div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">1. Added gantt chart for exercise history<br> 2. Improved design on mobile<br> 3. You can now set your template to be shown publicly or kept private.</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300">1. Redesigned to single-page mobile-friendly layout<br> 2. Added gantt chart for exercise history<br>3. Added template privacy setting</p>
                             </div>
                             <div class="border-l-4 border-blue-500 pl-4">
                                 <div class="flex items-baseline gap-2 mb-1">
@@ -34,6 +70,47 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Progressions Section (Collapsible) -->
+            @if (count($progressionSummary) > 0 || count($standaloneExercises) > 0)
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showProgressions: false }">
+                    <div class="p-4 sm:p-6">
+                        <button @click="showProgressions = !showProgressions" class="w-full flex items-center justify-between text-left">
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progressions</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ count($progressionSummary) + count($standaloneExercises) }} exercises this week</span>
+                                <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showProgressions }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </button>
+
+                        <div x-show="showProgressions" x-transition x-cloak class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            @if (count($progressionSummary) > 0)
+                                <div class="space-y-4 mb-6">
+                                    @foreach ($progressionSummary as $progression)
+                                        <x-progression-summary-card :progression="$progression" />
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if (count($standaloneExercises) > 0)
+                                <div class="flex flex-wrap gap-3 {{ count($progressionSummary) > 0 ? 'pt-6 border-t border-gray-200 dark:border-gray-700' : '' }}">
+                                    @foreach ($standaloneExercises as $exercise)
+                                        @php
+                                            $minutes = round($exercise['total_seconds'] / 60);
+                                        @endphp
+                                        <div class="flex-shrink-0 rounded-lg px-4 py-3 min-w-[160px] text-center bg-green-50 dark:bg-green-900/20 border-2 border-green-500 dark:border-green-600">
+                                            <div class="text-gray-900 dark:text-gray-100 font-medium mb-1">{{ $exercise['name'] }}</div>
+                                            <div class="text-green-700 dark:text-green-400 text-sm font-semibold">{{ $minutes }} min</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             @if ($userCarouselData->isEmpty())
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -56,70 +133,55 @@
                              x-data="{
                                  currentIndex: 0,
                                  templateCount: {{ $carouselData['templates']->count() }},
-                                 selectedDay: null,
                                  weeklyData: {{ Js::from($carouselData['weeklyBreakdown']) }},
-                                 allExercises: {{ Js::from($allExercisesInWeek) }},
-                                 toggleDay(dayIndex) {
-                                     this.selectedDay = this.selectedDay === dayIndex ? null : dayIndex;
-                                 }
+                                 allExercises: {{ Js::from($allExercisesInWeek) }}
                              }">
-                            <div class="p-6 text-gray-900 dark:text-gray-100">
-                                <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6">
-                                    {{ $carouselData['user']->name }}
-                                </h4>
-
-                                <!-- Week Activity Grid with Streak -->
-                                <div class="mb-2">
-                                    <div class="grid grid-cols-8 gap-2">
-                                        @foreach ($carouselData['weeklyBreakdown'] as $index => $day)
-                                            <x-activity-day-card :day="$day" :dayIndex="$index" />
-                                        @endforeach
-                                        <!-- Streak Card -->
-                                        <div class="flex flex-col items-center justify-center p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                                            <span class="text-2xl mb-1">🔥</span>
-                                            <div class="font-bold text-orange-800 dark:text-orange-400 text-sm">{{ $carouselData['currentStreak'] }}</div>
-                                            <div class="text-xs text-orange-600 dark:text-orange-500 text-center">Streak</div>
-                                        </div>
+                            <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                                        {{ $carouselData['user']->name }}
+                                    </h4>
+                                    <div class="flex items-center gap-2 px-2 py-1 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded">
+                                        <span>🔥</span>
+                                        <span class="font-bold text-orange-800 dark:text-orange-400 text-sm">{{ $carouselData['currentStreak'] }}</span>
                                     </div>
                                 </div>
 
-                                <!-- Gantt Chart for Exercises -->
-                                <div x-show="selectedDay !== null" x-transition x-cloak class="mb-6">
-                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Exercise History</div>
-                                        <template x-if="allExercises.length === 0">
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">No exercises this week</div>
-                                        </template>
-                                        <div class="space-y-2">
-                                            <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
-                                                <div class="flex items-center gap-2">
-                                                    <div class="w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
-                                                    <div class="flex-1 grid grid-cols-7 gap-1">
-                                                        <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
-                                                            <div
-                                                                class="h-4 rounded-sm transition-colors"
-                                                                :class="{
-                                                                    'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
-                                                                    'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise),
-                                                                    'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-900': selectedDay === dayIdx
-                                                                }"
-                                                            ></div>
-                                                        </template>
+                                <!-- Gantt Chart for Exercises (Always Shown) -->
+                                <template x-if="allExercises.length > 0">
+                                    <div class="mb-6">
+                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+                                            <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">This Week</div>
+                                            <div class="space-y-2">
+                                                <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-20 sm:w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
+                                                        <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                            <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
+                                                                <div
+                                                                    class="h-3 sm:h-4 rounded-sm transition-colors"
+                                                                    :class="{
+                                                                        'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
+                                                                        'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise)
+                                                                    }"
+                                                                ></div>
+                                                            </template>
+                                                        </div>
                                                     </div>
+                                                </template>
+                                            </div>
+                                            <!-- Day labels -->
+                                            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                <div class="w-20 sm:w-24"></div>
+                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                    @foreach ($carouselData['weeklyBreakdown'] as $day)
+                                                        <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
+                                                    @endforeach
                                                 </div>
-                                            </template>
-                                        </div>
-                                        <!-- Day labels -->
-                                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                            <div class="w-24"></div>
-                                            <div class="flex-1 grid grid-cols-7 gap-1">
-                                                @foreach ($carouselData['weeklyBreakdown'] as $day)
-                                                    <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
-                                                @endforeach
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
 
                                 <!-- Template Carousel -->
                                 <div>

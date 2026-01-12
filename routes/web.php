@@ -4,21 +4,24 @@ use App\Http\Controllers\GoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
 use App\Models\Exercise;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    // If not logged in, show the marketing page
+    if (! auth()->check()) {
+        return view('welcome');
+    }
 
-Route::get('/dashboard', function () {
+    // Otherwise show the dashboard
+    $user = auth()->user();
+
     $allExercises = Exercise::query()
-        ->availableFor(auth()->user())
+        ->availableFor($user)
         ->orderBy('name')
         ->get();
 
     // Get date range for the past week
-    $userNow = auth()->user()->now();
+    $userNow = $user->now();
     $startDate = $userNow->copy()->subDays(6)->startOfDay();
     $endDate = $userNow->copy()->endOfDay();
     $startDateUtc = $startDate->copy()->timezone('UTC');
@@ -28,7 +31,7 @@ Route::get('/dashboard', function () {
 
     // Get ALL templates for the current user (not just ones used recently)
     $authUserTemplates = \App\Models\SessionTemplate::query()
-        ->where('user_id', auth()->id())
+        ->where('user_id', $user->id)
         ->with([
             'user',
             'exercises' => function ($query) {
@@ -36,8 +39,8 @@ Route::get('/dashboard', function () {
                     ->orderByPivot('order');
             },
         ])
-        ->withSum(['sessions' => function ($query) use ($startDateUtc, $endDateUtc) {
-            $query->where('user_id', auth()->id())
+        ->withSum(['sessions' => function ($query) use ($user, $startDateUtc, $endDateUtc) {
+            $query->where('user_id', $user->id)
                 ->completed()
                 ->whereBetween('completed_at', [$startDateUtc, $endDateUtc]);
         }], 'total_duration_seconds')
@@ -46,27 +49,27 @@ Route::get('/dashboard', function () {
 
     if ($authUserTemplates->isNotEmpty()) {
         $userCarouselData->push([
-            'user' => auth()->user(),
+            'user' => $user,
             'templates' => $authUserTemplates,
-            'currentStreak' => auth()->user()->getCurrentStreak(),
-            'weeklyBreakdown' => auth()->user()->getWeeklyExerciseBreakdown(7),
+            'currentStreak' => $user->getCurrentStreak(),
+            'weeklyBreakdown' => $user->getWeeklyExerciseBreakdown(7),
             'topTemplateId' => $authUserTemplates->first()->id ?? null,
         ]);
     }
 
     // Get all other users who have public templates
     $otherUsers = \App\Models\User::query()
-        ->where('id', '!=', auth()->id())
+        ->where('id', '!=', $user->id)
         ->with('activeGoal')
         ->whereHas('sessionTemplates', function ($query) {
             $query->where('is_public', true);
         })
         ->get();
 
-    foreach ($otherUsers as $user) {
+    foreach ($otherUsers as $otherUser) {
         // Get all public templates from this user
         $publicTemplates = \App\Models\SessionTemplate::query()
-            ->where('user_id', $user->id)
+            ->where('user_id', $otherUser->id)
             ->where('is_public', true)
             ->with([
                 'user',
@@ -75,8 +78,8 @@ Route::get('/dashboard', function () {
                         ->orderByPivot('order');
                 },
             ])
-            ->withSum(['sessions' => function ($query) use ($user, $startDateUtc, $endDateUtc) {
-                $query->where('user_id', $user->id)
+            ->withSum(['sessions' => function ($query) use ($otherUser, $startDateUtc, $endDateUtc) {
+                $query->where('user_id', $otherUser->id)
                     ->completed()
                     ->whereBetween('completed_at', [$startDateUtc, $endDateUtc]);
             }], 'total_duration_seconds')
@@ -85,41 +88,32 @@ Route::get('/dashboard', function () {
 
         if ($publicTemplates->isNotEmpty()) {
             $userCarouselData->push([
-                'user' => $user,
+                'user' => $otherUser,
                 'templates' => $publicTemplates,
-                'currentStreak' => $user->getCurrentStreak(),
-                'weeklyBreakdown' => $user->getWeeklyExerciseBreakdown(7),
+                'currentStreak' => $otherUser->getCurrentStreak(),
+                'weeklyBreakdown' => $otherUser->getWeeklyExerciseBreakdown(7),
                 'topTemplateId' => $publicTemplates->first()->id,
             ]);
         }
     }
 
+    // Get progression data for the current user (for Progressions section)
+    $progressionSummary = $user->getWeeklyProgressionSummary(7);
+    $standaloneExercises = $user->getWeeklyStandaloneExercises(7);
+
     return view('dashboard', [
         'userCarouselData' => $userCarouselData,
         'allExercises' => $allExercises,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/activity', function (Request $request) {
-    $user = auth()->user();
-    $range = $request->input('range', 'week');
-
-    // Validate range input
-    if (! in_array($range, ['week', 'month'])) {
-        $range = 'week';
-    }
-
-    $days = $range === 'month' ? 30 : 7;
-
-    $progressionSummary = $user->getWeeklyProgressionSummary($days);
-    $standaloneExercises = $user->getWeeklyStandaloneExercises($days);
-
-    return view('activity', [
+        'authUserStreak' => $user->getCurrentStreak(),
         'progressionSummary' => $progressionSummary,
         'standaloneExercises' => $standaloneExercises,
-        'selectedRange' => $range,
     ]);
-})->middleware(['auth', 'verified'])->name('activity');
+})->name('home');
+
+// Redirect /dashboard to / for backwards compatibility
+Route::get('/dashboard', function () {
+    return redirect()->route('home');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

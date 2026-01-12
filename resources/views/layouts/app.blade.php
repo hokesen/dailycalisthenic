@@ -16,9 +16,6 @@
     </head>
     <body class="font-sans antialiased" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
         <div class="h-screen flex flex-col bg-gray-100 dark:bg-gray-900 overflow-hidden">
-            <div x-show="!workoutRunning" class="shrink-0">
-                @include('layouts.navigation')
-            </div>
 
             <!-- Page Heading -->
             @isset($header)

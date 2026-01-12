@@ -17,7 +17,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Welcome, John Doe!');
@@ -50,7 +50,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Template');
@@ -87,7 +87,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee(route('templates.copy', $otherUserTemplate));
@@ -100,7 +100,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('No recent activity to display. Start a workout to see your progress!');
@@ -143,7 +143,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Full Body Workout');
@@ -174,18 +174,31 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee(route('go.index', ['template' => $template->id]));
         $response->assertSee('Go');
     }
 
-    public function test_dashboard_requires_authentication(): void
+    public function test_home_shows_marketing_page_for_guests(): void
     {
-        $response = $this->get('/dashboard');
+        $response = $this->get('/');
 
-        $response->assertRedirect('/login');
+        $response->assertOk();
+        $response->assertSee('Daily Calisthenic');
+        $response->assertSee('Start Training Free');
+    }
+
+    public function test_dashboard_redirects_to_home(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertRedirect('/');
     }
 
     public function test_dashboard_displays_exercise_details_for_time_based_exercises(): void
@@ -211,7 +224,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Jumping Jacks');
@@ -235,7 +248,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee($user->name, false);
@@ -260,7 +273,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('3');
@@ -292,7 +305,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('0');
@@ -315,7 +328,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         // Check for day names (Mon, Tue, etc.)
@@ -492,14 +505,14 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         // Check for the presence of the calendar grid
         $response->assertSee('Streak');
     }
 
-    public function test_activity_page_displays_progression_summary_when_available(): void
+    public function test_homepage_displays_progressions_section_when_available(): void
     {
         $user = User::factory()->create();
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Kneeling Plank']);
@@ -523,26 +536,27 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/activity');
+            ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Your Activity');
-        $response->assertSee('Plank Progression');
+        $response->assertSee('Progressions');
+        $response->assertSee('1 exercises this week');
     }
 
-    public function test_activity_page_shows_no_activity_when_empty(): void
+    public function test_homepage_shows_no_activity_message_when_empty(): void
     {
         $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)
-            ->get('/activity');
+            ->get('/');
 
         $response->assertOk();
-        $response->assertSee('No activity in this time period');
+        // When user has no templates, the "no activity" message is shown
+        $response->assertSee('No recent activity to display');
     }
 
-    public function test_activity_page_displays_standalone_exercises(): void
+    public function test_homepage_displays_standalone_exercises_in_progressions(): void
     {
         $user = User::factory()->create();
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Jumping Jacks']);
@@ -562,15 +576,15 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/activity');
+            ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Your Activity');
+        $response->assertSee('Progressions');
         $response->assertSee('Jumping Jacks');
         $response->assertSee('10 min');
     }
 
-    public function test_activity_page_displays_both_progressions_and_standalone_exercises(): void
+    public function test_homepage_displays_both_progressions_and_standalone_exercises(): void
     {
         $user = User::factory()->create();
 
@@ -604,48 +618,12 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/activity');
+            ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Your Activity');
+        $response->assertSee('Progressions');
         $response->assertSee('Plank Progression');
         $response->assertSee('Burpees');
-    }
-
-    public function test_activity_page_filters_by_month_range(): void
-    {
-        $user = User::factory()->create();
-        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Old Exercise']);
-
-        // Create a session from 20 days ago
-        $session = \App\Models\Session::factory()->create([
-            'user_id' => $user->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now()->subDays(20),
-        ]);
-
-        \App\Models\SessionExercise::factory()->create([
-            'session_id' => $session->id,
-            'exercise_id' => $exercise->id,
-            'duration_seconds' => 300,
-        ]);
-
-        // Should not show with week range
-        $weekResponse = $this
-            ->actingAs($user)
-            ->get('/activity?range=week');
-
-        $weekResponse->assertOk();
-        $weekResponse->assertSee('No activity in this time period');
-
-        // Should show with month range
-        $monthResponse = $this
-            ->actingAs($user)
-            ->get('/activity?range=month');
-
-        $monthResponse->assertOk();
-        $monthResponse->assertSee('Your Activity');
-        $monthResponse->assertSee('Old Exercise');
     }
 
     public function test_standalone_exercises_not_shown_in_progression_section(): void
@@ -722,7 +700,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('User Template');
@@ -750,7 +728,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Public Template 1');
@@ -766,7 +744,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('My Public Template');
@@ -780,7 +758,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Private');
@@ -794,7 +772,7 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/dashboard');
+            ->get('/');
 
         $response->assertOk();
         $response->assertSee('Public');
