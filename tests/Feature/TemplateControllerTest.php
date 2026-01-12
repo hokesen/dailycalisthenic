@@ -578,4 +578,91 @@ class TemplateControllerTest extends TestCase
             ->first();
         $this->assertNotNull($copiedTemplate);
     }
+
+    public function test_user_can_toggle_template_visibility_to_public(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create([
+            'user_id' => $user->id,
+            'is_public' => false,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('templates.toggle-visibility', $template));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('session_templates', [
+            'id' => $template->id,
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_user_can_toggle_template_visibility_to_private(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create([
+            'user_id' => $user->id,
+            'is_public' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('templates.toggle-visibility', $template));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('session_templates', [
+            'id' => $template->id,
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_user_cannot_toggle_visibility_of_another_users_template(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $template = SessionTemplate::factory()->create([
+            'user_id' => $user1->id,
+            'is_public' => false,
+        ]);
+
+        $response = $this
+            ->actingAs($user2)
+            ->patch(route('templates.toggle-visibility', $template));
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('session_templates', [
+            'id' => $template->id,
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_user_cannot_toggle_visibility_of_system_template(): void
+    {
+        $user = User::factory()->create();
+        $systemTemplate = SessionTemplate::factory()->create([
+            'user_id' => null,
+            'is_public' => false,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('templates.toggle-visibility', $systemTemplate));
+
+        $response->assertForbidden();
+    }
+
+    public function test_toggle_visibility_requires_authentication(): void
+    {
+        $template = SessionTemplate::factory()->create(['user_id' => User::factory()->create()->id]);
+
+        $this->patch(route('templates.toggle-visibility', $template))->assertRedirect('/login');
+    }
+
+    public function test_new_templates_default_to_private(): void
+    {
+        $template = SessionTemplate::factory()->create(['user_id' => User::factory()->create()->id]);
+
+        $this->assertFalse($template->is_public);
+    }
 }

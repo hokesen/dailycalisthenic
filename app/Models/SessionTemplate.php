@@ -19,9 +19,15 @@ class SessionTemplate extends Model
         'description',
         'notes',
         'default_rest_seconds',
+        'is_public',
     ];
 
-    protected $casts = [];
+    protected function casts(): array
+    {
+        return [
+            'is_public' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {

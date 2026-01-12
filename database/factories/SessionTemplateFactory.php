@@ -22,6 +22,14 @@ class SessionTemplateFactory extends Factory
             'description' => fake()->sentence(),
             'notes' => fake()->optional()->paragraph(),
             'default_rest_seconds' => fake()->randomElement([30, 45, 60, 90]),
+            'is_public' => false,
         ];
+    }
+
+    public function public(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_public' => true,
+        ]);
     }
 }

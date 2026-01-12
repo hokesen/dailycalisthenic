@@ -29,7 +29,7 @@ class DashboardTest extends TestCase
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
         $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
         $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
-        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template']);
+        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template', 'is_public' => true]);
 
         // Create completed sessions to make users appear on dashboard
         \App\Models\Session::factory()->create([
@@ -66,7 +66,7 @@ class DashboardTest extends TestCase
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
         $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
         $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
-        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template']);
+        $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template', 'is_public' => true]);
 
         // Create completed sessions to make users appear on dashboard
         \App\Models\Session::factory()->create([
@@ -694,5 +694,109 @@ class DashboardTest extends TestCase
         $this->assertCount(1, $standaloneExercises);
         $this->assertEquals('Mountain Climbers', $standaloneExercises[0]['name']);
         $this->assertEquals(420, $standaloneExercises[0]['total_seconds']);
+    }
+
+    public function test_dashboard_hides_private_templates_from_other_users(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $otherUser = User::factory()->create(['name' => 'Jane Smith']);
+        $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
+        $privateTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Private Template', 'is_public' => false]);
+
+        // Create completed sessions
+        \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'session_template_id' => $userTemplate->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+            'total_duration_seconds' => 300,
+        ]);
+
+        \App\Models\Session::factory()->create([
+            'user_id' => $otherUser->id,
+            'session_template_id' => $privateTemplate->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+            'total_duration_seconds' => 300,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('User Template');
+        $response->assertDontSee('Private Template');
+        $response->assertDontSee('Jane Smith');
+    }
+
+    public function test_dashboard_shows_multiple_public_templates_from_same_user(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $otherUser = User::factory()->create(['name' => 'Jane Smith']);
+        $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
+        $publicTemplate1 = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Public Template 1', 'is_public' => true]);
+        $publicTemplate2 = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Public Template 2', 'is_public' => true]);
+        $privateTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Private Template', 'is_public' => false]);
+
+        // Create completed sessions
+        \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'session_template_id' => $userTemplate->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+            'total_duration_seconds' => 300,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Public Template 1');
+        $response->assertSee('Public Template 2');
+        $response->assertDontSee('Private Template');
+    }
+
+    public function test_dashboard_shows_all_own_templates_regardless_of_visibility(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $publicTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Public Template', 'is_public' => true]);
+        $privateTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Private Template', 'is_public' => false]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('My Public Template');
+        $response->assertSee('My Private Template');
+    }
+
+    public function test_dashboard_shows_visibility_toggle_for_own_templates(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Template', 'is_public' => false]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Private');
+        $response->assertSee(route('templates.toggle-visibility', $template));
+    }
+
+    public function test_dashboard_shows_public_status_for_public_template(): void
+    {
+        $user = User::factory()->create(['name' => 'John Doe']);
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'My Template', 'is_public' => true]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('Public');
     }
 }

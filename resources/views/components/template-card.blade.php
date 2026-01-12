@@ -25,6 +25,23 @@
                 </form>
             @endif
         </div>
+        @if ($template->user_id === auth()->id())
+            <div x-show="!editingName" class="flex items-center gap-2 mt-2">
+                <form action="{{ route('templates.toggle-visibility', $template) }}" method="POST" @submit.prevent="
+                    fetch($el.action, {
+                        method: 'PATCH',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    }).then(() => location.reload())
+                ">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ $template->is_public ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700' }}" role="switch" aria-checked="{{ $template->is_public ? 'true' : 'false' }}">
+                        <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $template->is_public ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                    </button>
+                </form>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ $template->is_public ? 'Public' : 'Private' }}</span>
+            </div>
+        @endif
         <div x-show="editingName" class="space-y-2">
             <form action="{{ route('templates.update-name', $template) }}" method="POST" class="flex gap-2" @submit.prevent="
                 const formData = new FormData($el);

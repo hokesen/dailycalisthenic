@@ -111,6 +111,21 @@ class TemplateController extends Controller
         return redirect()->route('dashboard')->with('success', 'Template name updated successfully');
     }
 
+    public function toggleVisibility(SessionTemplate $template): RedirectResponse
+    {
+        if ($template->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $template->update([
+            'is_public' => ! $template->is_public,
+        ]);
+
+        $status = $template->is_public ? 'public' : 'private';
+
+        return redirect()->route('dashboard')->with('success', "Template is now {$status}");
+    }
+
     public function destroy(DeleteTemplateRequest $request, SessionTemplate $template): RedirectResponse
     {
         $template->delete();
