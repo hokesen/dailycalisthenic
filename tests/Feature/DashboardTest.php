@@ -539,8 +539,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Progressions');
-        $response->assertSee('1 exercises this week');
+        $response->assertSee('This Week');
+        $response->assertSee('1 exercises');
     }
 
     public function test_homepage_shows_no_activity_message_when_empty(): void
@@ -579,9 +579,9 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Progressions');
+        $response->assertSee('This Week');
         $response->assertSee('Jumping Jacks');
-        $response->assertSee('10 min');
+        $response->assertSee('10m'); // Weekly total format changed
     }
 
     public function test_homepage_displays_both_progressions_and_standalone_exercises(): void
@@ -621,8 +621,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Progressions');
-        $response->assertSee('Plank Progression');
+        $response->assertSee('This Week');
+        $response->assertSee('Plank'); // Progression path label is uppercase, exercise name shown
         $response->assertSee('Burpees');
     }
 

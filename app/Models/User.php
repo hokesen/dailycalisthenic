@@ -331,4 +331,189 @@ class User extends Authenticatable implements FilamentUser
 
         return $exerciseData;
     }
+
+    /**
+     * Calculate the current streak for a specific exercise.
+     */
+    public function getExerciseStreak(int $exerciseId): int
+    {
+        $streak = 0;
+        $currentDate = $this->now()->startOfDay();
+        $timezone = $this->timezone ?? 'America/Los_Angeles';
+
+        while (true) {
+            $hasExercise = SessionExercise::query()
+                ->whereHas('session', function ($query) use ($currentDate, $timezone) {
+                    $query->where('user_id', $this->id)
+                        ->completed()
+                        ->onDate($currentDate, $timezone);
+                })
+                ->where('exercise_id', $exerciseId)
+                ->exists();
+
+            if (! $hasExercise) {
+                break;
+            }
+
+            $streak++;
+            $currentDate = $currentDate->copy()->subDay();
+        }
+
+        return $streak;
+    }
+
+    /**
+     * Get comprehensive progression data for gantt chart display.
+     * Groups exercises by progression path with daily breakdown and streaks.
+     *
+     * @return array{progressions: array, standalone: array}
+     */
+    public function getProgressionGanttData(int $days = 7): array
+    {
+        $userNow = $this->now();
+        $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
+        $endDate = $userNow->copy()->endOfDay();
+        $timezone = $this->timezone ?? 'America/Los_Angeles';
+
+        // Convert to UTC for database query
+        $startDateUtc = $startDate->copy()->timezone('UTC');
+        $endDateUtc = $endDate->copy()->timezone('UTC');
+
+        // Fetch all session exercises for the week
+        $sessions = $this->sessions()
+            ->completed()
+            ->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
+            ->with(['sessionExercises.exercise.progression'])
+            ->get();
+
+        // Build daily exercise data
+        $dailyData = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = $userNow->copy()->subDays($i)->startOfDay();
+            $dailyData[] = [
+                'date' => $date,
+                'dayName' => $date->format('D'),
+                'exercises' => [], // Will be keyed by exercise_id
+            ];
+        }
+
+        // Populate daily exercise durations
+        foreach ($sessions as $session) {
+            $timestamp = $session->completed_at->getTimestamp();
+            $sessionInTz = \Carbon\Carbon::createFromTimestamp($timestamp, $timezone);
+
+            foreach ($dailyData as $dayIndex => &$day) {
+                if ($sessionInTz->toDateString() === $day['date']->toDateString()) {
+                    foreach ($session->sessionExercises as $sessionExercise) {
+                        $exerciseId = $sessionExercise->exercise_id;
+                        if (! isset($day['exercises'][$exerciseId])) {
+                            $day['exercises'][$exerciseId] = 0;
+                        }
+                        $day['exercises'][$exerciseId] += $sessionExercise->duration_seconds ?? 0;
+                    }
+                }
+            }
+            unset($day); // Break the reference to avoid PHP gotcha
+        }
+
+        // Collect all unique exercises from the week
+        $allExercises = $sessions->flatMap(fn ($s) => $s->sessionExercises->pluck('exercise'))
+            ->unique('id')
+            ->keyBy('id');
+
+        // Group exercises by progression path
+        $progressionPaths = [];
+        $standaloneExercises = [];
+        $processedProgressionPaths = [];
+
+        foreach ($allExercises as $exercise) {
+            $progression = $exercise->progression;
+
+            if ($progression && $progression->progression_path_name) {
+                $pathName = $progression->progression_path_name;
+
+                if (isset($processedProgressionPaths[$pathName])) {
+                    continue;
+                }
+
+                $processedProgressionPaths[$pathName] = true;
+
+                // Get all exercises in this progression path (easier + this + harder)
+                $easierVariations = $exercise->getEasierVariations();
+                $harderVariations = $exercise->getHarderVariations();
+
+                // Order from easiest to hardest
+                $pathExercises = array_reverse($easierVariations);
+                $pathExercises[] = $exercise;
+                $pathExercises = array_merge($pathExercises, $harderVariations);
+
+                // Find which exercises were actually done this week
+                $exercisesInPath = [];
+                foreach ($pathExercises as $index => $pathExercise) {
+                    $exerciseId = $pathExercise->id;
+                    $weeklyTotal = 0;
+                    $dailySeconds = [];
+
+                    foreach ($dailyData as $day) {
+                        $seconds = $day['exercises'][$exerciseId] ?? 0;
+                        $dailySeconds[] = $seconds;
+                        $weeklyTotal += $seconds;
+                    }
+
+                    // Only include if done this week
+                    if ($weeklyTotal > 0) {
+                        $exercisesInPath[] = [
+                            'id' => $exerciseId,
+                            'name' => $pathExercise->name,
+                            'order' => $index, // 0 = easiest in path
+                            'total_in_path' => count($pathExercises),
+                            'weekly_seconds' => $weeklyTotal,
+                            'daily_seconds' => $dailySeconds,
+                            'streak' => $this->getExerciseStreak($exerciseId),
+                        ];
+                    }
+                }
+
+                if (! empty($exercisesInPath)) {
+                    $progressionPaths[$pathName] = [
+                        'path_name' => $pathName,
+                        'exercises' => $exercisesInPath,
+                    ];
+                }
+            } else {
+                // Standalone exercise
+                $exerciseId = $exercise->id;
+                $weeklyTotal = 0;
+                $dailySeconds = [];
+
+                foreach ($dailyData as $day) {
+                    $seconds = $day['exercises'][$exerciseId] ?? 0;
+                    $dailySeconds[] = $seconds;
+                    $weeklyTotal += $seconds;
+                }
+
+                if ($weeklyTotal > 0) {
+                    $standaloneExercises[] = [
+                        'id' => $exerciseId,
+                        'name' => $exercise->name,
+                        'weekly_seconds' => $weeklyTotal,
+                        'daily_seconds' => $dailySeconds,
+                        'streak' => $this->getExerciseStreak($exerciseId),
+                    ];
+                }
+            }
+        }
+
+        // Build day labels
+        $dayLabels = [];
+        foreach ($dailyData as $day) {
+            $dayLabels[] = substr($day['dayName'], 0, 1);
+        }
+
+        return [
+            'progressions' => array_values($progressionPaths),
+            'standalone' => $standaloneExercises,
+            'dayLabels' => $dayLabels,
+        ];
+    }
 }

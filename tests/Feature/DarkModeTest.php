@@ -24,12 +24,12 @@ class DarkModeTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/dashboard');
+        $response = $this->actingAs($user)->get('/');
 
         $response->assertStatus(200);
         $response->assertSee('class="dark"', false);
         $response->assertSee('dark:bg-gray-900', false);
         $response->assertSee('dark:bg-gray-800', false);
-        $response->assertSee('dark:text-gray-200', false);
+        $response->assertSee('dark:text-gray-100', false); // Text class always present
     }
 }

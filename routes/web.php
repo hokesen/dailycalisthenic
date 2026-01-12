@@ -97,16 +97,14 @@ Route::get('/', function () {
         }
     }
 
-    // Get progression data for the current user (for Progressions section)
-    $progressionSummary = $user->getWeeklyProgressionSummary(7);
-    $standaloneExercises = $user->getWeeklyStandaloneExercises(7);
+    // Get progression gantt data for the current user
+    $progressionGanttData = $user->getProgressionGanttData(7);
 
     return view('dashboard', [
         'userCarouselData' => $userCarouselData,
         'allExercises' => $allExercises,
         'authUserStreak' => $user->getCurrentStreak(),
-        'progressionSummary' => $progressionSummary,
-        'standaloneExercises' => $standaloneExercises,
+        'progressionGanttData' => $progressionGanttData,
     ]);
 })->name('home');
 

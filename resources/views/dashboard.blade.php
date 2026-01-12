@@ -71,42 +71,164 @@
                 </div>
             </div>
 
-            <!-- Progressions Section (Collapsible) -->
-            @if (count($progressionSummary) > 0 || count($standaloneExercises) > 0)
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showProgressions: false }">
+            <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
+            @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true }">
                     <div class="p-4 sm:p-6">
-                        <button @click="showProgressions = !showProgressions" class="w-full flex items-center justify-between text-left">
-                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progressions</h3>
+                        <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
                             <div class="flex items-center gap-2">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ count($progressionSummary) + count($standaloneExercises) }} exercises this week</span>
-                                <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showProgressions }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                @php
+                                    $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
+                                @endphp
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $totalExercises }} exercises</span>
+                                <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showChart }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
                         </button>
 
-                        <div x-show="showProgressions" x-transition x-cloak class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            @if (count($progressionSummary) > 0)
-                                <div class="space-y-4 mb-6">
-                                    @foreach ($progressionSummary as $progression)
-                                        <x-progression-summary-card :progression="$progression" />
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            @if (count($standaloneExercises) > 0)
-                                <div class="flex flex-wrap gap-3 {{ count($progressionSummary) > 0 ? 'pt-6 border-t border-gray-200 dark:border-gray-700' : '' }}">
-                                    @foreach ($standaloneExercises as $exercise)
-                                        @php
-                                            $minutes = round($exercise['total_seconds'] / 60);
-                                        @endphp
-                                        <div class="flex-shrink-0 rounded-lg px-4 py-3 min-w-[160px] text-center bg-green-50 dark:bg-green-900/20 border-2 border-green-500 dark:border-green-600">
-                                            <div class="text-gray-900 dark:text-gray-100 font-medium mb-1">{{ $exercise['name'] }}</div>
-                                            <div class="text-green-700 dark:text-green-400 text-sm font-semibold">{{ $minutes }} min</div>
+                        <div x-show="showChart" x-transition class="mt-4">
+                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+                                <div class="space-y-1">
+                                    @foreach ($progressionGanttData['progressions'] as $progression)
+                                        <!-- Progression Group Header -->
+                                        <div class="flex items-center gap-2 pt-2 {{ !$loop->first ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
+                                            <div class="w-28 sm:w-36"></div>
+                                            <div class="flex-1">
+                                                <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">{{ ucwords($progression['path_name']) }}</span>
+                                            </div>
                                         </div>
+                                        @foreach ($progression['exercises'] as $exercise)
+                                            @php
+                                                // Color coding based on position in progression (0 = easiest)
+                                                $progressLevel = $exercise['order'] / max(1, $exercise['total_in_path'] - 1);
+                                                if ($exercise['total_in_path'] <= 1) {
+                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
+                                                    $levelIndicator = 'bg-green-500';
+                                                } elseif ($progressLevel >= 0.8) {
+                                                    $cellColorClass = 'bg-emerald-500 dark:bg-emerald-600';
+                                                    $levelIndicator = 'bg-emerald-500';
+                                                } elseif ($progressLevel >= 0.5) {
+                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
+                                                    $levelIndicator = 'bg-green-500';
+                                                } elseif ($progressLevel >= 0.25) {
+                                                    $cellColorClass = 'bg-yellow-500 dark:bg-yellow-600';
+                                                    $levelIndicator = 'bg-yellow-500';
+                                                } else {
+                                                    $cellColorClass = 'bg-orange-500 dark:bg-orange-600';
+                                                    $levelIndicator = 'bg-orange-500';
+                                                }
+                                                $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
+                                            @endphp
+                                            <div class="flex items-center gap-2">
+                                                <!-- Exercise name with level indicator -->
+                                                <div class="w-28 sm:w-36 flex items-center gap-1.5">
+                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 {{ $levelIndicator }}"></div>
+                                                    <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
+                                                </div>
+                                                <!-- Daily cells -->
+                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                    @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
+                                                        @php
+                                                            $dailyMinutes = round($seconds / 60);
+                                                        @endphp
+                                                        <div
+                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }}"
+                                                            title="{{ $dailyMinutes }} min"
+                                                        >
+                                                            @if ($seconds > 0)
+                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">{{ $dailyMinutes }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <!-- Weekly total & streak -->
+                                                <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $weeklyMinutes }}m</span>
+                                                    @if ($exercise['streak'] > 0)
+                                                        <span class="text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">🔥{{ $exercise['streak'] }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     @endforeach
+
+                                    @if (count($progressionGanttData['standalone']) > 0)
+                                        <!-- Standalone exercises section -->
+                                        <div class="flex items-center gap-2 pt-2 {{ count($progressionGanttData['progressions']) > 0 ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
+                                            <div class="w-28 sm:w-36"></div>
+                                            <div class="flex-1">
+                                                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Other</span>
+                                            </div>
+                                        </div>
+                                        @foreach ($progressionGanttData['standalone'] as $exercise)
+                                            @php
+                                                $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
+                                            @endphp
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-28 sm:w-36 flex items-center gap-1.5">
+                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 bg-blue-500"></div>
+                                                    <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
+                                                </div>
+                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                    @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
+                                                        @php
+                                                            $dailyMinutes = round($seconds / 60);
+                                                        @endphp
+                                                        <div
+                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-200 dark:bg-gray-700' }}"
+                                                            title="{{ $dailyMinutes }} min"
+                                                        >
+                                                            @if ($seconds > 0)
+                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">{{ $dailyMinutes }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $weeklyMinutes }}m</span>
+                                                    @if ($exercise['streak'] > 0)
+                                                        <span class="text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">🔥{{ $exercise['streak'] }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </div>
-                            @endif
+
+                                <!-- Day labels -->
+                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="w-28 sm:w-36"></div>
+                                    <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                        @foreach ($progressionGanttData['dayLabels'] as $dayLabel)
+                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ $dayLabel }}</div>
+                                        @endforeach
+                                    </div>
+                                    <div class="w-16 sm:w-20"></div>
+                                </div>
+
+                                <!-- Legend -->
+                                <div class="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Level:</span>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Beginner</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Intermediate</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Advanced</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Expert</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -147,41 +269,43 @@
                                     </div>
                                 </div>
 
-                                <!-- Gantt Chart for Exercises (Always Shown) -->
-                                <template x-if="allExercises.length > 0">
-                                    <div class="mb-6">
-                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
-                                            <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">This Week</div>
-                                            <div class="space-y-2">
-                                                <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
-                                                    <div class="flex items-center gap-2">
-                                                        <div class="w-20 sm:w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
-                                                        <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
-                                                            <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
-                                                                <div
-                                                                    class="h-3 sm:h-4 rounded-sm transition-colors"
-                                                                    :class="{
-                                                                        'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
-                                                                        'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise)
-                                                                    }"
-                                                                ></div>
-                                                            </template>
+                                <!-- Gantt Chart for Exercises (Only for other users, auth user has it in the combined section above) -->
+                                @if ($carouselData['user']->id !== auth()->id())
+                                    <template x-if="allExercises.length > 0">
+                                        <div class="mb-6">
+                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+                                                <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">This Week</div>
+                                                <div class="space-y-2">
+                                                    <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="w-20 sm:w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
+                                                            <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                                <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
+                                                                    <div
+                                                                        class="h-3 sm:h-4 rounded-sm transition-colors"
+                                                                        :class="{
+                                                                            'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
+                                                                            'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise)
+                                                                        }"
+                                                                    ></div>
+                                                                </template>
+                                                            </div>
                                                         </div>
+                                                    </template>
+                                                </div>
+                                                <!-- Day labels -->
+                                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                    <div class="w-20 sm:w-24"></div>
+                                                    <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                        @foreach ($carouselData['weeklyBreakdown'] as $day)
+                                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
+                                                        @endforeach
                                                     </div>
-                                                </template>
-                                            </div>
-                                            <!-- Day labels -->
-                                            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <div class="w-20 sm:w-24"></div>
-                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
-                                                    @foreach ($carouselData['weeklyBreakdown'] as $day)
-                                                        <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
-                                                    @endforeach
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </template>
+                                    </template>
+                                @endif
 
                                 <!-- Template Carousel -->
                                 <div>
