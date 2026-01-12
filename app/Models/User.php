@@ -425,6 +425,7 @@ class User extends Authenticatable implements FilamentUser
         $progressionPaths = [];
         $standaloneExercises = [];
         $processedProgressionPaths = [];
+        $processedExerciseIds = []; // Track which exercises have been added to a progression
 
         foreach ($allExercises as $exercise) {
             $progression = $exercise->progression;
@@ -471,6 +472,7 @@ class User extends Authenticatable implements FilamentUser
                             'daily_seconds' => $dailySeconds,
                             'streak' => $this->getExerciseStreak($exerciseId),
                         ];
+                        $processedExerciseIds[$exerciseId] = true;
                     }
                 }
 
@@ -481,8 +483,13 @@ class User extends Authenticatable implements FilamentUser
                     ];
                 }
             } else {
-                // Standalone exercise
+                // Standalone exercise - skip if already added to a progression path
                 $exerciseId = $exercise->id;
+
+                if (isset($processedExerciseIds[$exerciseId])) {
+                    continue;
+                }
+
                 $weeklyTotal = 0;
                 $dailySeconds = [];
 
@@ -504,16 +511,24 @@ class User extends Authenticatable implements FilamentUser
             }
         }
 
-        // Build day labels
+        // Build day labels and calculate daily/weekly totals
         $dayLabels = [];
+        $dailyTotals = [];
+        $weeklyTotal = 0;
+
         foreach ($dailyData as $day) {
             $dayLabels[] = substr($day['dayName'], 0, 1);
+            $dayTotal = array_sum($day['exercises']);
+            $dailyTotals[] = $dayTotal;
+            $weeklyTotal += $dayTotal;
         }
 
         return [
             'progressions' => array_values($progressionPaths),
             'standalone' => $standaloneExercises,
             'dayLabels' => $dayLabels,
+            'dailyTotals' => $dailyTotals,
+            'weeklyTotal' => $weeklyTotal,
         ];
     }
 }

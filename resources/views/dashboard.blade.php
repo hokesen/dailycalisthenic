@@ -208,6 +208,27 @@
                                     <div class="w-16 sm:w-20"></div>
                                 </div>
 
+                                <!-- Daily & Weekly Totals -->
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="w-28 sm:w-36 text-xs font-medium text-gray-600 dark:text-gray-400 text-right pr-1">Total</div>
+                                    <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                        @foreach ($progressionGanttData['dailyTotals'] as $dailyTotal)
+                                            @php
+                                                $dailyMinutes = round($dailyTotal / 60);
+                                            @endphp
+                                            <div class="text-[10px] sm:text-xs font-semibold text-center {{ $dailyTotal > 0 ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600' }}">
+                                                {{ $dailyMinutes > 0 ? $dailyMinutes : '-' }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="w-16 sm:w-20 flex items-center justify-end">
+                                        @php
+                                            $weeklyMinutes = round($progressionGanttData['weeklyTotal'] / 60);
+                                        @endphp
+                                        <span class="text-xs font-bold text-gray-800 dark:text-gray-200">{{ $weeklyMinutes }}m</span>
+                                    </div>
+                                </div>
+
                                 <!-- Legend -->
                                 <div class="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                                     <span class="text-xs text-gray-500 dark:text-gray-400">Level:</span>
