@@ -433,20 +433,26 @@ class User extends Authenticatable implements FilamentUser
             if ($progression && $progression->progression_path_name) {
                 $pathName = $progression->progression_path_name;
 
+                // Skip if we've already processed this path
                 if (isset($processedProgressionPaths[$pathName])) {
+                    // But still mark this exercise as processed so it doesn't go to standalone
+                    $processedExerciseIds[$exercise->id] = true;
+
                     continue;
                 }
 
                 $processedProgressionPaths[$pathName] = true;
 
-                // Get all exercises in this progression path (easier + this + harder)
-                $easierVariations = $exercise->getEasierVariations();
-                $harderVariations = $exercise->getHarderVariations();
-
-                // Order from easiest to hardest
-                $pathExercises = array_reverse($easierVariations);
-                $pathExercises[] = $exercise;
-                $pathExercises = array_merge($pathExercises, $harderVariations);
+                // Get ALL exercises in this progression path by querying the database
+                // This is more reliable than chain traversal which can break if links are missing
+                $pathExercises = Exercise::query()
+                    ->whereHas('progression', function ($query) use ($pathName) {
+                        $query->where('progression_path_name', $pathName);
+                    })
+                    ->with('progression')
+                    ->get()
+                    ->sortBy(fn ($ex) => $ex->progression->order ?? 0)
+                    ->values();
 
                 // Find which exercises were actually done this week
                 $exercisesInPath = [];
@@ -472,8 +478,9 @@ class User extends Authenticatable implements FilamentUser
                             'daily_seconds' => $dailySeconds,
                             'streak' => $this->getExerciseStreak($exerciseId),
                         ];
-                        $processedExerciseIds[$exerciseId] = true;
                     }
+                    // Mark all exercises in path as processed (even if not done this week)
+                    $processedExerciseIds[$exerciseId] = true;
                 }
 
                 if (! empty($exercisesInPath)) {
