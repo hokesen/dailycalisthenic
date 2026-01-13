@@ -107,17 +107,17 @@
                                                     $cellColorClass = 'bg-green-500 dark:bg-green-600';
                                                     $levelIndicator = 'bg-green-500';
                                                 } elseif ($progressLevel >= 0.8) {
-                                                    $cellColorClass = 'bg-emerald-500 dark:bg-emerald-600';
-                                                    $levelIndicator = 'bg-emerald-500';
+                                                    $cellColorClass = 'bg-red-500 dark:bg-red-600';
+                                                    $levelIndicator = 'bg-red-500';
                                                 } elseif ($progressLevel >= 0.5) {
-                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
-                                                    $levelIndicator = 'bg-green-500';
-                                                } elseif ($progressLevel >= 0.25) {
                                                     $cellColorClass = 'bg-yellow-500 dark:bg-yellow-600';
                                                     $levelIndicator = 'bg-yellow-500';
+                                                } elseif ($progressLevel >= 0.25) {
+                                                    $cellColorClass = 'bg-blue-500 dark:bg-blue-600';
+                                                    $levelIndicator = 'bg-blue-500';
                                                 } else {
-                                                    $cellColorClass = 'bg-orange-500 dark:bg-orange-600';
-                                                    $levelIndicator = 'bg-orange-500';
+                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
+                                                    $levelIndicator = 'bg-green-500';
                                                 }
                                                 $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
                                             @endphp
@@ -233,19 +233,19 @@
                                 <div class="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                                     <span class="text-xs text-gray-500 dark:text-gray-400">Level:</span>
                                     <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
                                         <span class="text-[10px] text-gray-500 dark:text-gray-400">Beginner</span>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                                         <span class="text-[10px] text-gray-500 dark:text-gray-400">Intermediate</span>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
                                         <span class="text-[10px] text-gray-500 dark:text-gray-400">Advanced</span>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
                                         <span class="text-[10px] text-gray-500 dark:text-gray-400">Expert</span>
                                     </div>
                                 </div>

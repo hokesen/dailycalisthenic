@@ -166,8 +166,8 @@
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                         </svg>
-                        <div class="flex-shrink-0 bg-purple-900/20 border border-purple-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-purple-400 font-semibold mb-1">ADVANCED</div>
+                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
+                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
                             <div class="text-white font-medium">Pike Push-Ups</div>
                         </div>
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,8 +191,8 @@
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                         </svg>
-                        <div class="flex-shrink-0 bg-purple-900/20 border border-purple-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-purple-400 font-semibold mb-1">ADVANCED</div>
+                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
+                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
                             <div class="text-white font-medium">Pistol Squat</div>
                         </div>
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,8 +223,8 @@
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                         </svg>
-                        <div class="flex-shrink-0 bg-purple-900/20 border border-purple-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-purple-400 font-semibold mb-1">ADVANCED</div>
+                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
+                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
                             <div class="text-white font-medium">Three-Point Plank</div>
                         </div>
                         <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
