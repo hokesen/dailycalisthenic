@@ -101,23 +101,20 @@
                                         </div>
                                         @foreach ($progression['exercises'] as $exercise)
                                             @php
-                                                // Color coding based on position in progression (0 = easiest)
-                                                $progressLevel = $exercise['order'] / max(1, $exercise['total_in_path'] - 1);
-                                                if ($exercise['total_in_path'] <= 1) {
+                                                // Color coding based on position in progression (0 = first/easiest)
+                                                $position = $exercise['order'];
+                                                if ($position === 0) {
                                                     $cellColorClass = 'bg-green-500 dark:bg-green-600';
                                                     $levelIndicator = 'bg-green-500';
-                                                } elseif ($progressLevel >= 0.8) {
-                                                    $cellColorClass = 'bg-red-500 dark:bg-red-600';
-                                                    $levelIndicator = 'bg-red-500';
-                                                } elseif ($progressLevel >= 0.5) {
-                                                    $cellColorClass = 'bg-yellow-500 dark:bg-yellow-600';
-                                                    $levelIndicator = 'bg-yellow-500';
-                                                } elseif ($progressLevel >= 0.25) {
+                                                } elseif ($position === 1) {
                                                     $cellColorClass = 'bg-blue-500 dark:bg-blue-600';
                                                     $levelIndicator = 'bg-blue-500';
+                                                } elseif ($position === 2) {
+                                                    $cellColorClass = 'bg-yellow-500 dark:bg-yellow-600';
+                                                    $levelIndicator = 'bg-yellow-500';
                                                 } else {
-                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
-                                                    $levelIndicator = 'bg-green-500';
+                                                    $cellColorClass = 'bg-red-500 dark:bg-red-600';
+                                                    $levelIndicator = 'bg-red-500';
                                                 }
                                                 $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
                                             @endphp
