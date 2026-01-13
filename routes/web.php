@@ -121,6 +121,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/go', [GoController::class, 'index'])->name('go.index');
     Route::patch('/go/{session}/update', [GoController::class, 'update'])->name('go.update');
 
+    Route::post('/templates', [TemplateController::class, 'store'])->name('templates.store');
+    Route::get('/templates/{template}/card', [TemplateController::class, 'card'])->name('templates.card');
     Route::post('/templates/{template}/swap-exercise', [TemplateController::class, 'swapExercise'])->name('templates.swap-exercise');
     Route::delete('/templates/{template}/remove-exercise', [TemplateController::class, 'removeExercise'])->name('templates.remove-exercise');
     Route::post('/templates/{template}/add-exercise', [TemplateController::class, 'addExercise'])->name('templates.add-exercise');

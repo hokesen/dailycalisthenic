@@ -103,7 +103,7 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('No recent activity to display. Start a workout to see your progress!');
+        $response->assertSee('No templates yet. Create one to get started!');
     }
 
     public function test_dashboard_displays_template_details(): void
@@ -553,7 +553,7 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         // When user has no templates, the "no activity" message is shown
-        $response->assertSee('No recent activity to display');
+        $response->assertSee('No templates yet');
     }
 
     public function test_homepage_displays_standalone_exercises_in_progressions(): void

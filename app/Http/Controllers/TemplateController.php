@@ -15,10 +15,41 @@ use App\Models\SessionTemplate;
 use App\Services\TemplateReplicationService;
 use App\Support\PivotDataBuilder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class TemplateController extends Controller
 {
     public function __construct(public TemplateReplicationService $replicationService) {}
+
+    public function store(): SessionTemplate|RedirectResponse
+    {
+        $template = SessionTemplate::create([
+            'user_id' => auth()->id(),
+            'name' => 'New Template',
+            'is_public' => false,
+        ]);
+
+        if (request()->wantsJson()) {
+            return $template;
+        }
+
+        return redirect()->route('home')->with('success', 'Template created! Add exercises to get started.');
+    }
+
+    public function card(SessionTemplate $template): View
+    {
+        $template->load(['user', 'exercises' => fn ($q) => $q->orderByPivot('order')]);
+
+        $allExercises = Exercise::query()
+            ->availableFor(auth()->user())
+            ->orderBy('name')
+            ->get();
+
+        return view('components.template-card', [
+            'template' => $template,
+            'allExercises' => $allExercises,
+        ]);
+    }
 
     public function swapExercise(SwapExerciseRequest $request, SessionTemplate $template): RedirectResponse
     {

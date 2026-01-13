@@ -12,6 +12,43 @@ class TemplateControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_can_create_new_template(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('templates.store'));
+
+        $response->assertRedirect(route('home'));
+        $this->assertDatabaseHas('session_templates', [
+            'user_id' => $user->id,
+            'name' => 'New Template',
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_create_template_requires_authentication(): void
+    {
+        $response = $this->post(route('templates.store'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_user_can_fetch_template_card_html(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'Test Template']);
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('templates.card', $template));
+
+        $response->assertOk();
+        $response->assertSee('Test Template');
+        $response->assertSee('Exercises:');
+    }
+
     public function test_user_can_swap_exercise_in_own_template(): void
     {
         $user = User::factory()->create();
