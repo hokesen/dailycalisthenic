@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#111827">
 
         <title>Daily Calisthenic - Track Your Bodyweight Training</title>
 
