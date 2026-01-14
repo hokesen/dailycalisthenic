@@ -121,6 +121,11 @@
                                         </div>
                                     </div>
 
+                                    <!-- Mobile Next Exercise -->
+                                    <div x-show="currentExerciseIndex < exercises.length - 1" class="md:hidden text-center text-gray-400 shrink-0 text-lg">
+                                        <span>Next: </span><span class="text-gray-300" x-text="exercises[currentExerciseIndex + 1]?.name"></span>
+                                    </div>
+
                                     <!-- Controls -->
                                     <div class="flex gap-4 justify-center flex-wrap shrink-0">
                                         <button x-show="state === 'ready'" @click="start"
