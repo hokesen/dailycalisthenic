@@ -33,7 +33,7 @@ class TemplateController extends Controller
             return $template;
         }
 
-        return redirect()->route('home')->with('success', 'Template created! Add exercises to get started.');
+        return $this->redirectToTemplate($template, 'Template created! Add exercises to get started.');
     }
 
     public function card(SessionTemplate $template): View
@@ -69,7 +69,7 @@ class TemplateController extends Controller
         $template->exercises()->wherePivot('order', $request->order)->detach();
         $template->exercises()->attach($request->new_exercise_id, $pivotData);
 
-        return redirect()->route('dashboard')->with('success', 'Exercise swapped successfully');
+        return $this->redirectToTemplate($template, 'Exercise swapped successfully');
     }
 
     public function removeExercise(RemoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -80,7 +80,7 @@ class TemplateController extends Controller
 
         $this->reorderExercises($template);
 
-        return redirect()->route('dashboard')->with('success', 'Exercise removed successfully');
+        return $this->redirectToTemplate($template, 'Exercise removed successfully');
     }
 
     public function addExercise(AddExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -94,7 +94,7 @@ class TemplateController extends Controller
             PivotDataBuilder::defaultSessionTemplateExercisePivot($maxOrder + 1, $template->default_rest_seconds)
         );
 
-        return redirect()->route('dashboard')->with('success', 'Exercise added successfully');
+        return $this->redirectToTemplate($template, 'Exercise added successfully');
     }
 
     public function addCustomExercise(AddCustomExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -113,7 +113,7 @@ class TemplateController extends Controller
             PivotDataBuilder::defaultSessionTemplateExercisePivot($maxOrder + 1, $template->default_rest_seconds)
         );
 
-        return redirect()->route('dashboard')->with('success', 'Custom exercise created and added successfully');
+        return $this->redirectToTemplate($template, 'Custom exercise created and added successfully');
     }
 
     public function updateExercise(UpdateExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -128,7 +128,7 @@ class TemplateController extends Controller
             'notes' => $request->notes,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Exercise updated successfully');
+        return $this->redirectToTemplate($template, 'Exercise updated successfully');
     }
 
     public function updateName(UpdateTemplateNameRequest $request, SessionTemplate $template): RedirectResponse
@@ -139,7 +139,7 @@ class TemplateController extends Controller
             'name' => $request->name,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Template name updated successfully');
+        return $this->redirectToTemplate($template, 'Template name updated successfully');
     }
 
     public function toggleVisibility(SessionTemplate $template): RedirectResponse
@@ -154,21 +154,21 @@ class TemplateController extends Controller
 
         $status = $template->is_public ? 'public' : 'private';
 
-        return redirect()->route('dashboard')->with('success', "Template is now {$status}");
+        return $this->redirectToTemplate($template, "Template is now {$status}");
     }
 
     public function destroy(DeleteTemplateRequest $request, SessionTemplate $template): RedirectResponse
     {
         $template->delete();
 
-        return redirect()->route('dashboard')->with('success', 'Template deleted successfully');
+        return redirect()->route('home')->with('success', 'Template deleted successfully');
     }
 
     public function copy(SessionTemplate $template): RedirectResponse
     {
-        $this->replicationService->replicateForUser($template, auth()->user());
+        $newTemplate = $this->replicationService->replicateForUser($template, auth()->user());
 
-        return redirect()->route('dashboard')->with('success', 'Template copied successfully');
+        return $this->redirectToTemplate($newTemplate, 'Template copied successfully');
     }
 
     public function moveExerciseUp(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -180,7 +180,7 @@ class TemplateController extends Controller
         $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
 
         if (! $currentExercise || $currentExercise->pivot->order <= 1) {
-            return redirect()->route('dashboard');
+            return $this->redirectToTemplate($template);
         }
 
         $currentOrder = $currentExercise->pivot->order;
@@ -194,7 +194,7 @@ class TemplateController extends Controller
             $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $currentOrder - 1]);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Exercise moved up');
+        return $this->redirectToTemplate($template, 'Exercise moved up');
     }
 
     public function moveExerciseDown(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
@@ -206,7 +206,7 @@ class TemplateController extends Controller
         $currentExercise = $template->exercises->firstWhere('id', $exerciseId);
 
         if (! $currentExercise || $currentExercise->pivot->order >= $template->exercises->count()) {
-            return redirect()->route('dashboard');
+            return $this->redirectToTemplate($template);
         }
 
         $currentOrder = $currentExercise->pivot->order;
@@ -220,7 +220,7 @@ class TemplateController extends Controller
             $template->exercises()->updateExistingPivot($currentExercise->id, ['order' => $currentOrder + 1]);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Exercise moved down');
+        return $this->redirectToTemplate($template, 'Exercise moved down');
     }
 
     protected function ensureUserOwnsTemplate(SessionTemplate $template): SessionTemplate
@@ -237,5 +237,16 @@ class TemplateController extends Controller
                 'order' => $index + 1,
             ]);
         }
+    }
+
+    protected function redirectToTemplate(SessionTemplate $template, ?string $message = null): RedirectResponse
+    {
+        $redirect = redirect()->route('home', ['template' => $template->id]);
+
+        if ($message) {
+            $redirect->with('success', $message);
+        }
+
+        return $redirect;
     }
 }

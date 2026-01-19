@@ -43,7 +43,7 @@ class PivotDataBuilder
     {
         return [
             'order' => $order,
-            'duration_seconds' => null,
+            'duration_seconds' => 60,
             'rest_after_seconds' => $defaultRestSeconds,
             'sets' => null,
             'reps' => null,

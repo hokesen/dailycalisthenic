@@ -273,8 +273,8 @@
                                             if (!r.ok) throw new Error('Failed to create template');
                                             return r.json();
                                         })
-                                        .then(() => {
-                                            window.location.reload();
+                                        .then((template) => {
+                                            window.location.href = '{{ route('home') }}?template=' + template.id;
                                         })
                                         .catch(() => {
                                             $el.disabled = false;
@@ -307,13 +307,28 @@
                                 ->values()
                                 ->toArray();
                         @endphp
+                        @php
+                            $isAuthUser = $carouselData['user']->id === auth()->id();
+                            $templateIds = $carouselData['templates']->pluck('id')->toArray();
+                        @endphp
                         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg"
                              x-data="{
-                                 currentIndex: 0,
+                                 currentIndex: {{ $isAuthUser ? ($initialTemplateIndex ?? 0) : 0 }},
                                  templateCount: {{ $carouselData['templates']->count() }},
+                                 templateIds: {{ Js::from($templateIds) }},
+                                 isAuthUser: {{ Js::from($isAuthUser) }},
                                  weeklyData: {{ Js::from($carouselData['weeklyBreakdown']) }},
-                                 allExercises: {{ Js::from($allExercisesInWeek) }}
-                             }">
+                                 allExercises: {{ Js::from($allExercisesInWeek) }},
+                                 updateUrl() {
+                                     if (this.isAuthUser) {
+                                         const url = new URL(window.location);
+                                         url.searchParams.set('template', this.templateIds[this.currentIndex]);
+                                         history.replaceState(null, '', url);
+                                     }
+                                 }
+                             }"
+                             x-init="updateUrl()"
+                             x-effect="updateUrl()">
                             <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                                 <div class="flex items-center justify-between mb-4">
                                     <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
@@ -383,8 +398,8 @@
                                                         if (!r.ok) throw new Error('Failed to create template');
                                                         return r.json();
                                                     })
-                                                    .then(() => {
-                                                        window.location.reload();
+                                                    .then((template) => {
+                                                        window.location.href = '{{ route('home') }}?template=' + template.id;
                                                     })
                                                     .catch((e) => {
                                                         console.error(e);

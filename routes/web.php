@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // If not logged in, show the marketing page
     if (! auth()->check()) {
+        // Redirect to login if they have a template parameter (deep link)
+        if (request()->has('template')) {
+            return redirect()->guest(route('login'));
+        }
+
         return view('welcome');
     }
 
@@ -100,11 +105,24 @@ Route::get('/', function () {
     // Get progression gantt data for the current user
     $progressionGanttData = $user->getProgressionGanttData(7);
 
+    // Determine initial template index from query parameter
+    $selectedTemplateId = request()->query('template');
+    $initialTemplateIndex = 0;
+
+    if ($selectedTemplateId && $authUserTemplates->isNotEmpty()) {
+        $index = $authUserTemplates->search(fn ($t) => $t->id == $selectedTemplateId);
+        if ($index !== false) {
+            $initialTemplateIndex = $index;
+        }
+    }
+
     return view('dashboard', [
         'userCarouselData' => $userCarouselData,
         'allExercises' => $allExercises,
         'authUserStreak' => $user->getCurrentStreak(),
         'progressionGanttData' => $progressionGanttData,
+        'initialTemplateIndex' => $initialTemplateIndex,
+        'selectedTemplateId' => $selectedTemplateId,
     ]);
 })->name('home');
 

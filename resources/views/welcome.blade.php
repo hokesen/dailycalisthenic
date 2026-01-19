@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#111827">
 
-        <title>Daily Calisthenic - Track Your Bodyweight Training</title>
+        <title>Daily Calisthenic - Fix Your Desk Posture</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -40,238 +40,233 @@
 
         <!-- Hero Section -->
         <div class="relative overflow-hidden">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
                 <div class="text-center">
-                    <h2 class="text-5xl md:text-6xl font-bold text-white mb-6">
-                        Your Bodyweight Training,
-                        <span class="text-indigo-400">Tracked & Timed</span>
+                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
+                        Sitting creates tension.<br>
+                        <span class="text-gray-400">Humans need to move.</span>
                     </h2>
-                    <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                        Progressive calisthenics training with live workout timers, exercise tracking, and streak monitoring. No equipment needed.
+                    <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                        This app helps you practice movement every day.
                     </p>
                     @guest
                         <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
-                            Start Training Free
+                            Begin
                         </a>
                     @endguest
                 </div>
             </div>
         </div>
 
-        <!-- Features Grid -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Feature 1: Live Workout Timer -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-indigo-500 transition-colors">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Live Workout Timer</h3>
-                    <p class="text-gray-400">
-                        Circular progress timer guides you through each exercise and rest period. Pause, skip, or mark exercises complete on the fly.
-                    </p>
-                </div>
+        <!-- The Problem Section -->
+        <div class="bg-gray-950 py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-white text-center mb-4">Sound familiar?</h2>
+                <p class="text-gray-400 text-center mb-12 text-lg">The daily reality of desk work</p>
 
-                <!-- Feature 2: Track Your Streak -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-orange-500 transition-colors">
-                    <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
-                        <span class="text-2xl">🔥</span>
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-1">Lower back pain that won't quit</h3>
+                            <p class="text-gray-400">Standing up from your chair feels like you're 80. The ache follows you home and keeps you awake at night.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Track Your Streak</h3>
-                    <p class="text-gray-400">
-                        Build consistency with daily streak tracking. See your past week at a glance and stay motivated to keep the fire burning.
-                    </p>
-                </div>
 
-                <!-- Feature 3: Custom Templates -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-green-500 transition-colors">
-                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                    <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-1">Shoulders permanently hunched forward</h3>
+                            <p class="text-gray-400">Your chest is tight, shoulders rounded. You catch your reflection and barely recognize your own posture.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Custom Templates</h3>
-                    <p class="text-gray-400">
-                        Create your own workout templates or use defaults. Set custom sets, reps, duration, and rest periods for each exercise.
-                    </p>
-                </div>
 
-                <!-- Feature 4: Exercise Progression -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
-                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                        </svg>
+                    <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-1">Neck strain and tension headaches</h3>
+                            <p class="text-gray-400">Hours staring at monitors leave your neck stiff. The tension creeps up into headaches that kill your focus.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Exercise Progression</h3>
-                    <p class="text-gray-400">
-                        Swap exercises for easier or harder variations as you progress. Build strength systematically with guided progressions.
-                    </p>
-                </div>
 
-                <!-- Feature 5: Real-Time Tracking -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition-colors">
-                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                        </svg>
+                    <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-1">Zero energy after work</h3>
+                            <p class="text-gray-400">Sitting all day leaves you exhausted. No motivation to exercise. The couch wins every time.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Real-Time Tracking</h3>
-                    <p class="text-gray-400">
-                        Every exercise completion is saved instantly. Your progress is preserved even if you close the browser mid-workout.
-                    </p>
-                </div>
-
-                <!-- Feature 6: No Equipment Needed -->
-                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-yellow-500 transition-colors">
-                    <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Train Anywhere</h3>
-                    <p class="text-gray-400">
-                        Bodyweight-focused exercises mean no gym or equipment required. Train at home, in the park, or on the road.
-                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Exercise Progressions -->
+        <!-- The Real Cost Section -->
+        <div class="py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold text-white mb-6">Neglect compounds</h2>
+                <p class="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    When movement disappears, muscles weaken. Posture slowly adapts. What starts as discomfort often becomes persistent pain.
+                </p>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+                        <div class="text-4xl font-bold text-red-400 mb-2">60.3%</div>
+                        <p class="text-gray-400 text-sm">of desk workers report neck pain</p>
+                    </div>
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+                        <div class="text-4xl font-bold text-red-400 mb-2">59.5%</div>
+                        <p class="text-gray-400 text-sm">report lower back pain</p>
+                    </div>
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+                        <div class="text-4xl font-bold text-red-400 mb-2">49.6%</div>
+                        <p class="text-gray-400 text-sm">report shoulder pain</p>
+                    </div>
+                </div>
+                <p class="text-center mt-6 text-xs text-gray-600">
+                    <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9800234" target="_blank" rel="noopener" class="hover:text-gray-500 transition-colors">Source: NIH - Prevalence of musculoskeletal pain among computer users</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- The Turnaround -->
+        <div class="bg-gradient-to-b from-gray-900 to-gray-950 py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-indigo-400 font-medium mb-4">There's a better way</p>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                    A daily habit that<br>restores balance
+                </h2>
+                <p class="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    Targeted bodyweight exercises to strengthen your back, open your chest, and build core strength. No gym. No equipment. Just 15 minutes.
+                </p>
+            </div>
+        </div>
+
+        <!-- How It Helps -->
+        <div class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-white text-center mb-4">Built for busy people</h2>
+                <p class="text-gray-400 text-center mb-12 text-lg">Fits into your schedule, not the other way around</p>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Guided Timer</h3>
+                        <p class="text-gray-400">
+                            Just hit start. The app guides you through each exercise and rest. No thinking required.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Progressive Difficulty</h3>
+                        <p class="text-gray-400">
+                            Start where you are. Swap to easier or harder variations as your strength builds.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Streaks</h3>
+                        <p class="text-gray-400">
+                            Build the habit. Watch your streak grow. Consistency beats intensity.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Custom Templates</h3>
+                        <p class="text-gray-400">
+                            Create your own routines or use ours. Focus on back, core, or full body.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Zero Equipment</h3>
+                        <p class="text-gray-400">
+                            Train anywhere. Home office, hotel room, or between meetings. Just your body.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                        <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Automatic Progress</h3>
+                        <p class="text-gray-400">
+                            Every workout saved instantly. Pick up where you left off, even mid-session.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simple Steps -->
         <div class="bg-gray-950 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-white mb-4">Progressive Training Paths</h2>
-                    <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-                        Start at your level and progress systematically. Each exercise has easier and harder variations to match your strength.
-                    </p>
-                </div>
-
-                <!-- Push-Up Progression -->
-                <div class="mb-12">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Push-Up Progression</h3>
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-3 overflow-x-auto pb-4">
-                        <div class="flex-shrink-0 bg-green-900/20 border border-green-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-green-400 font-semibold mb-1">BEGINNER</div>
-                            <div class="text-white font-medium">Wall Push-Up</div>
+                <h2 class="text-3xl font-bold text-white text-center mb-12">Get started in under a minute</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-white">1</span>
                         </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-blue-900/20 border border-blue-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-blue-400 font-semibold mb-1">INTERMEDIATE</div>
-                            <div class="text-white font-medium">Push Ups</div>
-                        </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
-                            <div class="text-white font-medium">Pike Push-Ups</div>
-                        </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-red-900/20 border border-red-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-red-400 font-semibold mb-1">ELITE</div>
-                            <div class="text-white font-medium">Handstand Push-Up</div>
-                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Pick a Template</h3>
+                        <p class="text-gray-400">Choose a back-focused routine or start with full body basics.</p>
                     </div>
-                </div>
 
-                <!-- Squat Progression -->
-                <div class="mb-12">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Squat Progression</h3>
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-3 overflow-x-auto pb-4">
-                        <div class="flex-shrink-0 bg-blue-900/20 border border-blue-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-blue-400 font-semibold mb-1">INTERMEDIATE</div>
-                            <div class="text-white font-medium">Squat</div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-white">2</span>
                         </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
-                            <div class="text-white font-medium">Pistol Squat</div>
-                        </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-red-900/20 border border-red-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-red-400 font-semibold mb-1">ELITE</div>
-                            <div class="text-white font-medium">Dragon Squat</div>
-                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Press Start</h3>
+                        <p class="text-gray-400">Follow the timer through each exercise. 15 minutes and you're done.</p>
                     </div>
-                </div>
 
-                <!-- Plank Progression -->
-                <div>
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Plank Progression</h3>
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-3 overflow-x-auto pb-4">
-                        <div class="flex-shrink-0 bg-green-900/20 border border-green-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-green-400 font-semibold mb-1">BEGINNER</div>
-                            <div class="text-white font-medium">Kneeling Plank</div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-white">3</span>
                         </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-blue-900/20 border border-blue-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-blue-400 font-semibold mb-1">INTERMEDIATE</div>
-                            <div class="text-white font-medium">Plank</div>
-                        </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-yellow-900/20 border border-yellow-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-yellow-400 font-semibold mb-1">ADVANCED</div>
-                            <div class="text-white font-medium">Three-Point Plank</div>
-                        </div>
-                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0 rotate-90 md:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div class="flex-shrink-0 bg-red-900/20 border border-red-700 rounded-lg px-4 py-3 min-w-[160px] text-center">
-                            <div class="text-xs text-red-400 font-semibold mb-1">ELITE</div>
-                            <div class="text-white font-medium">Two-Point Plank</div>
-                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Build the Habit</h3>
+                        <p class="text-gray-400">Track your streak and watch your consistency grow day by day.</p>
                     </div>
-                </div>
-
-                <div class="text-center mt-12">
-                    <p class="text-gray-400 text-lg">
-                        <span class="text-indigo-400 font-semibold">20+ progression paths</span> help you build strength systematically from beginner to elite
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- How It Works -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <h2 class="text-3xl font-bold text-white text-center mb-12">How It Works</h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-white">1</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Choose Your Template</h3>
-                    <p class="text-gray-400">Select a default workout or create your own custom template with your favorite exercises.</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-white">2</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Start Your Workout</h3>
-                    <p class="text-gray-400">Hit "Go" and follow along with the live timer. Complete exercises or mark them done as you progress.</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-white">3</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">Track Your Progress</h3>
-                    <p class="text-gray-400">View your activity calendar, build streaks, and watch your strength grow over time.</p>
                 </div>
             </div>
         </div>
@@ -280,14 +275,14 @@
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-                    Ready to Start Your Journey?
+                    Your back can't wait another day
                 </h2>
-                <p class="text-xl text-indigo-100 mb-8">
-                    Join Daily Calisthenic and build the body you want, one workout at a time.
+                <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+                    Start building better habits today. 15 minutes a day. Free to use.
                 </p>
                 @guest
                     <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-white text-indigo-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                        Get Started Now
+                        Begin Your First Session
                     </a>
                 @else
                     <a href="{{ url('/dashboard') }}" class="inline-block px-8 py-4 bg-white text-indigo-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors">
@@ -301,7 +296,7 @@
         <footer class="bg-gray-950 border-t border-gray-800 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <p class="text-center text-gray-400">
-                    &copy; {{ date('Y') }} Daily Calisthenic by Simon Hokesen. Progressive bodyweight training.
+                    &copy; {{ date('Y') }} Daily Calisthenic. Built by a software engineer who got tired of back pain.
                 </p>
             </div>
         </footer>
