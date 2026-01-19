@@ -1,1 +1,1 @@
-# Daily Calisthenic
+# Daily Calisthenics

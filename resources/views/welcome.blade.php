@@ -20,7 +20,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
-                        <h1 class="text-xl font-bold text-white">Daily Calisthenic</h1>
+                        <h1 class="text-xl font-bold text-white">Daily Calisthenics</h1>
                     </div>
                     @if (Route::has('login'))
                         <div class="flex items-center gap-4">
@@ -296,7 +296,7 @@
         <footer class="bg-gray-950 border-t border-gray-800 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <p class="text-center text-gray-400">
-                    &copy; {{ date('Y') }} Daily Calisthenic. Built by a software engineer who got tired of back pain.
+                    &copy; {{ date('Y') }} Daily Calisthenics. Built by a software engineer who got tired of back pain.
                 </p>
             </div>
         </footer>

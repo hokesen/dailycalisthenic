@@ -186,7 +186,7 @@ class DashboardTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('Daily Calisthenic');
+        $response->assertSee('Daily Calisthenics');
         $response->assertSee('Start Training Free');
     }
 

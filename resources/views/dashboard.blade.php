@@ -9,7 +9,7 @@
                         <!-- Left: Title and Welcome -->
                         <div class="flex items-center gap-4">
                             <div>
-                                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Daily Calisthenic</h1>
+                                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Daily Calisthenics</h1>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Welcome, {{ auth()->user()->name }}!</p>
                             </div>
                         </div>
