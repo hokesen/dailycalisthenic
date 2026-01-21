@@ -49,7 +49,7 @@
             @else
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <p class="text-gray-600 dark:text-gray-400">No activity in this time period. Complete some workouts to see your progress!</p>
+                        <p class="text-gray-600 dark:text-gray-400">No activity in this time period. Complete some practice sessions to see your progress!</p>
                     </div>
                 </div>
             @endif

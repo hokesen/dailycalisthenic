@@ -4,8 +4,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#111827">
+        <meta name="description" content="Build a daily practice habit with guided bodyweight exercises. Fix desk posture, strengthen your back, and build core strength in 15 minutes a day. No gym required.">
 
-        <title>Daily Calisthenic - Fix Your Desk Posture</title>
+        <!-- Open Graph / Social Sharing -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Daily Calisthenics - Fix Your Desk Posture">
+        <meta property="og:description" content="Build a daily practice habit with guided bodyweight exercises. Fix desk posture, strengthen your back, and build core strength in 15 minutes a day.">
+
+        <title>Daily Calisthenics - Fix Your Desk Posture</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -232,7 +238,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-white mb-2">Automatic Progress</h3>
                         <p class="text-gray-400">
-                            Every workout saved instantly. Pick up where you left off, even mid-session.
+                            Every session saved instantly. Pick up where you left off, even mid-practice.
                         </p>
                     </div>
                 </div>

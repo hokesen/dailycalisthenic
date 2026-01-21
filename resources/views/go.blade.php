@@ -11,11 +11,15 @@
                             x-effect="$dispatch('workout-state-changed', { running: state === 'running' })"
                             class="w-full h-full">
 
-                            <!-- Workout Complete Screen -->
+                            <!-- Practice Complete Screen -->
                             <div x-show="state === 'completed'" class="text-center py-4 flex flex-col items-center justify-between h-full overflow-hidden">
                                 <div class="shrink-0">
-                                    <div class="text-6xl mb-4">🎉</div>
-                                    <h2 class="text-4xl md:text-5xl font-bold text-gray-100 mb-2">Workout Complete!</h2>
+                                    <div class="mb-4">
+                                        <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <h2 class="text-4xl md:text-5xl font-bold text-gray-100 mb-2">Practice Complete</h2>
                                     <p class="text-2xl md:text-3xl text-gray-300">Total time: <span x-text="formatTime(totalElapsedSeconds)"></span></p>
                                 </div>
 
@@ -25,7 +29,9 @@
                                         <!-- Completed Exercises -->
                                         <div x-show="completedExercises.length > 0">
                                             <h3 class="text-xl font-semibold text-gray-100 mb-3 flex items-center justify-center gap-2">
-                                                <span class="text-green-400">✓</span>
+                                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
                                                 <span>Completed (<span x-text="completedExercises.length"></span>)</span>
                                             </h3>
                                             <div class="space-y-2">
@@ -40,7 +46,9 @@
                                         <!-- Skipped Exercises -->
                                         <div x-show="skippedExercises.length > 0">
                                             <h3 class="text-xl font-semibold text-gray-100 mb-3 flex items-center justify-center gap-2">
-                                                <span class="text-yellow-400">⊘</span>
+                                                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                                                </svg>
                                                 <span>Skipped (<span x-text="skippedExercises.length"></span>)</span>
                                             </h3>
                                             <div class="space-y-2">
@@ -108,7 +116,7 @@
                                     </div>
 
                                     <!-- Exercise Info -->
-                                    <div class="text-center space-y-2 shrink-0">
+                                    <div class="text-center space-y-2 shrink-0" x-data="{ showInstructions: false }">
                                         <h3 class="text-4xl md:text-5xl font-bold text-gray-100" x-text="currentExercise?.name"></h3>
                                         <div x-show="currentExercise?.description" class="text-xl text-gray-300" x-text="currentExercise?.description"></div>
                                         <div class="flex gap-4 justify-center text-lg text-gray-400">
@@ -118,6 +126,25 @@
                                             <span x-show="currentExercise?.duration_seconds">
                                                 <span x-text="currentExercise?.duration_seconds"></span>s
                                             </span>
+                                        </div>
+                                        <!-- Instructions Toggle -->
+                                        <div x-show="currentExercise?.instructions" class="pt-2">
+                                            <button
+                                                @click="showInstructions = !showInstructions"
+                                                class="inline-flex items-center gap-2 text-base text-indigo-400 hover:text-indigo-300 transition-colors"
+                                            >
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <span x-text="showInstructions ? 'Hide instructions' : 'Show instructions'"></span>
+                                            </button>
+                                            <div
+                                                x-show="showInstructions"
+                                                x-transition
+                                                class="mt-3 p-4 bg-gray-800 rounded-lg text-left max-w-2xl mx-auto"
+                                            >
+                                                <p class="text-base text-gray-300 whitespace-pre-line" x-text="currentExercise?.instructions"></p>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -130,7 +157,7 @@
                                     <div class="flex gap-4 justify-center flex-wrap shrink-0">
                                         <button x-show="state === 'ready'" @click="start"
                                             class="px-8 py-4 bg-green-600 text-white rounded-xl text-xl font-semibold hover:bg-green-700 transition-colors">
-                                            Start Workout
+                                            Start Practice
                                         </button>
 
                                         <button x-show="state === 'running'" @click="pause"
@@ -152,6 +179,14 @@
                                             class="px-8 py-4 bg-purple-600 text-white rounded-xl text-xl font-semibold hover:bg-purple-700 transition-colors">
                                             Mark Completed
                                         </button>
+                                    </div>
+
+                                    <!-- Keyboard shortcuts hint (desktop only) -->
+                                    <div x-show="state !== 'completed'" class="hidden md:flex gap-4 justify-center text-sm text-gray-500 mt-2">
+                                        <span x-show="state === 'ready'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> to start</span>
+                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Space</kbd> pause/resume</span>
+                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">S</kbd> skip</span>
+                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> complete</span>
                                     </div>
                                 </div>
 

@@ -14,8 +14,25 @@
                             </div>
                         </div>
 
-                        <!-- Right: Streak and User Menu -->
+                        <!-- Right: Today Status, Streak, and User Menu -->
                         <div class="flex items-center gap-3 sm:gap-4">
+                            <!-- Today's Status -->
+                            @if ($hasPracticedToday)
+                                <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-400 hidden sm:inline">Practiced today</span>
+                                </div>
+                            @else
+                                <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">Not yet today</span>
+                                </div>
+                            @endif
+
                             <!-- Streak -->
                             <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
                                 <span class="text-lg">🔥</span>

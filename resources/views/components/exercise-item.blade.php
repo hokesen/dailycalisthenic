@@ -92,7 +92,55 @@
             @endif
             <span class="text-gray-500 dark:text-gray-400 font-bold text-base sm:text-lg flex-shrink-0" data-order-number>{{ $exercise->pivot->order }}.</span>
             <div class="flex-grow min-w-0">
-                <div class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg leading-tight">{{ $exercise->name }}</div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg leading-tight">{{ $exercise->name }}</span>
+                    @if ($exercise->description)
+                        <button
+                            type="button"
+                            x-data="{ showDesc: false }"
+                            @click="showDesc = !showDesc"
+                            @click.outside="showDesc = false"
+                            class="relative text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            title="{{ $exercise->description }}"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div
+                                x-show="showDesc"
+                                x-transition
+                                class="absolute z-10 left-0 mt-2 w-64 p-3 bg-gray-800 text-gray-200 text-sm rounded-lg shadow-lg"
+                            >
+                                {{ $exercise->description }}
+                            </div>
+                        </button>
+                    @endif
+                    @if ($exercise->category)
+                        @php
+                            $categoryColors = match($exercise->category->value) {
+                                'push' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                'pull' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                'legs' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                'core' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                'full_body' => 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+                                default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+                            };
+                        @endphp
+                        <span class="text-xs px-1.5 py-0.5 rounded {{ $categoryColors }}">{{ $exercise->category->label() }}</span>
+                    @endif
+                    @if ($exercise->difficulty_level)
+                        @php
+                            $difficultyColors = match($exercise->difficulty_level->value) {
+                                'beginner' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                'intermediate' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                'advanced' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                'expert' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                                default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+                            };
+                        @endphp
+                        <span class="text-xs px-1.5 py-0.5 rounded {{ $difficultyColors }}">{{ $exercise->difficulty_level->label() }}</span>
+                    @endif
+                </div>
                 <div class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base" x-show="!showEdit">
                     @if ($exercise->pivot->sets && $exercise->pivot->reps)
                         <span class="font-semibold">{{ $exercise->pivot->sets }} × {{ $exercise->pivot->reps }}</span>
@@ -168,14 +216,14 @@
                                 @if (count($easierVariations) > 0)
                                     <optgroup label="Easier">
                                         @foreach ($easierVariations as $easier)
-                                            <option value="{{ $easier->id }}">{{ $easier->name }}</option>
+                                            <option value="{{ $easier->id }}">{{ $easier->name }}@if($easier->difficulty_level) ({{ $easier->difficulty_level->label() }})@endif</option>
                                         @endforeach
                                     </optgroup>
                                 @endif
                                 @if (count($harderVariations) > 0)
                                     <optgroup label="Harder">
                                         @foreach ($harderVariations as $harder)
-                                            <option value="{{ $harder->id }}">{{ $harder->name }}</option>
+                                            <option value="{{ $harder->id }}">{{ $harder->name }}@if($harder->difficulty_level) ({{ $harder->difficulty_level->label() }})@endif</option>
                                         @endforeach
                                     </optgroup>
                                 @endif
@@ -183,7 +231,7 @@
                                     <optgroup label="Something else">
                                         @foreach ($allExercises as $allEx)
                                             @if ($allEx->id !== $exercise->id)
-                                                <option value="{{ $allEx->id }}">{{ $allEx->name }}</option>
+                                                <option value="{{ $allEx->id }}">{{ $allEx->name }}@if($allEx->difficulty_level) ({{ $allEx->difficulty_level->label() }})@endif</option>
                                             @endif
                                         @endforeach
                                     </optgroup>

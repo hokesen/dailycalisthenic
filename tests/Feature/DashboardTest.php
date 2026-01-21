@@ -178,7 +178,7 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee(route('go.index', ['template' => $template->id]));
-        $response->assertSee('Go');
+        $response->assertSee('Practice');
     }
 
     public function test_home_shows_marketing_page_for_guests(): void
@@ -187,7 +187,7 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Daily Calisthenics');
-        $response->assertSee('Start Training Free');
+        $response->assertSee('Begin');
     }
 
     public function test_dashboard_redirects_to_home(): void

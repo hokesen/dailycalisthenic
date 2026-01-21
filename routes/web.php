@@ -105,6 +105,15 @@ Route::get('/', function () {
     // Get progression gantt data for the current user
     $progressionGanttData = $user->getProgressionGanttData(7);
 
+    // Check if user has practiced today
+    $todayStartUtc = $userNow->copy()->startOfDay()->timezone('UTC');
+    $todayEndUtc = $userNow->copy()->endOfDay()->timezone('UTC');
+    $hasPracticedToday = \App\Models\Session::query()
+        ->where('user_id', $user->id)
+        ->completed()
+        ->whereBetween('completed_at', [$todayStartUtc, $todayEndUtc])
+        ->exists();
+
     // Determine initial template index from query parameter
     $selectedTemplateId = request()->query('template');
     $initialTemplateIndex = 0;
@@ -123,6 +132,7 @@ Route::get('/', function () {
         'progressionGanttData' => $progressionGanttData,
         'initialTemplateIndex' => $initialTemplateIndex,
         'selectedTemplateId' => $selectedTemplateId,
+        'hasPracticedToday' => $hasPracticedToday,
     ]);
 })->name('home');
 

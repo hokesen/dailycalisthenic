@@ -55,7 +55,7 @@ class GoTest extends TestCase
         $response->assertOk();
         $response->assertSee('Push-ups');
         $response->assertSee('Squats');
-        $response->assertSee('Start Workout');
+        $response->assertSee('Start Practice');
     }
 
     public function test_go_page_with_template_creates_session(): void

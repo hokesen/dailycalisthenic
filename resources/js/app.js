@@ -43,6 +43,40 @@ Alpine.data('workoutTimer', (config) => ({
 
     init() {
         this.timeRemaining = this.currentExercise.duration_seconds;
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts when typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Space: pause/resume
+            if (e.code === 'Space' && this.state !== 'completed' && this.state !== 'ready') {
+                e.preventDefault();
+                if (this.state === 'running') {
+                    this.pause();
+                } else if (this.state === 'paused') {
+                    this.resume();
+                }
+            }
+
+            // Enter: start (when ready) or mark complete (when running/paused)
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                if (this.state === 'ready') {
+                    this.start();
+                } else if (this.state === 'running' || this.state === 'paused') {
+                    this.markCompleted();
+                }
+            }
+
+            // S: skip current exercise
+            if (e.code === 'KeyS' && (this.state === 'running' || this.state === 'paused')) {
+                e.preventDefault();
+                this.skipToNext();
+            }
+        });
     },
 
     formatTime(seconds) {

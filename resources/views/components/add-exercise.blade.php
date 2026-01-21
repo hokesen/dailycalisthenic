@@ -12,8 +12,15 @@
         <select name="exercise_id" @change="if($event.target.value === 'custom') { showCustom = true; $event.target.value = ''; } else { $event.target.form.requestSubmit(); }" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
             <option value="">+ Add Exercise</option>
             <option value="custom">+ Create Custom Exercise</option>
-            @foreach ($allExercises as $allEx)
-                <option value="{{ $allEx->id }}">{{ $allEx->name }}</option>
+            @php
+                $exercisesByCategory = $allExercises->groupBy(fn($ex) => $ex->category?->label() ?? 'Other');
+            @endphp
+            @foreach ($exercisesByCategory as $categoryName => $exercises)
+                <optgroup label="{{ $categoryName }}">
+                    @foreach ($exercises as $allEx)
+                        <option value="{{ $allEx->id }}">{{ $allEx->name }}@if($allEx->difficulty_level) ({{ $allEx->difficulty_level->label() }})@endif</option>
+                    @endforeach
+                </optgroup>
             @endforeach
         </select>
     </form>
