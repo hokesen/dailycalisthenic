@@ -27,4 +27,21 @@ class SessionFactory extends Factory
             'status' => 'planned',
         ];
     }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => \App\Enums\SessionStatus::Completed,
+            'started_at' => now()->subMinutes(30),
+            'completed_at' => now(),
+        ]);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => \App\Enums\SessionStatus::InProgress,
+            'started_at' => now()->subMinutes(10),
+        ]);
+    }
 }

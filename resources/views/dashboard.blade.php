@@ -2,8 +2,8 @@
 <x-app-layout>
     <div class="py-6 sm:py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Welcome Bar with Title, Streak, User Dropdown, and Changelog -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-6" x-data="{ showChangelog: false, showUserMenu: false }">
+            <!-- Welcome Bar with Title, Streak, and User Dropdown -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-6" x-data="{ showUserMenu: false }">
                 <div class="p-4 sm:p-6">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <!-- Left: Title and Welcome -->
@@ -14,7 +14,7 @@
                             </div>
                         </div>
 
-                        <!-- Right: Streak, Changelog, User Menu -->
+                        <!-- Right: Streak and User Menu -->
                         <div class="flex items-center gap-3 sm:gap-4">
                             <!-- Streak -->
                             <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
@@ -22,11 +22,6 @@
                                 <span class="font-bold text-orange-800 dark:text-orange-400">{{ $authUserStreak }}</span>
                                 <span class="text-xs text-orange-600 dark:text-orange-500 hidden sm:inline">day streak</span>
                             </div>
-
-                            <!-- Changelog Toggle -->
-                            <button @click="showChangelog = !showChangelog" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hidden sm:block">
-                                <span x-text="showChangelog ? 'Hide Changelog' : 'Show Changelog'"></span>
-                            </button>
 
                             <!-- User Dropdown -->
                             <div class="relative" @click.outside="showUserMenu = false">
@@ -44,27 +39,6 @@
                                         <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg">Log Out</button>
                                     </form>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Changelog (Hidden by default) -->
-                    <div x-show="showChangelog" x-transition class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Changelog</h4>
-                        <div class="space-y-3">
-                            <div class="border-l-4 border-green-500 pl-4">
-                                <div class="flex items-baseline gap-2 mb-1">
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">January 11th, 2026</span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">Improvements & Features</span>
-                                </div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">1. Redesigned to single-page mobile-friendly layout<br> 2. Added gantt chart for exercise history<br>3. Added template privacy setting</p>
-                            </div>
-                            <div class="border-l-4 border-blue-500 pl-4">
-                                <div class="flex items-baseline gap-2 mb-1">
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">January 4th, 2026</span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">New Features</span>
-                                </div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">1. Exercises can now be re-ordered with arrow buttons<br> 2. Go page is now full screen for better visibility<br> 3. Activity page shows everything you've done in the past week/month.</p>
                             </div>
                         </div>
                     </div>

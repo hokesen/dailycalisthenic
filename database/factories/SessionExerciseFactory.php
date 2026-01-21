@@ -27,4 +27,11 @@ class SessionExerciseFactory extends Factory
             'completed_at' => fake()->optional()->dateTime(),
         ];
     }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'completed_at' => now(),
+        ]);
+    }
 }

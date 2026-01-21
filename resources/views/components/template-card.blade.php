@@ -107,7 +107,7 @@
     <div>
         <a href="{{ route('go.index', ['template' => $template->id]) }}">
             <x-primary-button type="button" class="w-full justify-center">
-                Go
+                Practice
             </x-primary-button>
         </a>
     </div>

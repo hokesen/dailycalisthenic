@@ -379,10 +379,14 @@ class User extends Authenticatable implements FilamentUser
         $startDateUtc = $startDate->copy()->timezone('UTC');
         $endDateUtc = $endDate->copy()->timezone('UTC');
 
-        // Fetch all session exercises for the week
+        // Fetch all sessions that have been started (including in-progress and completed)
+        // This allows partial progress to count even if the session was abandoned
         $sessions = $this->sessions()
-            ->completed()
-            ->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
+            ->whereNotNull('started_at')
+            ->where(function ($query) use ($startDateUtc, $endDateUtc) {
+                $query->whereBetween('started_at', [$startDateUtc, $endDateUtc])
+                    ->orWhereBetween('completed_at', [$startDateUtc, $endDateUtc]);
+            })
             ->with(['sessionExercises.exercise.progression'])
             ->get();
 
@@ -398,13 +402,20 @@ class User extends Authenticatable implements FilamentUser
         }
 
         // Populate daily exercise durations
+        // Only count exercises that have been individually completed (have completed_at set)
         foreach ($sessions as $session) {
-            $timestamp = $session->completed_at->getTimestamp();
-            $sessionInTz = \Carbon\Carbon::createFromTimestamp($timestamp, $timezone);
+            foreach ($session->sessionExercises as $sessionExercise) {
+                // Skip exercises that haven't been completed yet
+                if (! $sessionExercise->completed_at) {
+                    continue;
+                }
 
-            foreach ($dailyData as $dayIndex => &$day) {
-                if ($sessionInTz->toDateString() === $day['date']->toDateString()) {
-                    foreach ($session->sessionExercises as $sessionExercise) {
+                // Use the exercise's completion timestamp for accurate day assignment
+                $timestamp = $sessionExercise->completed_at->getTimestamp();
+                $exerciseInTz = \Carbon\Carbon::createFromTimestamp($timestamp, $timezone);
+
+                foreach ($dailyData as $dayIndex => &$day) {
+                    if ($exerciseInTz->toDateString() === $day['date']->toDateString()) {
                         $exerciseId = $sessionExercise->exercise_id;
                         if (! isset($day['exercises'][$exerciseId])) {
                             $day['exercises'][$exerciseId] = 0;
@@ -412,12 +423,12 @@ class User extends Authenticatable implements FilamentUser
                         $day['exercises'][$exerciseId] += $sessionExercise->duration_seconds ?? 0;
                     }
                 }
+                unset($day); // Break the reference to avoid PHP gotcha
             }
-            unset($day); // Break the reference to avoid PHP gotcha
         }
 
-        // Collect all unique exercises from the week
-        $allExercises = $sessions->flatMap(fn ($s) => $s->sessionExercises->pluck('exercise'))
+        // Collect all unique exercises from completed session exercises in the week
+        $allExercises = $sessions->flatMap(fn ($s) => $s->sessionExercises->filter(fn ($se) => $se->completed_at)->pluck('exercise'))
             ->unique('id')
             ->keyBy('id');
 

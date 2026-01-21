@@ -522,13 +522,11 @@ class DashboardTest extends TestCase
             'progression_path_name' => 'plank',
         ]);
 
-        $session = \App\Models\Session::factory()->create([
+        $session = \App\Models\Session::factory()->completed()->create([
             'user_id' => $user->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
         ]);
 
-        \App\Models\SessionExercise::factory()->create([
+        \App\Models\SessionExercise::factory()->completed()->create([
             'session_id' => $session->id,
             'exercise_id' => $exercise->id,
             'duration_seconds' => 300,
@@ -562,13 +560,11 @@ class DashboardTest extends TestCase
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Jumping Jacks']);
 
         // No progression assigned to this exercise
-        $session = \App\Models\Session::factory()->create([
+        $session = \App\Models\Session::factory()->completed()->create([
             'user_id' => $user->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
         ]);
 
-        \App\Models\SessionExercise::factory()->create([
+        \App\Models\SessionExercise::factory()->completed()->create([
             'session_id' => $session->id,
             'exercise_id' => $exercise->id,
             'duration_seconds' => 600,
@@ -598,19 +594,17 @@ class DashboardTest extends TestCase
         // Create a standalone exercise
         $standaloneExercise = \App\Models\Exercise::factory()->create(['name' => 'Burpees']);
 
-        $session = \App\Models\Session::factory()->create([
+        $session = \App\Models\Session::factory()->completed()->create([
             'user_id' => $user->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
         ]);
 
-        \App\Models\SessionExercise::factory()->create([
+        \App\Models\SessionExercise::factory()->completed()->create([
             'session_id' => $session->id,
             'exercise_id' => $progressionExercise->id,
             'duration_seconds' => 300,
         ]);
 
-        \App\Models\SessionExercise::factory()->create([
+        \App\Models\SessionExercise::factory()->completed()->create([
             'session_id' => $session->id,
             'exercise_id' => $standaloneExercise->id,
             'duration_seconds' => 420,
@@ -776,5 +770,69 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Public');
+    }
+
+    public function test_partial_session_completion_counts_in_activity(): void
+    {
+        $user = User::factory()->create();
+        $exercise1 = \App\Models\Exercise::factory()->create(['name' => 'Plank']);
+        $exercise2 = \App\Models\Exercise::factory()->create(['name' => 'Squats']);
+
+        // Create an in-progress session (user paused midway and session was abandoned)
+        $session = \App\Models\Session::factory()->inProgress()->create([
+            'user_id' => $user->id,
+        ]);
+
+        // First exercise was completed before pausing
+        \App\Models\SessionExercise::factory()->completed()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise1->id,
+            'duration_seconds' => 300,
+        ]);
+
+        // Second exercise was not completed (no completed_at)
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise2->id,
+            'duration_seconds' => 180,
+            'completed_at' => null,
+        ]);
+
+        // The activity chart should show the completed exercise's minutes
+        $ganttData = $user->getProgressionGanttData(7);
+
+        // Should have activity (the completed exercise should count)
+        $this->assertGreaterThan(0, $ganttData['weeklyTotal']);
+        $this->assertEquals(300, $ganttData['weeklyTotal']); // Only the completed exercise
+
+        // Verify the standalone section shows the completed exercise
+        $this->assertCount(1, $ganttData['standalone']);
+        $this->assertEquals('Plank', $ganttData['standalone'][0]['name']);
+    }
+
+    public function test_incomplete_exercises_in_session_do_not_count(): void
+    {
+        $user = User::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['name' => 'Push-ups']);
+
+        // Create an in-progress session
+        $session = \App\Models\Session::factory()->inProgress()->create([
+            'user_id' => $user->id,
+        ]);
+
+        // Exercise not yet completed (mid-timer when user paused)
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+            'completed_at' => null,
+        ]);
+
+        // The activity chart should not show this exercise
+        $ganttData = $user->getProgressionGanttData(7);
+
+        $this->assertEquals(0, $ganttData['weeklyTotal']);
+        $this->assertEmpty($ganttData['standalone']);
+        $this->assertEmpty($ganttData['progressions']);
     }
 }
