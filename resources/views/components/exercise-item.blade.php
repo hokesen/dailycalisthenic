@@ -1,8 +1,9 @@
 @props(['template', 'exercise', 'allExercises'])
 
 @php
-    $easierVariations = $exercise->getEasierVariations();
-    $harderVariations = $exercise->getHarderVariations();
+    $exerciseRepo = app(\App\Repositories\ExerciseRepository::class);
+    $easierVariations = $exerciseRepo->getEasierVariations($exercise)->all();
+    $harderVariations = $exerciseRepo->getHarderVariations($exercise)->all();
 @endphp
 
 <div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false }">

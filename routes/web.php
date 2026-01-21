@@ -3,7 +3,7 @@
 use App\Http\Controllers\GoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
-use App\Models\Exercise;
+use App\Repositories\ExerciseRepository;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,10 +20,7 @@ Route::get('/', function () {
     // Otherwise show the dashboard
     $user = auth()->user();
 
-    $allExercises = Exercise::query()
-        ->availableFor($user)
-        ->orderBy('name')
-        ->get();
+    $allExercises = app(ExerciseRepository::class)->getAvailableForUser($user);
 
     // Get date range for the past week
     $userNow = $user->now();

@@ -1,0 +1,288 @@
+{
+    "exercises": [
+        {
+            "name": "Wall Push-Up",
+            "description": "Push-up performed against a wall, great for beginners",
+            "instructions": "Stand facing a wall at arm's length. Place palms flat against the wall at shoulder height and width. Bend elbows to bring chest toward wall, then push back to start.",
+            "difficulty_level": "beginner",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Kneeling Push-Up",
+            "description": "Push-up from knees, easier than full push-up",
+            "instructions": "Start on hands and knees with hands slightly wider than shoulders. Lower chest toward floor by bending elbows, keeping core tight. Push back up to start.",
+            "difficulty_level": "beginner",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Push Ups",
+            "description": "Classic bodyweight pushing exercise",
+            "instructions": "Start in plank position with hands slightly wider than shoulders. Lower chest toward floor, keeping body straight. Push back up to start position.",
+            "difficulty_level": "beginner",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Pike Push-Ups",
+            "description": "Push-up with hips raised, targets shoulders",
+            "instructions": "Start in downward dog position with hips high. Bend elbows to lower head toward floor between hands. Push back up to start.",
+            "difficulty_level": "intermediate",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Archer Push-Ups",
+            "description": "Asymmetric push-up shifting weight to one arm",
+            "instructions": "Start in wide push-up position. Lower toward one hand while extending the other arm straight. Push back up and alternate sides.",
+            "difficulty_level": "intermediate",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Kneeling Plank",
+            "description": "Plank from knees, easier core engagement",
+            "instructions": "Start on forearms and knees. Keep body in straight line from head to knees. Hold position while breathing steadily.",
+            "difficulty_level": "beginner",
+            "category": "core",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Plank",
+            "description": "Foundational core stability exercise",
+            "instructions": "Start on forearms and toes with body in straight line. Keep core engaged and hips level. Hold position while breathing steadily.",
+            "difficulty_level": "beginner",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Three-Point Plank",
+            "description": "Plank with one limb raised for added challenge",
+            "instructions": "Start in plank position. Lift one foot or hand off ground while maintaining straight body line. Alternate limbs.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Two-Point Plank",
+            "description": "Plank with opposite arm and leg raised",
+            "instructions": "Start in plank position. Lift opposite arm and leg simultaneously while keeping hips level. Alternate sides.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Squat",
+            "description": "Fundamental lower body exercise",
+            "instructions": "Stand with feet shoulder-width apart. Lower hips back and down as if sitting in a chair. Keep chest up and knees tracking over toes. Stand back up.",
+            "difficulty_level": "beginner",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Archer Squat",
+            "description": "Wide stance squat shifting weight to one leg",
+            "instructions": "Stand with feet wide apart. Shift weight to one leg and bend that knee while keeping the other leg straight. Alternate sides.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Pistol Squat",
+            "description": "Single-leg squat requiring strength and balance",
+            "instructions": "Stand on one leg with other leg extended forward. Lower into deep squat on standing leg while keeping extended leg off ground. Stand back up.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Dragon Squat",
+            "description": "Advanced single-leg squat with rear leg crossed behind",
+            "instructions": "Stand on one leg. Cross other leg behind and lower into squat while keeping rear leg elevated. Stand back up.",
+            "difficulty_level": "advanced",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Wall Hand-Stand",
+            "description": "Handstand with wall support for balance",
+            "instructions": "Place hands on floor near wall. Kick up to handstand with heels resting against wall. Hold position with arms straight.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Handstand",
+            "description": "Freestanding balance on hands",
+            "instructions": "Place hands on floor shoulder-width apart. Kick up to balance on hands with body straight. Use micro-adjustments in fingers and wrists to maintain balance.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Press Handstand",
+            "description": "Pressing up to handstand from standing or straddle",
+            "instructions": "From standing or straddle position, place hands on floor and press hips up and over shoulders to reach handstand without jumping.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Handstand Push-Up",
+            "description": "Push-up in handstand position",
+            "instructions": "Start in handstand against wall. Lower head toward floor by bending elbows. Push back up to straight arms.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "L-Sit",
+            "description": "Seated position with legs extended, body supported on hands",
+            "instructions": "Sit with legs extended. Place hands beside hips and press down to lift body off ground. Keep legs straight and parallel to floor.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Crow Pose",
+            "description": "Arm balance with knees resting on upper arms",
+            "instructions": "Squat with hands on floor. Lean forward and place knees on backs of upper arms. Shift weight forward until feet lift off ground.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Elbow Lever",
+            "description": "Horizontal balance on bent arm",
+            "instructions": "Place one elbow into hip crease. Lean forward and balance body horizontally with arm supporting weight. Keep body straight.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 20
+        },
+        {
+            "name": "Single Arm Elbow Lever",
+            "description": "Elbow lever balanced on one arm only",
+            "instructions": "Perform elbow lever but remove support of free arm, balancing entirely on one elbow planted in hip.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 15
+        },
+        {
+            "name": "Toe Touch",
+            "description": "Standing forward fold to improve hamstring flexibility",
+            "instructions": "Stand with feet together. Hinge at hips and reach toward toes. Keep legs straight and relax into the stretch.",
+            "difficulty_level": "beginner",
+            "category": "flexibility",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Glute Bridge",
+            "description": "Hip extension exercise for glutes and hamstrings",
+            "instructions": "Lie on back with knees bent and feet flat. Press through heels to lift hips toward ceiling. Squeeze glutes at top, then lower.",
+            "difficulty_level": "beginner",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Bridge Hold",
+            "description": "Full back bridge position",
+            "instructions": "Lie on back with hands by ears, fingers pointing toward shoulders. Press up to arch back, lifting hips and chest. Hold position.",
+            "difficulty_level": "intermediate",
+            "category": "flexibility",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Lying Leg Raise",
+            "description": "Core exercise lifting legs while lying down",
+            "instructions": "Lie flat on back with legs extended. Keeping legs straight, lift them toward ceiling. Lower slowly without touching floor.",
+            "difficulty_level": "beginner",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Calf Raise",
+            "description": "Standing heel raises for calf strength",
+            "instructions": "Stand with feet hip-width apart. Rise up onto balls of feet, lifting heels high. Lower slowly and repeat.",
+            "difficulty_level": "beginner",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Reverse Nordic Curl",
+            "description": "Quad-focused exercise leaning back from kneeling",
+            "instructions": "Kneel with body upright. Slowly lean back, keeping hips extended and body straight. Use quads to control descent and return.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        }
+    ],
+    "progressions": [
+        {
+            "path_name": "Push-Up",
+            "exercises": [
+                "Wall Push-Up",
+                "Kneeling Push-Up",
+                "Push Ups",
+                "Pike Push-Ups",
+                "Handstand",
+                "Handstand Push-Up"
+            ]
+        },
+        {
+            "path_name": "Archer Push-Up",
+            "exercises": [
+                "Push Ups",
+                "Archer Push-Ups"
+            ]
+        },
+        {
+            "path_name": "Plank",
+            "exercises": [
+                "Kneeling Plank",
+                "Plank",
+                "Three-Point Plank",
+                "Two-Point Plank"
+            ]
+        },
+        {
+            "path_name": "Squat",
+            "exercises": [
+                "Squat",
+                "Archer Squat",
+                "Pistol Squat",
+                "Dragon Squat"
+            ]
+        },
+        {
+            "path_name": "Handstand",
+            "exercises": [
+                "Wall Hand-Stand",
+                "Handstand",
+                "Press Handstand"
+            ]
+        },
+        {
+            "path_name": "Elbow Lever",
+            "exercises": [
+                "Elbow Lever",
+                "Single Arm Elbow Lever"
+            ]
+        },
+        {
+            "path_name": "Bridge",
+            "exercises": [
+                "Glute Bridge",
+                "Bridge Hold"
+            ]
+        },
+        {
+            "path_name": "Crow Pose",
+            "exercises": [
+                "Pike Push-Ups",
+                "Crow Pose",
+                "Handstand"
+            ]
+        }
+    ]
+}

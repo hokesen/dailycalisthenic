@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateExerciseRequest;
 use App\Http\Requests\UpdateTemplateNameRequest;
 use App\Models\Exercise;
 use App\Models\SessionTemplate;
+use App\Repositories\ExerciseRepository;
 use App\Services\TemplateReplicationService;
 use App\Support\PivotDataBuilder;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,10 @@ use Illuminate\View\View;
 
 class TemplateController extends Controller
 {
-    public function __construct(public TemplateReplicationService $replicationService) {}
+    public function __construct(
+        public TemplateReplicationService $replicationService,
+        public ExerciseRepository $exerciseRepository
+    ) {}
 
     public function store(): SessionTemplate|RedirectResponse
     {
@@ -40,10 +44,7 @@ class TemplateController extends Controller
     {
         $template->load(['user', 'exercises' => fn ($q) => $q->orderByPivot('order')]);
 
-        $allExercises = Exercise::query()
-            ->availableFor(auth()->user())
-            ->orderBy('name')
-            ->get();
+        $allExercises = $this->exerciseRepository->getAvailableForUser(auth()->user());
 
         return view('components.template-card', [
             'template' => $template,
@@ -64,10 +65,20 @@ class TemplateController extends Controller
             return back()->with('error', 'Exercise not found in template');
         }
 
+        // Materialize default exercise if needed (negative ID)
+        $newExerciseId = $request->new_exercise_id;
+        if ($newExerciseId < 0) {
+            $materialized = $this->exerciseRepository->materialize($newExerciseId);
+            if (! $materialized) {
+                return back()->with('error', 'Exercise not found');
+            }
+            $newExerciseId = $materialized->id;
+        }
+
         $pivotData = PivotDataBuilder::fromSessionTemplateExercisePivot($exercise->pivot);
 
         $template->exercises()->wherePivot('order', $request->order)->detach();
-        $template->exercises()->attach($request->new_exercise_id, $pivotData);
+        $template->exercises()->attach($newExerciseId, $pivotData);
 
         return $this->redirectToTemplate($template, 'Exercise swapped successfully');
     }
@@ -87,10 +98,20 @@ class TemplateController extends Controller
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
+        // Materialize default exercise if needed (negative ID)
+        $exerciseId = $request->exercise_id;
+        if ($exerciseId < 0) {
+            $materialized = $this->exerciseRepository->materialize($exerciseId);
+            if (! $materialized) {
+                return back()->with('error', 'Exercise not found');
+            }
+            $exerciseId = $materialized->id;
+        }
+
         $maxOrder = $template->exercises()->max('session_template_exercises.order') ?? 0;
 
         $template->exercises()->attach(
-            $request->exercise_id,
+            $exerciseId,
             PivotDataBuilder::defaultSessionTemplateExercisePivot($maxOrder + 1, $template->default_rest_seconds)
         );
 

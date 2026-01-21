@@ -251,7 +251,7 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee($user->name, false);
+        $response->assertSee($user->name);
         $response->assertSee('Streak');
     }
 
