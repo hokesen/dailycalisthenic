@@ -215,6 +215,374 @@
             "difficulty_level": "intermediate",
             "category": "legs",
             "default_duration_seconds": 60
+        },
+        {
+            "name": "Dead Hang",
+            "description": "Hanging from a bar to build grip strength and shoulder stability",
+            "instructions": "Grab a pull-up bar with both hands. Hang with arms fully extended, shoulders engaged. Keep core tight and breathe steadily.",
+            "difficulty_level": "beginner",
+            "category": "pull",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Scapular Pull",
+            "description": "Shoulder blade activation while hanging",
+            "instructions": "Hang from bar with arms straight. Without bending elbows, pull shoulder blades down and together to lift body slightly. Lower with control.",
+            "difficulty_level": "beginner",
+            "category": "pull",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Australian Pull-Up",
+            "description": "Horizontal pulling exercise with feet on ground",
+            "instructions": "Set bar at waist height. Lie under bar and grab with overhand grip. Keep body straight and pull chest to bar. Lower with control.",
+            "difficulty_level": "beginner",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Negative Pull-Up",
+            "description": "Lowering phase of pull-up to build strength",
+            "instructions": "Jump or step up to top pull-up position with chin over bar. Lower yourself as slowly as possible with control.",
+            "difficulty_level": "intermediate",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Pull-Up",
+            "description": "Classic vertical pulling exercise",
+            "instructions": "Hang from bar with hands shoulder-width apart. Pull body up until chin clears bar. Lower with control to full hang.",
+            "difficulty_level": "intermediate",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Chin-Up",
+            "description": "Pull-up with underhand grip, bicep emphasis",
+            "instructions": "Hang from bar with palms facing you. Pull body up until chin clears bar. Lower with control to full hang.",
+            "difficulty_level": "intermediate",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Wide-Grip Pull-Up",
+            "description": "Pull-up with wider hand placement for back development",
+            "instructions": "Hang from bar with hands wider than shoulders. Pull chest toward bar. Lower with control to full hang.",
+            "difficulty_level": "intermediate",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Archer Pull-Up",
+            "description": "Asymmetric pull-up shifting weight to one arm",
+            "instructions": "Start in pull-up position. Pull up while shifting weight to one arm, extending the other arm. Alternate sides.",
+            "difficulty_level": "advanced",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Typewriter Pull-Up",
+            "description": "Horizontal movement at top of pull-up",
+            "instructions": "Pull up to bar. While maintaining height, shift body side to side toward each hand. Lower with control.",
+            "difficulty_level": "advanced",
+            "category": "pull",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "One-Arm Pull-Up Negative",
+            "description": "Single-arm lowering phase for advanced strength",
+            "instructions": "Pull up with both arms. Release one hand and lower slowly with one arm. Alternate sides.",
+            "difficulty_level": "advanced",
+            "category": "pull",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "One-Arm Pull-Up",
+            "description": "Elite single-arm vertical pull",
+            "instructions": "Hang from bar with one hand. Pull body up until chin clears bar using only one arm. Lower with control.",
+            "difficulty_level": "expert",
+            "category": "pull",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Bench Dip",
+            "description": "Tricep dip using a bench or chair",
+            "instructions": "Sit on bench edge with hands beside hips. Extend legs and lower body by bending elbows. Push back up.",
+            "difficulty_level": "beginner",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Parallel Bar Support",
+            "description": "Static hold in top dip position",
+            "instructions": "Mount parallel bars with arms straight, supporting full body weight. Keep shoulders down and core tight.",
+            "difficulty_level": "beginner",
+            "category": "push",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Negative Dip",
+            "description": "Lowering phase of dip to build strength",
+            "instructions": "Start in top dip position. Lower body slowly by bending elbows until shoulders reach elbow height. Reset to top.",
+            "difficulty_level": "intermediate",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Dip",
+            "description": "Classic parallel bar dip for triceps and chest",
+            "instructions": "Start in support position on bars. Lower body by bending elbows until shoulders reach elbow height. Push back up.",
+            "difficulty_level": "intermediate",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Ring Dip",
+            "description": "Dip performed on gymnastics rings for added instability",
+            "instructions": "Support yourself on rings. Lower body by bending elbows while maintaining ring stability. Push back up.",
+            "difficulty_level": "advanced",
+            "category": "push",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Dead Bug",
+            "description": "Core stability exercise on back",
+            "instructions": "Lie on back with arms extended toward ceiling, knees bent at 90 degrees. Lower opposite arm and leg while keeping lower back pressed to floor. Alternate sides.",
+            "difficulty_level": "beginner",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Hollow Body Hold",
+            "description": "Core compression hold creating banana shape",
+            "instructions": "Lie on back. Press lower back to floor and lift shoulders and legs slightly off ground. Keep arms extended overhead.",
+            "difficulty_level": "intermediate",
+            "category": "core",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Arch Hold",
+            "description": "Back extension hold, opposite of hollow body",
+            "instructions": "Lie face down. Lift chest and legs off ground simultaneously, creating an arch shape. Keep arms extended forward.",
+            "difficulty_level": "intermediate",
+            "category": "core",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Side Plank",
+            "description": "Lateral core stability exercise",
+            "instructions": "Lie on side with forearm on ground. Lift hips to create straight line from head to feet. Hold position, then switch sides.",
+            "difficulty_level": "beginner",
+            "category": "core",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Hanging Knee Raise",
+            "description": "Hanging core exercise lifting knees",
+            "instructions": "Hang from pull-up bar. Lift knees toward chest by engaging core. Lower with control.",
+            "difficulty_level": "intermediate",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Hanging Leg Raise",
+            "description": "Advanced hanging core exercise with straight legs",
+            "instructions": "Hang from bar. Keep legs straight and lift toward horizontal. Lower with control without swinging.",
+            "difficulty_level": "advanced",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Toes-to-Bar",
+            "description": "Hanging core exercise bringing toes to bar",
+            "instructions": "Hang from bar. Lift straight legs all the way up to touch toes to bar. Lower with control.",
+            "difficulty_level": "advanced",
+            "category": "core",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Tuck L-Sit",
+            "description": "L-sit with knees tucked, easier variation",
+            "instructions": "Sit with hands beside hips. Press down to lift body while bringing knees to chest. Hold with body off ground.",
+            "difficulty_level": "intermediate",
+            "category": "core",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Copenhagen Plank",
+            "description": "Advanced side plank variation for adductors",
+            "instructions": "Position top leg on elevated surface. Bottom leg hovers. Support body on forearm creating straight line. Intense adductor work.",
+            "difficulty_level": "advanced",
+            "category": "core",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Lunge",
+            "description": "Single-leg exercise in split stance",
+            "instructions": "Step forward into split stance. Lower back knee toward ground while keeping front shin vertical. Push back to standing. Alternate legs.",
+            "difficulty_level": "beginner",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Bulgarian Split Squat",
+            "description": "Single-leg squat with rear foot elevated",
+            "instructions": "Place rear foot on elevated surface behind you. Lower into single-leg squat on front leg. Push back up.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Single Leg Deadlift",
+            "description": "Balance and hamstring exercise on one leg",
+            "instructions": "Stand on one leg. Hinge at hip and reach toward ground while extending free leg behind. Return to standing.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Shrimp Squat",
+            "description": "Single-leg squat with rear leg bent behind",
+            "instructions": "Stand on one leg, hold other foot behind you. Lower into deep single-leg squat. Stand back up.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Jump Squat",
+            "description": "Explosive squat variation for power",
+            "instructions": "Perform a squat then explode upward into a jump. Land softly and immediately lower into next squat.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Nordic Curl",
+            "description": "Advanced hamstring exercise from kneeling",
+            "instructions": "Kneel with feet anchored. Slowly lower torso forward by extending at knees while keeping hips straight. Use hamstrings to control descent.",
+            "difficulty_level": "advanced",
+            "category": "legs",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Single Leg Calf Raise",
+            "description": "Calf raise on one leg for increased difficulty",
+            "instructions": "Stand on one leg. Rise up onto ball of foot, lifting heel high. Lower with control. Switch legs.",
+            "difficulty_level": "intermediate",
+            "category": "legs",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Skin the Cat",
+            "description": "Full rotation hanging from bar for shoulder mobility",
+            "instructions": "Hang from bar. Tuck knees and rotate backward through hang until you're looking at ground upside down. Reverse the motion.",
+            "difficulty_level": "intermediate",
+            "category": "flexibility",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "German Hang",
+            "description": "Extreme shoulder extension stretch while hanging",
+            "instructions": "From bar hang, rotate backward into deep shoulder extension with palms facing forward at bottom of rotation. Hold stretch.",
+            "difficulty_level": "advanced",
+            "category": "flexibility",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Wrist Mobility",
+            "description": "Wrist circles and extensions for joint health",
+            "instructions": "Perform wrist circles in both directions. Press palms together with fingers pointing down. Gently stretch wrists in all directions.",
+            "difficulty_level": "beginner",
+            "category": "flexibility",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Cat-Cow Stretch",
+            "description": "Spinal mobility exercise",
+            "instructions": "On hands and knees, alternate between arching back (cow) and rounding spine (cat). Move slowly and breathe with each position.",
+            "difficulty_level": "beginner",
+            "category": "flexibility",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Child's Pose",
+            "description": "Resting stretch for back and shoulders",
+            "instructions": "Kneel and sit back on heels. Extend arms forward and lower chest toward ground. Relax and breathe deeply.",
+            "difficulty_level": "beginner",
+            "category": "flexibility",
+            "default_duration_seconds": 45
+        },
+        {
+            "name": "Front Lever Tuck",
+            "description": "Horizontal hold with knees tucked",
+            "instructions": "Hang from bar. Pull hips up and tuck knees to chest while keeping back horizontal. Hold position.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 20
+        },
+        {
+            "name": "Front Lever",
+            "description": "Advanced horizontal hold with straight body",
+            "instructions": "From hanging position, pull body horizontal with back facing ground. Keep body perfectly straight and parallel to ground.",
+            "difficulty_level": "expert",
+            "category": "full_body",
+            "default_duration_seconds": 15
+        },
+        {
+            "name": "Back Lever Tuck",
+            "description": "Inverted horizontal hold with knees tucked",
+            "instructions": "From hanging, rotate backward and tuck knees to chest while keeping shoulders horizontal. Hold position.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 20
+        },
+        {
+            "name": "Back Lever",
+            "description": "Advanced inverted horizontal hold",
+            "instructions": "From hanging, rotate backward into horizontal position with chest facing ground. Keep body straight and parallel to ground.",
+            "difficulty_level": "expert",
+            "category": "full_body",
+            "default_duration_seconds": 15
+        },
+        {
+            "name": "Planche Lean",
+            "description": "Forward lean building planche strength",
+            "instructions": "Start in plank position. Shift weight forward over hands, lifting heels and leaning shoulders past wrists.",
+            "difficulty_level": "intermediate",
+            "category": "push",
+            "default_duration_seconds": 30
+        },
+        {
+            "name": "Tuck Planche",
+            "description": "Planche hold with knees tucked",
+            "instructions": "Lean forward on hands and tuck knees to chest. Lift feet off ground and balance with shoulders far forward.",
+            "difficulty_level": "advanced",
+            "category": "push",
+            "default_duration_seconds": 15
+        },
+        {
+            "name": "Planche",
+            "description": "Elite horizontal push hold",
+            "instructions": "Balance on hands with body parallel to ground, legs straight. Maintain perfect horizontal position.",
+            "difficulty_level": "expert",
+            "category": "push",
+            "default_duration_seconds": 10
+        },
+        {
+            "name": "Muscle-Up",
+            "description": "Dynamic movement combining pull-up and dip",
+            "instructions": "Pull up explosively on bar. As chest reaches bar, transition by rolling wrists over and pressing into dip. Lower with control.",
+            "difficulty_level": "advanced",
+            "category": "full_body",
+            "default_duration_seconds": 60
+        },
+        {
+            "name": "Wall Walk",
+            "description": "Walking feet up wall from plank",
+            "instructions": "Start in plank facing away from wall. Walk feet up wall while walking hands closer to wall until nearly vertical. Walk back down.",
+            "difficulty_level": "intermediate",
+            "category": "full_body",
+            "default_duration_seconds": 45
         }
     ],
     "progressions": [
@@ -224,16 +592,8 @@
                 "Wall Push-Up",
                 "Kneeling Push-Up",
                 "Push Ups",
-                "Pike Push-Ups",
-                "Handstand",
-                "Handstand Push-Up"
-            ]
-        },
-        {
-            "path_name": "Archer Push-Up",
-            "exercises": [
-                "Push Ups",
-                "Archer Push-Ups"
+                "Archer Push-Ups",
+                "Pike Push-Ups"
             ]
         },
         {
@@ -250,6 +610,7 @@
             "exercises": [
                 "Squat",
                 "Archer Squat",
+                "Shrimp Squat",
                 "Pistol Squat",
                 "Dragon Squat"
             ]
@@ -257,16 +618,66 @@
         {
             "path_name": "Handstand",
             "exercises": [
+                "Pike Push-Ups",
                 "Wall Hand-Stand",
+                "Wall Walk",
                 "Handstand",
-                "Press Handstand"
+                "Press Handstand",
+                "Handstand Push-Up"
             ]
         },
         {
-            "path_name": "Elbow Lever",
+            "path_name": "Pull-Up",
             "exercises": [
-                "Elbow Lever",
-                "Single Arm Elbow Lever"
+                "Dead Hang",
+                "Scapular Pull",
+                "Australian Pull-Up",
+                "Negative Pull-Up",
+                "Pull-Up",
+                "Wide-Grip Pull-Up",
+                "Archer Pull-Up",
+                "Typewriter Pull-Up",
+                "One-Arm Pull-Up Negative",
+                "One-Arm Pull-Up"
+            ]
+        },
+        {
+            "path_name": "Chin-Up",
+            "exercises": [
+                "Dead Hang",
+                "Scapular Pull",
+                "Australian Pull-Up",
+                "Negative Pull-Up",
+                "Chin-Up",
+                "Pull-Up"
+            ]
+        },
+        {
+            "path_name": "Dip",
+            "exercises": [
+                "Bench Dip",
+                "Parallel Bar Support",
+                "Negative Dip",
+                "Dip",
+                "Ring Dip"
+            ]
+        },
+        {
+            "path_name": "Core Hold",
+            "exercises": [
+                "Dead Bug",
+                "Hollow Body Hold",
+                "Tuck L-Sit",
+                "L-Sit"
+            ]
+        },
+        {
+            "path_name": "Hanging Leg Raise",
+            "exercises": [
+                "Dead Hang",
+                "Hanging Knee Raise",
+                "Hanging Leg Raise",
+                "Toes-to-Bar"
             ]
         },
         {
@@ -277,11 +688,86 @@
             ]
         },
         {
-            "path_name": "Crow Pose",
+            "path_name": "Elbow Lever",
             "exercises": [
-                "Pike Push-Ups",
                 "Crow Pose",
-                "Handstand"
+                "Elbow Lever",
+                "Single Arm Elbow Lever"
+            ]
+        },
+        {
+            "path_name": "Front Lever",
+            "exercises": [
+                "Pull-Up",
+                "Tuck L-Sit",
+                "Front Lever Tuck",
+                "Front Lever"
+            ]
+        },
+        {
+            "path_name": "Back Lever",
+            "exercises": [
+                "Skin the Cat",
+                "German Hang",
+                "Back Lever Tuck",
+                "Back Lever"
+            ]
+        },
+        {
+            "path_name": "Planche",
+            "exercises": [
+                "Plank",
+                "Planche Lean",
+                "Tuck Planche",
+                "Planche"
+            ]
+        },
+        {
+            "path_name": "Muscle-Up",
+            "exercises": [
+                "Pull-Up",
+                "Dip",
+                "Muscle-Up"
+            ]
+        },
+        {
+            "path_name": "Single Leg Squat",
+            "exercises": [
+                "Lunge",
+                "Bulgarian Split Squat",
+                "Shrimp Squat",
+                "Pistol Squat"
+            ]
+        },
+        {
+            "path_name": "Leg Raise",
+            "exercises": [
+                "Lying Leg Raise",
+                "Hanging Knee Raise",
+                "Hanging Leg Raise"
+            ]
+        },
+        {
+            "path_name": "Side Plank",
+            "exercises": [
+                "Side Plank",
+                "Copenhagen Plank"
+            ]
+        },
+        {
+            "path_name": "Hamstring",
+            "exercises": [
+                "Glute Bridge",
+                "Single Leg Deadlift",
+                "Reverse Nordic Curl",
+                "Nordic Curl"
+            ]
+        },
+        {
+            "path_name": "Calf",
+            "exercises": [
+                "Calf Raise",
+                "Single Leg Calf Raise"
             ]
         }
     ]

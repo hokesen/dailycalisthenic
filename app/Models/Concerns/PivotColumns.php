@@ -14,6 +14,8 @@ class PivotColumns
         'sets',
         'reps',
         'notes',
+        'tempo',
+        'intensity',
     ];
 
     /**
@@ -26,5 +28,7 @@ class PivotColumns
         'difficulty_rating',
         'started_at',
         'completed_at',
+        'tempo',
+        'intensity',
     ];
 }

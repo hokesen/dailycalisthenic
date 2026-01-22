@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ExerciseIntensity;
+use App\Enums\ExerciseTempo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SessionTemplateExercise extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'session_template_id',
         'exercise_id',
@@ -18,9 +21,14 @@ class SessionTemplateExercise extends Model
         'sets',
         'reps',
         'notes',
+        'tempo',
+        'intensity',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'tempo' => ExerciseTempo::class,
+        'intensity' => ExerciseIntensity::class,
+    ];
 
     public function sessionTemplate(): BelongsTo
     {

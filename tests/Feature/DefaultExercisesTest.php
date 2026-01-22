@@ -55,7 +55,7 @@ class DefaultExercisesTest extends TestCase
         $this->assertNotNull($progression);
         $this->assertEquals('Push-Up', $progression['path_name']);
         $this->assertEquals('Kneeling Push-Up', $progression['easier']);
-        $this->assertEquals('Pike Push-Ups', $progression['harder']);
+        $this->assertEquals('Archer Push-Ups', $progression['harder']);
     }
 
     public function test_exercise_repository_returns_default_exercises(): void
@@ -158,7 +158,7 @@ class DefaultExercisesTest extends TestCase
         $harderVariations = $repository->getHarderVariations($pushUp);
 
         $this->assertNotEmpty($harderVariations);
-        $this->assertEquals('Pike Push-Ups', $harderVariations->first()->name);
+        $this->assertEquals('Archer Push-Ups', $harderVariations->first()->name);
     }
 
     public function test_default_exercises_have_correct_attributes(): void

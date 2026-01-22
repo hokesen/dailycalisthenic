@@ -28,6 +28,8 @@ class UpdateExerciseRequest extends FormRequest
             'sets' => 'nullable|integer|min:1',
             'reps' => 'nullable|integer|min:1',
             'notes' => 'nullable|string|max:1000',
+            'tempo' => 'nullable|string|in:slow,normal,fast,explosive',
+            'intensity' => 'nullable|string|in:recovery,easy,moderate,hard,maximum',
         ];
     }
 }

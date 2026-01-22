@@ -147,6 +147,8 @@ class TemplateController extends Controller
             'sets' => $request->sets,
             'reps' => $request->reps,
             'notes' => $request->notes,
+            'tempo' => $request->tempo,
+            'intensity' => $request->intensity,
         ]);
 
         return $this->redirectToTemplate($template, 'Exercise updated successfully');

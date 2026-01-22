@@ -17,6 +17,8 @@ class SessionExerciseData
         public int $duration_seconds,
         public int $rest_after_seconds,
         public int $order,
+        public ?string $tempo = null,
+        public ?string $intensity = null,
     ) {}
 
     public static function fromTemplateExercise(Exercise $exercise, SessionTemplate $template): self
@@ -31,6 +33,8 @@ class SessionExerciseData
             duration_seconds: $exercise->pivot->duration_seconds ?? 0,
             rest_after_seconds: $exercise->pivot->rest_after_seconds ?? ($template->default_rest_seconds ?? 30),
             order: $exercise->pivot->order,
+            tempo: $exercise->pivot->tempo?->label(),
+            intensity: $exercise->pivot->intensity?->label(),
         );
     }
 
@@ -46,6 +50,8 @@ class SessionExerciseData
             'duration_seconds' => $this->duration_seconds,
             'rest_after_seconds' => $this->rest_after_seconds,
             'order' => $this->order,
+            'tempo' => $this->tempo,
+            'intensity' => $this->intensity,
         ];
     }
 }

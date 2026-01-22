@@ -119,12 +119,18 @@
                                     <div class="text-center space-y-2 shrink-0" x-data="{ showInstructions: false }">
                                         <h3 class="text-4xl md:text-5xl font-bold text-gray-100" x-text="currentExercise?.name"></h3>
                                         <div x-show="currentExercise?.description" class="text-xl text-gray-300" x-text="currentExercise?.description"></div>
-                                        <div class="flex gap-4 justify-center text-lg text-gray-400">
+                                        <div class="flex gap-4 justify-center text-lg text-gray-400 flex-wrap">
                                             <span x-show="currentExercise?.sets && currentExercise?.reps">
                                                 <span x-text="currentExercise?.sets"></span> sets × <span x-text="currentExercise?.reps"></span> reps
                                             </span>
                                             <span x-show="currentExercise?.duration_seconds">
                                                 <span x-text="currentExercise?.duration_seconds"></span>s
+                                            </span>
+                                            <span x-show="currentExercise?.tempo" class="text-blue-300">
+                                                <span x-text="currentExercise?.tempo"></span>
+                                            </span>
+                                            <span x-show="currentExercise?.intensity" class="text-orange-300">
+                                                <span x-text="currentExercise?.intensity"></span> intensity
                                             </span>
                                         </div>
                                         <!-- Instructions Toggle -->

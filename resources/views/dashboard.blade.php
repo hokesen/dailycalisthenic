@@ -35,7 +35,9 @@
 
                             <!-- Streak -->
                             <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                                <span class="text-lg">🔥</span>
+                                <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+                                </svg>
                                 <span class="font-bold text-orange-800 dark:text-orange-400">{{ $authUserStreak }}</span>
                                 <span class="text-xs text-orange-600 dark:text-orange-500 hidden sm:inline">day streak</span>
                             </div>
@@ -247,39 +249,64 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ created: false, cardHtml: '' }">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <template x-if="!created">
-                            <div>
-                                <p class="text-gray-600 dark:text-gray-400 mb-4">No templates yet. Create one to get started!</p>
-                                <button
-                                    @click="
-                                        $el.disabled = true;
-                                        $el.querySelector('span').textContent = 'Creating...';
-                                        fetch('{{ route('templates.store') }}', {
-                                            method: 'POST',
-                                            headers: {
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                'Accept': 'application/json'
-                                            }
-                                        })
-                                        .then(r => {
-                                            if (!r.ok) throw new Error('Failed to create template');
-                                            return r.json();
-                                        })
-                                        .then((template) => {
-                                            window.location.href = '{{ route('home') }}?template=' + template.id;
-                                        })
-                                        .catch(() => {
-                                            $el.disabled = false;
-                                            $el.querySelector('span').textContent = 'Create Your First Template';
-                                            alert('Failed to create template');
-                                        });
-                                    "
-                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    <span>Create Your First Template</span>
-                                </button>
+                            <div class="max-w-2xl">
+                                <div class="mb-6">
+                                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Get Started with Daily Calisthenics</h2>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-4">Choose a starter template below to begin your practice, or create your own custom template.</p>
+                                </div>
+
+                                <div class="grid gap-3 sm:grid-cols-2 mb-6">
+                                    @php
+                                        $starterTemplates = \App\Models\SessionTemplate::whereNull('user_id')
+                                            ->where('is_public', true)
+                                            ->with('exercises')
+                                            ->get();
+                                    @endphp
+
+                                    @foreach($starterTemplates as $starter)
+                                        <a href="{{ route('home') }}?template={{ $starter->id }}" class="block p-4 bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <h3 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ $starter->name }}</h3>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $starter->exercises->count() }} exercises</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Click to view and copy</p>
+                                        </a>
+                                    @endforeach
+                                </div>
+
+                                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <button
+                                        @click="
+                                            $el.disabled = true;
+                                            $el.querySelector('span').textContent = 'Creating...';
+                                            fetch('{{ route('templates.store') }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                    'Accept': 'application/json'
+                                                }
+                                            })
+                                            .then(r => {
+                                                if (!r.ok) throw new Error('Failed to create template');
+                                                return r.json();
+                                            })
+                                            .then((template) => {
+                                                window.location.href = '{{ route('home') }}?template=' + template.id;
+                                            })
+                                            .catch(() => {
+                                                $el.disabled = false;
+                                                $el.querySelector('span').textContent = 'Create Blank Template';
+                                                alert('Failed to create template');
+                                            });
+                                        "
+                                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <span>Create Blank Template</span>
+                                    </button>
+                                </div>
                             </div>
                         </template>
                         <template x-if="created">

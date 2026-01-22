@@ -103,7 +103,7 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('No templates yet. Create one to get started!');
+        $response->assertSee('Get Started with Daily Calisthenics');
     }
 
     public function test_dashboard_displays_template_details(): void
@@ -550,8 +550,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        // When user has no templates, the "no activity" message is shown
-        $response->assertSee('No templates yet');
+        // When user has no templates, the "get started" message is shown
+        $response->assertSee('Get Started with Daily Calisthenics');
     }
 
     public function test_homepage_displays_standalone_exercises_in_progressions(): void

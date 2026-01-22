@@ -44,6 +44,8 @@ class GoController extends Controller
                 'exercise_id' => $exercise->id,
                 'order' => $exercise->pivot->order,
                 'duration_seconds' => $exercise->pivot->duration_seconds ?? 0,
+                'tempo' => $exercise->pivot->tempo?->value,
+                'intensity' => $exercise->pivot->intensity?->value,
             ]);
         }
 
