@@ -6,7 +6,15 @@
     $harderVariations = $exerciseRepo->getHarderVariations($exercise)->all();
 @endphp
 
-<div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false }">
+<div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
+    <!-- Collapsed View -->
+    <div x-show="!expanded" class="flex items-center justify-center gap-2 cursor-pointer" @click="expanded = true">
+        <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg truncate">{{ $exercise->name }}</span>
+        <span class="text-gray-400 text-xl font-bold">+</span>
+    </div>
+
+    <!-- Expanded View -->
+    <div x-show="expanded" x-cloak>
     <div class="flex items-start justify-between gap-2 sm:gap-3">
         <div class="flex items-start gap-1.5 sm:gap-2 flex-grow min-w-0">
             @if ($template->user_id === auth()->id())
@@ -330,7 +338,11 @@
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
                     <button type="submit" class="bg-slate-500 text-red-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-700 hover:text-red-300 transition-colors">✕</button>
                 </form>
+                <button @click="expanded = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-bold px-2 transition-colors" title="Hide details">−</button>
             </div>
+        @else
+            <button @click="expanded = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-bold px-2 transition-colors flex-shrink-0" title="Hide details">−</button>
         @endif
     </div>
+    </div><!-- end expanded -->
 </div>

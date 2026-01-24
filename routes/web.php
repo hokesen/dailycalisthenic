@@ -126,6 +126,7 @@ Route::get('/', function () {
         'userCarouselData' => $userCarouselData,
         'allExercises' => $allExercises,
         'authUserStreak' => $user->getCurrentStreak(),
+        'potentialStreak' => $user->getPotentialStreak(),
         'progressionGanttData' => $progressionGanttData,
         'initialTemplateIndex' => $initialTemplateIndex,
         'selectedTemplateId' => $selectedTemplateId,

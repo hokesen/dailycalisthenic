@@ -161,6 +161,33 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Calculate the potential streak if the user completes a session today.
+     * Returns the streak they would have after completing today's practice.
+     */
+    public function getPotentialStreak(): int
+    {
+        // Start from yesterday and count consecutive days
+        $streak = 1; // Today would count as 1
+        $currentDate = $this->now()->startOfDay()->subDay();
+
+        while (true) {
+            $hasSession = $this->sessions()
+                ->completed()
+                ->onDate($currentDate, $this->timezone ?? 'America/Los_Angeles')
+                ->exists();
+
+            if (! $hasSession) {
+                break;
+            }
+
+            $streak++;
+            $currentDate = $currentDate->copy()->subDay();
+        }
+
+        return $streak;
+    }
+
+    /**
      * Get weekly exercise breakdown with minutes per exercise for each day.
      *
      * @return array<int, array{date: \Carbon\Carbon, dayName: string, hasSession: bool, exercises: array}>

@@ -180,6 +180,55 @@ class UserTest extends TestCase
         $this->assertEquals(0, $streak);
     }
 
+    public function test_get_potential_streak_returns_one_with_no_sessions(): void
+    {
+        $user = User::factory()->create();
+
+        $potentialStreak = $user->getPotentialStreak();
+
+        $this->assertEquals(1, $potentialStreak);
+    }
+
+    public function test_get_potential_streak_counts_yesterday_streak_plus_today(): void
+    {
+        $user = User::factory()->create();
+
+        // Create sessions for yesterday and 2 days ago (but not today)
+        Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => SessionStatus::Completed,
+            'completed_at' => now()->subDays(1),
+        ]);
+
+        Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => SessionStatus::Completed,
+            'completed_at' => now()->subDays(2),
+        ]);
+
+        $potentialStreak = $user->getPotentialStreak();
+
+        // Yesterday streak was 2, so potential streak if completed today = 3
+        $this->assertEquals(3, $potentialStreak);
+    }
+
+    public function test_get_potential_streak_returns_one_if_gap_yesterday(): void
+    {
+        $user = User::factory()->create();
+
+        // Create session for 2 days ago but NOT yesterday
+        Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => SessionStatus::Completed,
+            'completed_at' => now()->subDays(2),
+        ]);
+
+        $potentialStreak = $user->getPotentialStreak();
+
+        // No session yesterday, so potential streak = 1 (just today)
+        $this->assertEquals(1, $potentialStreak);
+    }
+
     public function test_sessions_are_grouped_by_user_timezone(): void
     {
         $user = User::factory()->create(['timezone' => 'America/Los_Angeles']); // PST/PDT (UTC-8/-7)

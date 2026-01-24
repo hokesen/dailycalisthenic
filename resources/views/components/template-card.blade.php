@@ -78,7 +78,7 @@
     @if ($template->exercises->isNotEmpty())
         <div class="mb-4 flex-grow">
             <p class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Exercises:</p>
-            <div class="space-y-2 sm:space-y-3">
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
                 @foreach ($template->exercises as $exercise)
                     <x-exercise-item :template="$template" :exercise="$exercise" :allExercises="$allExercises" />
                 @endforeach
