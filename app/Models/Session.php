@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\SessionStatus;
 use App\Models\Concerns\PivotColumns;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -70,5 +72,21 @@ class Session extends Model
         $endOfDay = $dateInTimezone->copy()->endOfDay()->timezone('UTC');
 
         return $query->whereBetween('completed_at', [$startOfDay, $endOfDay]);
+    }
+
+    /**
+     * Scope to filter sessions within a date range.
+     */
+    public function scopeForDateRange(Builder $query, Carbon $start, Carbon $end): Builder
+    {
+        return $query->whereBetween('completed_at', [$start, $end]);
+    }
+
+    /**
+     * Scope to eager load session exercises with their related exercise data.
+     */
+    public function scopeWithExercises(Builder $query): Builder
+    {
+        return $query->with(['sessionExercises.exercise']);
     }
 }

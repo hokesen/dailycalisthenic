@@ -1,8 +1,15 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { csrfFetch, submitForm, deleteResource, updateResource } from './utils/fetchHelper';
 
 window.Alpine = Alpine;
+
+// Make fetch helpers available globally
+window.csrfFetch = csrfFetch;
+window.submitForm = submitForm;
+window.deleteResource = deleteResource;
+window.updateResource = updateResource;
 
 // Register workoutTimer component
 Alpine.data('workoutTimer', (config) => ({
@@ -166,12 +173,8 @@ Alpine.data('workoutTimer', (config) => ({
             return;
         }
 
-        fetch(`/go/${this.sessionId}/update`, {
+        csrfFetch(`/go/${this.sessionId}/update`, {
             method: 'PATCH',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 status: this.state === 'completed' ? 'completed' : 'in_progress',
                 total_duration_seconds: this.totalElapsedSeconds,
@@ -191,12 +194,8 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     updateSessionStatus(status) {
-        fetch(`/go/${this.sessionId}/update`, {
+        csrfFetch(`/go/${this.sessionId}/update`, {
             method: 'PATCH',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 status: status,
                 total_duration_seconds: this.totalElapsedSeconds

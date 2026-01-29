@@ -2,70 +2,12 @@
 <x-app-layout>
     <div class="py-6 sm:py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Welcome Bar with Title, Streak, and User Dropdown -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-6" x-data="{ showUserMenu: false }">
-                <div class="p-4 sm:p-6">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <!-- Left: Title and Welcome -->
-                        <div class="flex items-center gap-4">
-                            <div>
-                                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Daily Calisthenics</h1>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Welcome, {{ auth()->user()->name }}!</p>
-                            </div>
-                        </div>
-
-                        <!-- Right: Today Status, Streak, and User Menu -->
-                        <div class="flex items-center gap-3 sm:gap-4">
-                            <!-- Today's Status + Streak -->
-                            @if ($hasPracticedToday)
-                                <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span class="text-xs font-medium text-green-700 dark:text-green-400 hidden sm:inline">Practiced today</span>
-                                </div>
-                                <!-- Streak (practiced) -->
-                                <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                                    <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <span class="font-bold text-orange-800 dark:text-orange-400">{{ $authUserStreak }}</span>
-                                    <span class="text-xs text-orange-600 dark:text-orange-500 hidden sm:inline">day streak</span>
-                                </div>
-                            @else
-                                <!-- Streak (not yet practiced) - show current → potential -->
-                                <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                                    <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <span class="font-bold text-orange-800 dark:text-orange-400">{{ $authUserStreak }}</span>
-                                    <span class="text-gray-400 dark:text-gray-500">→</span>
-                                    <span class="text-gray-400 dark:text-gray-500">{{ $potentialStreak }}</span>
-                                    <span class="text-xs text-orange-600 dark:text-orange-500 hidden sm:inline">day streak</span>
-                                </div>
-                            @endif
-
-                            <!-- User Dropdown -->
-                            <div class="relative" @click.outside="showUserMenu = false">
-                                <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors">
-                                    <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
-                                    <span class="sm:hidden">Menu</span>
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                                <div x-show="showUserMenu" x-transition x-cloak class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg">Profile</a>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg">Log Out</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-dashboard.welcome-bar
+                :user="auth()->user()"
+                :hasPracticed="$hasPracticedToday"
+                :streak="$authUserStreak"
+                :potentialStreak="$potentialStreak"
+            />
 
             <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
             @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
@@ -112,7 +54,6 @@
                                                     $cellColorClass = 'bg-red-500 dark:bg-red-600';
                                                     $levelIndicator = 'bg-red-500';
                                                 }
-                                                $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
                                             @endphp
                                             <div class="flex items-center gap-2">
                                                 <!-- Exercise name with level indicator -->
@@ -123,22 +64,21 @@
                                                 <!-- Daily cells -->
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
-                                                        @php
-                                                            $dailyMinutes = round($seconds / 60);
-                                                        @endphp
                                                         <div
                                                             class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }}"
-                                                            title="{{ $dailyMinutes }} min"
+                                                            title="<x-duration-display :seconds='$seconds' /> min"
                                                         >
                                                             @if ($seconds > 0)
-                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">{{ $dailyMinutes }}</span>
+                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">
+                                                                    <x-duration-display :seconds="$seconds" />
+                                                                </span>
                                                             @endif
                                                         </div>
                                                     @endforeach
                                                 </div>
                                                 <!-- Weekly total & streak -->
                                                 <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $weeklyMinutes }}m</span>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><x-duration-display :seconds="$exercise['weekly_seconds']" />m</span>
                                                     @if ($exercise['streak'] > 0)
                                                         <span class="flex items-center gap-0.5 text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">
                                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -161,9 +101,6 @@
                                             </div>
                                         </div>
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
-                                            @php
-                                                $weeklyMinutes = round($exercise['weekly_seconds'] / 60);
-                                            @endphp
                                             <div class="flex items-center gap-2">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
                                                     <div class="w-2 h-2 rounded-full flex-shrink-0 bg-blue-500"></div>
@@ -171,21 +108,20 @@
                                                 </div>
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
-                                                        @php
-                                                            $dailyMinutes = round($seconds / 60);
-                                                        @endphp
                                                         <div
                                                             class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-200 dark:bg-gray-700' }}"
-                                                            title="{{ $dailyMinutes }} min"
+                                                            title="<x-duration-display :seconds='$seconds' /> min"
                                                         >
                                                             @if ($seconds > 0)
-                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">{{ $dailyMinutes }}</span>
+                                                                <span class="text-[8px] sm:text-[10px] text-white font-medium">
+                                                                    <x-duration-display :seconds="$seconds" />
+                                                                </span>
                                                             @endif
                                                         </div>
                                                     @endforeach
                                                 </div>
                                                 <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $weeklyMinutes }}m</span>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><x-duration-display :seconds="$exercise['weekly_seconds']" />m</span>
                                                     @if ($exercise['streak'] > 0)
                                                         <span class="flex items-center gap-0.5 text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">
                                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

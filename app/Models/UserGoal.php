@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserGoal extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'sessions_per_week',

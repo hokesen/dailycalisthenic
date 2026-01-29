@@ -125,29 +125,10 @@
                         </button>
                     @endif
                     @if ($exercise->category)
-                        @php
-                            $categoryColors = match($exercise->category->value) {
-                                'push' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                'pull' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                                'legs' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-                                'core' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                                'full_body' => 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-                                default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
-                            };
-                        @endphp
-                        <span class="text-xs px-1.5 py-0.5 rounded {{ $categoryColors }}">{{ $exercise->category->label() }}</span>
+                        <x-exercise-category-badge :category="$exercise->category" />
                     @endif
                     @if ($exercise->difficulty_level)
-                        @php
-                            $difficultyColors = match($exercise->difficulty_level->value) {
-                                'beginner' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                                'intermediate' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                                'advanced' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                'expert' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                                default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
-                            };
-                        @endphp
-                        <span class="text-xs px-1.5 py-0.5 rounded {{ $difficultyColors }}">{{ $exercise->difficulty_level->label() }}</span>
+                        <x-exercise-difficulty-badge :difficulty="$exercise->difficulty_level" />
                     @endif
                 </div>
                 <div class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base" x-show="!showEdit">

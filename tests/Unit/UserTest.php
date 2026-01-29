@@ -264,19 +264,21 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create(['timezone' => 'America/Los_Angeles']);
 
-        // Create sessions for 3 consecutive days in PST late at night
-        // These would be different days in UTC, but should be consecutive in PST
+        // Set "now" to Jan 3 12:00 PST (which is Jan 3 20:00 UTC)
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::create(2026, 1, 3, 20, 0, 0, 'UTC'));
+
+        // Create sessions for 3 consecutive days in PST
+        // Jan 1 at 10:00 PST = Jan 1 18:00 UTC
+        // Jan 2 at 10:00 PST = Jan 2 18:00 UTC
+        // Jan 3 at 10:00 PST = Jan 3 18:00 UTC
         for ($i = 0; $i < 3; $i++) {
-            $pstDate = \Carbon\Carbon::create(2026, 1, 1 + $i, 23, 30, 0, 'America/Los_Angeles');
+            $pstDate = \Carbon\Carbon::create(2026, 1, 1 + $i, 10, 0, 0, 'America/Los_Angeles');
             Session::factory()->create([
                 'user_id' => $user->id,
                 'status' => SessionStatus::Completed,
                 'completed_at' => $pstDate->copy()->timezone('UTC'),
             ]);
         }
-
-        // Mock "now" to be Jan 3 in PST
-        \Carbon\Carbon::setTestNow(\Carbon\Carbon::create(2026, 1, 3, 12, 0, 0, 'America/Los_Angeles'));
 
         $streak = $user->getCurrentStreak();
 

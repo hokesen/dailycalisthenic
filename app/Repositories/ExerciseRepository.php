@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\User;
 use App\Services\DefaultExerciseService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class ExerciseRepository
 {
@@ -70,26 +71,38 @@ class ExerciseRepository
     /**
      * Convert default exercises from JSON into Exercise model instances.
      * These are not persisted but behave like models for display purposes.
+     * Results are cached permanently since defaults only change on deployment.
      */
     public function getDefaultExercisesAsModels(): Collection
     {
-        $defaults = $this->defaultExerciseService->getDefaultExercises();
+        return Cache::rememberForever('default_exercises_models', function () {
+            $defaults = $this->defaultExerciseService->getDefaultExercises();
 
-        return $defaults->map(function ($data) {
-            $exercise = new Exercise;
-            $exercise->id = $data->id;
-            $exercise->user_id = null;
-            $exercise->name = $data->name;
-            $exercise->description = $data->description;
-            $exercise->instructions = $data->instructions;
-            $exercise->difficulty_level = $data->difficulty_level;
-            $exercise->category = $data->category;
-            $exercise->default_duration_seconds = $data->default_duration_seconds;
-            $exercise->exists = false; // Mark as not persisted
-            $exercise->is_default = true;
+            return $defaults->map(function ($data) {
+                $exercise = new Exercise;
+                $exercise->id = $data->id;
+                $exercise->user_id = null;
+                $exercise->name = $data->name;
+                $exercise->description = $data->description;
+                $exercise->instructions = $data->instructions;
+                $exercise->difficulty_level = $data->difficulty_level;
+                $exercise->category = $data->category;
+                $exercise->default_duration_seconds = $data->default_duration_seconds;
+                $exercise->exists = false; // Mark as not persisted
+                $exercise->is_default = true;
 
-            return $exercise;
-        })->values();
+                return $exercise;
+            })->values();
+        });
+    }
+
+    /**
+     * Clear the default exercises cache.
+     * Should be called after deployment or when default exercises JSON changes.
+     */
+    public function clearDefaultExercisesCache(): void
+    {
+        Cache::forget('default_exercises_models');
     }
 
     /**

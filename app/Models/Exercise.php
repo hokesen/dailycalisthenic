@@ -6,6 +6,7 @@ use App\Enums\ExerciseCategory;
 use App\Enums\ExerciseDifficulty;
 use App\Models\Concerns\HasProgressionVariations;
 use App\Models\Concerns\PivotColumns;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -73,6 +74,24 @@ class Exercise extends Model
         return $query->where(function ($q) use ($user) {
             $q->whereNull('user_id')
                 ->orWhere('user_id', $user->id);
+        });
+    }
+
+    /**
+     * Scope to eager load progression relationships.
+     */
+    public function scopeWithProgression(Builder $query): Builder
+    {
+        return $query->with(['progression.easierExercise', 'progression.harderExercise']);
+    }
+
+    /**
+     * Scope to filter exercises by progression path name.
+     */
+    public function scopeInProgressionPath(Builder $query, string $pathName): Builder
+    {
+        return $query->whereHas('progression', function ($q) use ($pathName) {
+            $q->where('progression_path_name', $pathName);
         });
     }
 }

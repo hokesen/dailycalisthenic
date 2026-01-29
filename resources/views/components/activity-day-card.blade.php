@@ -2,7 +2,6 @@
 
 @php
     $totalSeconds = collect($day['exercises'])->sum('total_seconds');
-    $totalMinutes = $totalSeconds > 0 ? round($totalSeconds / 60) : 0;
 @endphp
 
 <div class="flex flex-col items-center">
@@ -16,8 +15,10 @@
             <svg class="w-6 h-6 text-green-600 dark:text-green-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
             </svg>
-            @if ($totalMinutes > 0)
-                <div class="text-xs font-medium text-green-700 dark:text-green-400">{{ $totalMinutes }} min</div>
+            @if ($totalSeconds > 0)
+                <div class="text-xs font-medium text-green-700 dark:text-green-400">
+                    <x-duration-display :seconds="$totalSeconds" /> min
+                </div>
             @endif
         @else
             <div class="text-gray-400 dark:text-gray-600">-</div>

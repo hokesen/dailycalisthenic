@@ -34,12 +34,11 @@
                         @if (count($standaloneExercises) > 0)
                             <div class="flex flex-wrap gap-3 {{ count($progressionSummary) > 0 ? 'pt-6 border-t border-gray-200 dark:border-gray-700' : '' }}">
                                 @foreach ($standaloneExercises as $exercise)
-                                    @php
-                                        $minutes = round($exercise['total_seconds'] / 60);
-                                    @endphp
                                     <div class="flex-shrink-0 rounded-lg px-4 py-3 min-w-[160px] text-center bg-green-50 dark:bg-green-900/20 border-2 border-green-500 dark:border-green-600">
                                         <div class="text-gray-900 dark:text-gray-100 font-medium mb-1">{{ $exercise['name'] }}</div>
-                                        <div class="text-green-700 dark:text-green-400 text-sm font-semibold">{{ $minutes }} min</div>
+                                        <div class="text-green-700 dark:text-green-400 text-sm font-semibold">
+                                            <x-duration-display :seconds="$exercise['total_seconds']" /> min
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

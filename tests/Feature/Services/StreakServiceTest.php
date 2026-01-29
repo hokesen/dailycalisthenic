@@ -37,7 +37,7 @@ class StreakServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->subDays(2),
+            'completed_at' => $user->now()->timezone('UTC')->subDays(2),
             'total_duration_seconds' => 300,
         ]);
 
@@ -53,7 +53,7 @@ class StreakServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -70,7 +70,7 @@ class StreakServiceTest extends TestCase
             Session::factory()->create([
                 'user_id' => $user->id,
                 'status' => SessionStatus::Completed,
-                'completed_at' => $user->now()->subDays($i),
+                'completed_at' => $user->now()->timezone('UTC')->subDays($i)->timezone('UTC'),
                 'total_duration_seconds' => 300,
             ]);
         }
@@ -87,21 +87,21 @@ class StreakServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->subDays(1),
+            'completed_at' => $user->now()->timezone('UTC')->subDays(1),
             'total_duration_seconds' => 300,
         ]);
 
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->subDays(5),
+            'completed_at' => $user->now()->timezone('UTC')->subDays(5),
             'total_duration_seconds' => 300,
         ]);
 
@@ -127,7 +127,7 @@ class StreakServiceTest extends TestCase
             Session::factory()->create([
                 'user_id' => $user->id,
                 'status' => SessionStatus::Completed,
-                'completed_at' => $user->now()->subDays($i),
+                'completed_at' => $user->now()->timezone('UTC')->subDays($i),
                 'total_duration_seconds' => 300,
             ]);
         }
@@ -144,14 +144,14 @@ class StreakServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->subDay(),
+            'completed_at' => $user->now()->timezone('UTC')->subDay(),
             'total_duration_seconds' => 300,
         ]);
 

@@ -22,7 +22,7 @@ class AddExerciseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'exercise_id' => 'required|exists:exercises,id',
+            'exercise_id' => 'required|integer',
         ];
     }
 }

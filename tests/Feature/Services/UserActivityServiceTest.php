@@ -31,7 +31,7 @@ class UserActivityServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -56,7 +56,7 @@ class UserActivityServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->subDay(),
+            'completed_at' => $user->now()->timezone('UTC')->subDay(),
             'total_duration_seconds' => 300,
         ]);
 
@@ -72,7 +72,7 @@ class UserActivityServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -92,7 +92,7 @@ class UserActivityServiceTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -109,7 +109,7 @@ class UserActivityServiceTest extends TestCase
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -135,7 +135,7 @@ class UserActivityServiceTest extends TestCase
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now(),
+            'completed_at' => $user->now()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -143,7 +143,7 @@ class UserActivityServiceTest extends TestCase
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->addHour(),
+            'completed_at' => $user->now()->timezone('UTC')->addHour(),
             'total_duration_seconds' => 300,
         ]);
 

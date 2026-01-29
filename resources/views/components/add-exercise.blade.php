@@ -4,9 +4,13 @@
     <form action="{{ route('templates.add-exercise', $template) }}" method="POST" x-show="!showCustom" @submit.prevent="
         fetch($el.action, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({ exercise_id: $el.querySelector('select').value })
-        }).then(() => location.reload())
+        }).then(response => response.json()).then(() => location.reload()).catch(err => console.error(err))
     ">
         @csrf
         <select name="exercise_id" @change="if($event.target.value === 'custom') { showCustom = true; $event.target.value = ''; } else { $event.target.form.requestSubmit(); }" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
@@ -27,9 +31,13 @@
     <form action="{{ route('templates.add-custom-exercise', $template) }}" method="POST" x-show="showCustom" class="flex gap-2" @submit.prevent="
         fetch($el.action, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({ name: customName })
-        }).then(() => location.reload())
+        }).then(response => response.json()).then(() => location.reload()).catch(err => console.error(err))
     ">
         @csrf
         <input type="text" name="name" x-model="customName" placeholder="Exercise name..." class="flex-grow border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none" required>
