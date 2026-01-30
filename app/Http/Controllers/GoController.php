@@ -7,6 +7,8 @@ use App\Enums\SessionStatus;
 use App\Http\Requests\UpdateSessionRequest;
 use App\Models\Session;
 use App\Models\SessionTemplate;
+use App\Services\CachedProgressionAnalyticsService;
+use App\Services\CachedStreakService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,11 @@ use Illuminate\View\View;
 
 class GoController extends Controller
 {
+    public function __construct(
+        private CachedStreakService $streakService,
+        private CachedProgressionAnalyticsService $analyticsService
+    ) {}
+
     public function index(Request $request): View|RedirectResponse
     {
         $templateId = $request->query('template');
@@ -73,8 +80,10 @@ class GoController extends Controller
             $updateData['started_at'] = now();
         }
 
+        $wasJustCompleted = false;
         if ($request->validated('status') === SessionStatus::Completed->value && $session->completed_at === null) {
             $updateData['completed_at'] = now();
+            $wasJustCompleted = true;
         }
 
         $session->update($updateData);
@@ -104,6 +113,12 @@ class GoController extends Controller
                     $sessionExercise->update($updateExerciseData);
                 }
             }
+        }
+
+        // Invalidate caches when session is completed
+        if ($wasJustCompleted) {
+            $this->streakService->invalidateUserCache($session->user_id);
+            $this->analyticsService->invalidateUserCache($session->user_id);
         }
 
         return response()->json(['success' => true]);

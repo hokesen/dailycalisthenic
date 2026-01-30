@@ -7,6 +7,7 @@ use App\Models\Session;
 use App\Models\SessionTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class GoTest extends TestCase
@@ -459,5 +460,40 @@ class GoTest extends TestCase
         $this->assertNotNull($sessionExercise->completed_at);
         // Duration should be set to actual time spent (30 seconds)
         $this->assertEquals(30, $sessionExercise->duration_seconds);
+    }
+
+    public function test_completing_session_invalidates_user_caches(): void
+    {
+        $user = User::factory()->create();
+        $session = Session::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'in_progress',
+            'started_at' => now(),
+            'completed_at' => null,
+        ]);
+
+        // Pre-populate some caches
+        Cache::put("user:{$user->id}:streak", 5, 3600);
+        Cache::put("user:{$user->id}:potential_streak", 6, 3600);
+        Cache::put("user:{$user->id}:analytics:gantt:7", ['some' => 'data'], 3600);
+
+        // Verify caches exist
+        $this->assertTrue(Cache::has("user:{$user->id}:streak"));
+        $this->assertTrue(Cache::has("user:{$user->id}:analytics:gantt:7"));
+
+        // Complete the session
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/go/'.$session->id.'/update', [
+                'status' => 'completed',
+                'total_duration_seconds' => 600,
+            ]);
+
+        $response->assertOk();
+
+        // Verify caches were invalidated
+        $this->assertFalse(Cache::has("user:{$user->id}:streak"));
+        $this->assertFalse(Cache::has("user:{$user->id}:potential_streak"));
+        $this->assertFalse(Cache::has("user:{$user->id}:analytics:gantt:7"));
     }
 }
