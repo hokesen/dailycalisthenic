@@ -27,7 +27,7 @@
                                 <div class="max-w-4xl mx-auto flex-1 min-h-0 overflow-auto my-4 w-full px-4">
                                     <div class="bg-gray-700 rounded-lg p-4 space-y-4">
                                         <!-- Completed Exercises -->
-                                        <div x-show="completedExercises.length > 0">
+                                        <div>
                                             <h3 class="text-xl font-semibold text-gray-100 mb-3 flex items-center justify-center gap-2">
                                                 <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -36,23 +36,6 @@
                                             </h3>
                                             <div class="space-y-2">
                                                 <template x-for="exercise in completedExercises" :key="exercise.id">
-                                                    <div class="text-gray-200 bg-gray-600 rounded p-2 text-base">
-                                                        <span x-text="exercise.name"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-
-                                        <!-- Skipped Exercises -->
-                                        <div x-show="skippedExercises.length > 0">
-                                            <h3 class="text-xl font-semibold text-gray-100 mb-3 flex items-center justify-center gap-2">
-                                                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-                                                </svg>
-                                                <span>Skipped (<span x-text="skippedExercises.length"></span>)</span>
-                                            </h3>
-                                            <div class="space-y-2">
-                                                <template x-for="exercise in skippedExercises" :key="exercise.id">
                                                     <div class="text-gray-200 bg-gray-600 rounded p-2 text-base">
                                                         <span x-text="exercise.name"></span>
                                                     </div>
@@ -176,14 +159,9 @@
                                             Resume
                                         </button>
 
-                                        <button x-show="state === 'running' || state === 'paused'" @click="skipToNext"
+                                        <button x-show="state === 'running' || state === 'paused'" @click="next"
                                             class="px-8 py-4 bg-blue-600 text-white rounded-xl text-xl font-semibold hover:bg-blue-700 transition-colors">
-                                            Skip
-                                        </button>
-
-                                        <button x-show="state === 'running' || state === 'paused'" @click="markCompleted"
-                                            class="px-8 py-4 bg-purple-600 text-white rounded-xl text-xl font-semibold hover:bg-purple-700 transition-colors">
-                                            Mark Completed
+                                            Next
                                         </button>
                                     </div>
 
@@ -191,8 +169,7 @@
                                     <div x-show="state !== 'completed'" class="hidden md:flex gap-4 justify-center text-sm text-gray-500 mt-2">
                                         <span x-show="state === 'ready'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> to start</span>
                                         <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Space</kbd> pause/resume</span>
-                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">S</kbd> skip</span>
-                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> complete</span>
+                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> next</span>
                                     </div>
                                 </div>
 

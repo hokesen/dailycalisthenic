@@ -27,7 +27,8 @@ class UpdateSessionRequest extends FormRequest
             'exercise_completion' => 'nullable|array',
             'exercise_completion.*.exercise_id' => 'required|integer|exists:exercises,id',
             'exercise_completion.*.order' => 'required|integer|min:1',
-            'exercise_completion.*.status' => 'required|string|in:completed,skipped,marked_completed,incomplete',
+            'exercise_completion.*.status' => 'required|string|in:completed,incomplete',
+            'exercise_completion.*.duration_seconds' => 'nullable|integer|min:0',
         ];
     }
 }

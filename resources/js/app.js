@@ -37,14 +37,7 @@ Alpine.data('workoutTimer', (config) => ({
 
     get completedExercises() {
         return this.exercises.filter((_, index) =>
-            this.exerciseCompletionStatus[index] === 'completed' ||
-            this.exerciseCompletionStatus[index] === 'marked_completed'
-        );
-    },
-
-    get skippedExercises() {
-        return this.exercises.filter((_, index) =>
-            this.exerciseCompletionStatus[index] === 'skipped'
+            this.exerciseCompletionStatus[index] === 'completed'
         );
     },
 
@@ -68,20 +61,14 @@ Alpine.data('workoutTimer', (config) => ({
                 }
             }
 
-            // Enter: start (when ready) or mark complete (when running/paused)
+            // Enter: start (when ready) or next (when running/paused)
             if (e.code === 'Enter') {
                 e.preventDefault();
                 if (this.state === 'ready') {
                     this.start();
                 } else if (this.state === 'running' || this.state === 'paused') {
-                    this.markCompleted();
+                    this.next();
                 }
-            }
-
-            // S: skip current exercise
-            if (e.code === 'KeyS' && (this.state === 'running' || this.state === 'paused')) {
-                e.preventDefault();
-                this.skipToNext();
             }
         });
     },
@@ -152,25 +139,32 @@ Alpine.data('workoutTimer', (config) => ({
         }
     },
 
-    skipToNext() {
+    next() {
         if (!this.isResting && !this.exerciseCompletionStatus[this.currentExerciseIndex]) {
-            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'skipped';
-            this.updateExerciseCompletion(this.currentExerciseIndex, 'skipped');
+            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'completed';
+            // Calculate actual time spent on this exercise
+            const actualDuration = this.currentExercise.duration_seconds - this.timeRemaining;
+            this.updateExerciseCompletion(this.currentExerciseIndex, 'completed', actualDuration);
         }
-        this.handleTimerComplete();
-    },
-
-    markCompleted() {
-        this.exerciseCompletionStatus[this.currentExerciseIndex] = 'marked_completed';
-        this.updateExerciseCompletion(this.currentExerciseIndex, 'marked_completed');
         this.isResting = false;
         this.moveToNextExercise();
     },
 
-    updateExerciseCompletion(exerciseIndex, status) {
+    updateExerciseCompletion(exerciseIndex, status, actualDuration = null) {
         const exercise = this.exercises[exerciseIndex];
         if (!exercise) {
             return;
+        }
+
+        const exerciseData = {
+            exercise_id: exercise.id,
+            order: exercise.order,
+            status: status
+        };
+
+        // Include actual duration for skipped exercises
+        if (actualDuration !== null) {
+            exerciseData.duration_seconds = actualDuration;
         }
 
         csrfFetch(`/go/${this.sessionId}/update`, {
@@ -178,11 +172,7 @@ Alpine.data('workoutTimer', (config) => ({
             body: JSON.stringify({
                 status: this.state === 'completed' ? 'completed' : 'in_progress',
                 total_duration_seconds: this.totalElapsedSeconds,
-                exercise_completion: [{
-                    exercise_id: exercise.id,
-                    order: exercise.order,
-                    status: status
-                }]
+                exercise_completion: [exerciseData]
             })
         });
     },

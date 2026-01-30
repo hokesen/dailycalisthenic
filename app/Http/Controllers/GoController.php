@@ -95,11 +95,10 @@ class GoController extends Controller
 
                     if ($completion['status'] === 'completed') {
                         $updateExerciseData['completed_at'] = $now;
-                    }
-
-                    if ($completion['status'] === 'marked_completed') {
-                        $updateExerciseData['completed_at'] = $now;
-                        $updateExerciseData['duration_seconds'] = 1;
+                        // If actual duration is provided (e.g., user pressed "next" early), use it
+                        if (isset($completion['duration_seconds'])) {
+                            $updateExerciseData['duration_seconds'] = $completion['duration_seconds'];
+                        }
                     }
 
                     $sessionExercise->update($updateExerciseData);
