@@ -2,6 +2,7 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 import { csrfFetch, submitForm, deleteResource, updateResource } from './utils/fetchHelper';
+import ganttChart from './components/ganttChart';
 
 window.Alpine = Alpine;
 
@@ -10,6 +11,9 @@ window.csrfFetch = csrfFetch;
 window.submitForm = submitForm;
 window.deleteResource = deleteResource;
 window.updateResource = updateResource;
+
+// Register ganttChart component
+Alpine.data('ganttChart', ganttChart);
 
 // Register workoutTimer component
 Alpine.data('workoutTimer', (config) => ({

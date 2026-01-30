@@ -253,11 +253,24 @@ class ProgressionAnalyticsService
         }
 
         $dayLabels = [];
+        $dayColumns = [];
         $dailyTotals = [];
         $weeklyTotal = 0;
+        $todayIndex = null;
 
-        foreach ($dailyData as $day) {
+        foreach ($dailyData as $index => $day) {
             $dayLabels[] = substr($day['dayName'], 0, 1);
+            $dayColumns[] = [
+                'date' => $day['date']->format('M j'),
+                'day_name' => $day['dayName'],
+                'full_date' => $day['date']->format('Y-m-d'),
+                'is_today' => $day['date']->isToday(),
+            ];
+
+            if ($day['date']->isToday()) {
+                $todayIndex = $index;
+            }
+
             $dayTotal = array_sum($day['exercises']);
             $dailyTotals[] = $dayTotal;
             $weeklyTotal += $dayTotal;
@@ -267,8 +280,14 @@ class ProgressionAnalyticsService
             'progressions' => array_values($progressionPaths),
             'standalone' => $standaloneExercises,
             'dayLabels' => $dayLabels,
+            'dayColumns' => $dayColumns,
             'dailyTotals' => $dailyTotals,
             'weeklyTotal' => $weeklyTotal,
+            'date_range' => [
+                'start' => $startDate->format('M j'),
+                'end' => $endDate->format('M j'),
+            ],
+            'today_index' => $todayIndex,
         ];
     }
 }

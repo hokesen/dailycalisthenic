@@ -6,12 +6,11 @@
                 :user="auth()->user()"
                 :hasPracticed="$hasPracticedToday"
                 :streak="$authUserStreak"
-                :potentialStreak="$potentialStreak"
             />
 
             <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
             @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true }">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
                     <div class="p-4 sm:p-6">
                         <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">
                             <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
@@ -28,45 +27,100 @@
 
                         <div x-show="showChart" x-transition class="mt-4">
                             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+                                <!-- Date Range Header -->
+                                <div class="mb-3 text-center">
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        {{ $progressionGanttData['date_range']['start'] }} - {{ $progressionGanttData['date_range']['end'] }}
+                                    </span>
+                                </div>
+
+                                <!-- Column Headers -->
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-28 sm:w-36"></div>
+                                    <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                        @foreach ($progressionGanttData['dayColumns'] as $index => $column)
+                                            <div class="text-center {{ $column['is_today'] ? 'bg-indigo-100 dark:bg-indigo-900/30 rounded-t-sm' : '' }}">
+                                                <div class="text-[10px] font-semibold {{ $column['is_today'] ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-500' }}">
+                                                    {{ $column['day_name'] }}
+                                                </div>
+                                                <div class="text-[9px] {{ $column['is_today'] ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600' }}">
+                                                    {{ $column['date'] }}
+                                                </div>
+                                                @if ($column['is_today'])
+                                                    <div class="text-[8px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
+                                                        Today
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="w-16 sm:w-20"></div>
+                                </div>
+
+                                <!-- Legend -->
+                                <div class="flex items-center justify-center gap-4 mb-3 text-xs">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-4 h-4 rounded bg-emerald-500"></div>
+                                        <span class="text-gray-600 dark:text-gray-400">Completed</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
+                                        <span class="text-gray-600 dark:text-gray-400">Not practiced</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-4 h-4 rounded ring-2 ring-indigo-400"></div>
+                                        <span class="text-gray-600 dark:text-gray-400">Today</span>
+                                    </div>
+                                </div>
+
                                 <div class="space-y-1">
                                     @foreach ($progressionGanttData['progressions'] as $progression)
                                         <!-- Progression Group Header -->
                                         <div class="flex items-center gap-2 pt-2 {{ !$loop->first ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
-                                            <div class="w-28 sm:w-36"></div>
+                                            <div class="w-28 sm:w-36">
+                                                <button
+                                                    @click="toggleGroup('{{ $progression['path_name'] }}')"
+                                                    class="flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                >
+                                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': !isGroupCollapsed('{{ $progression['path_name'] }}') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ count($progression['exercises']) }}</span>
+                                                </button>
+                                            </div>
                                             <div class="flex-1">
                                                 <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">{{ ucwords($progression['path_name']) }}</span>
                                             </div>
                                         </div>
+
+                                        <div x-show="!isGroupCollapsed('{{ $progression['path_name'] }}')" x-collapse>
                                         @foreach ($progression['exercises'] as $exercise)
                                             @php
-                                                // Color coding based on position in progression (0 = first/easiest)
+                                                // Simplified binary color scheme
+                                                $cellColorClass = 'bg-emerald-500 dark:bg-emerald-600';
+                                                $levelIndicator = 'bg-emerald-500';
+                                                // Position indicator for progression level
                                                 $position = $exercise['order'];
-                                                if ($position === 0) {
-                                                    $cellColorClass = 'bg-green-500 dark:bg-green-600';
-                                                    $levelIndicator = 'bg-green-500';
-                                                } elseif ($position === 1) {
-                                                    $cellColorClass = 'bg-blue-500 dark:bg-blue-600';
-                                                    $levelIndicator = 'bg-blue-500';
-                                                } elseif ($position === 2) {
-                                                    $cellColorClass = 'bg-yellow-500 dark:bg-yellow-600';
-                                                    $levelIndicator = 'bg-yellow-500';
-                                                } else {
-                                                    $cellColorClass = 'bg-red-500 dark:bg-red-600';
-                                                    $levelIndicator = 'bg-red-500';
-                                                }
+                                                $positionDisplay = $position + 1;
                                             @endphp
                                             <div class="flex items-center gap-2">
-                                                <!-- Exercise name with level indicator -->
+                                                <!-- Exercise name with progression level -->
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
-                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 {{ $levelIndicator }}"></div>
+                                                    <span class="flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex-shrink-0">
+                                                        {{ $positionDisplay }}
+                                                    </span>
                                                     <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
                                                 <!-- Daily cells -->
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
+                                                        @php
+                                                            $isToday = $dayIndex === $progressionGanttData['today_index'];
+                                                            $todayClass = $isToday ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '';
+                                                        @endphp
                                                         <div
-                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }}"
-                                                            title="<x-duration-display :seconds='$seconds' /> min"
+                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -90,27 +144,44 @@
                                                 </div>
                                             </div>
                                         @endforeach
+                                        </div>
                                     @endforeach
 
                                     @if (count($progressionGanttData['standalone']) > 0)
                                         <!-- Standalone exercises section -->
                                         <div class="flex items-center gap-2 pt-2 {{ count($progressionGanttData['progressions']) > 0 ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
-                                            <div class="w-28 sm:w-36"></div>
+                                            <div class="w-28 sm:w-36">
+                                                <button
+                                                    @click="toggleGroup('standalone')"
+                                                    class="flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                >
+                                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': !isGroupCollapsed('standalone') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ count($progressionGanttData['standalone']) }}</span>
+                                                </button>
+                                            </div>
                                             <div class="flex-1">
                                                 <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Other</span>
                                             </div>
                                         </div>
+
+                                        <div x-show="!isGroupCollapsed('standalone')" x-collapse>
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
                                             <div class="flex items-center gap-2">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
-                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 bg-blue-500"></div>
+                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-500"></div>
                                                     <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
+                                                        @php
+                                                            $isToday = $dayIndex === $progressionGanttData['today_index'];
+                                                            $todayClass = $isToday ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '';
+                                                        @endphp
                                                         <div
-                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-200 dark:bg-gray-700' }}"
-                                                            title="<x-duration-display :seconds='$seconds' /> min"
+                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -133,6 +204,7 @@
                                                 </div>
                                             </div>
                                         @endforeach
+                                        </div>
                                     @endif
                                 </div>
 

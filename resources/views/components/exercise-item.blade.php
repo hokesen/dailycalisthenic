@@ -9,7 +9,7 @@
 <div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
     <!-- Collapsed View -->
     <div x-show="!expanded" class="flex items-center justify-center gap-2 cursor-pointer" @click="expanded = true">
-        <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg truncate">{{ $exercise->name }}</span>
+        <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg truncate" title="{{ $exercise->name }}">{{ $exercise->name }}</span>
         <span class="text-gray-400 text-xl font-bold">+</span>
     </div>
 

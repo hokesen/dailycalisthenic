@@ -1,4 +1,4 @@
-@props(['user', 'hasPracticed', 'streak', 'potentialStreak'])
+@props(['user', 'hasPracticed', 'streak'])
 
 <!-- Welcome Bar with Title, Streak, and User Dropdown -->
 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-6" x-data="{ showUserMenu: false }">
@@ -18,10 +18,7 @@
                 <x-today-status-badge :hasPracticed="$hasPracticed" />
 
                 <!-- Streak -->
-                <x-streak-badge
-                    :count="$streak"
-                    :potentialStreak="$hasPracticed ? null : $potentialStreak"
-                />
+                <x-streak-badge :count="$streak" />
 
                 <!-- User Dropdown -->
                 <div class="relative" @click.outside="showUserMenu = false">
