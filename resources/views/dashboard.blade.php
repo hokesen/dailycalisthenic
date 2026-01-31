@@ -9,20 +9,26 @@
             />
 
             <!-- Tab Navigation -->
-            <div class="mb-6" x-data="{ activeTab: 'activity' }">
+            <div class="mb-6" x-data="{ activeTab: 'activity' }" @keydown.arrow-right.window="if (activeTab === 'activity') activeTab = 'templates'" @keydown.arrow-left.window="if (activeTab === 'templates') activeTab = 'activity'">
                 <div class="border-b border-gray-200 dark:border-gray-700">
-                    <nav class="-mb-px flex gap-8" aria-label="Tabs">
+                    <nav class="-mb-px flex gap-8" aria-label="Tabs" role="tablist">
                         <button
                             @click="activeTab = 'activity'"
                             :class="activeTab === 'activity' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            :aria-selected="activeTab === 'activity'"
+                            role="tab"
+                            aria-controls="activity-panel"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
                             Activity
                         </button>
                         <button
                             @click="activeTab = 'templates'"
                             :class="activeTab === 'templates' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            :aria-selected="activeTab === 'templates'"
+                            role="tab"
+                            aria-controls="templates-panel"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
                             Templates
                         </button>
@@ -30,7 +36,7 @@
                 </div>
 
                 <!-- Activity Tab Content -->
-                <div x-show="activeTab === 'activity'" x-transition class="mt-6">
+                <div x-show="activeTab === 'activity'" x-transition class="mt-6" role="tabpanel" id="activity-panel" aria-labelledby="activity-tab">
                     <!-- Filter Controls -->
                     <div class="mb-4 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
@@ -173,7 +179,7 @@
                                                                 : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="rounded-sm transition-all flex items-center justify-center {{ $seconds > 0 ? $cellColorClass . ' cursor-pointer hover:brightness-110' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm transition-all duration-200 ease-in-out flex items-center justify-center {{ $seconds > 0 ? $cellColorClass . ' cursor-pointer hover:brightness-110 hover:scale-105 hover:shadow-md' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
                                                             style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
                                                             @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', '{{ addslashes($progression['path_name']) }}', {{ $exercise['order'] + 1 }})"
@@ -272,7 +278,7 @@
                                                                 : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="rounded-sm transition-all flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600 cursor-pointer hover:brightness-110' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm transition-all duration-200 ease-in-out flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600 cursor-pointer hover:brightness-110 hover:scale-105 hover:shadow-md' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
                                                             style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
                                                             @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', null, null)"
@@ -478,7 +484,7 @@
                 </div>
 
                 <!-- Templates Tab Content -->
-                <div x-show="activeTab === 'templates'" x-transition class="mt-6">
+                <div x-show="activeTab === 'templates'" x-transition class="mt-6" role="tabpanel" id="templates-panel" aria-labelledby="templates-tab">
                     @if ($userCarouselData->isEmpty())
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ created: false, cardHtml: '' }">
                     <div class="p-6 text-gray-900 dark:text-gray-100">

@@ -1,3 +1,55 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Print Styles */
+@media print {
+    /* Hide navigation, header, and non-essential elements */
+    nav[aria-label="Tabs"],
+    button[aria-controls],
+    .no-print {
+        display: none !important;
+    }
+
+    /* Show all tab content when printing */
+    [role="tabpanel"] {
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    /* Optimize gantt chart for printing */
+    .bg-gray-50,
+    .bg-gray-900 {
+        background-color: white !important;
+    }
+
+    /* Ensure colors are visible in print */
+    .bg-emerald-500,
+    .bg-emerald-600 {
+        background-color: #10b981 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .bg-gray-200,
+    .bg-gray-700 {
+        background-color: #e5e7eb !important;
+        border: 1px solid #d1d5db !important;
+    }
+
+    /* Remove shadows and transitions for print */
+    * {
+        box-shadow: none !important;
+        transition: none !important;
+    }
+
+    /* Optimize page breaks */
+    .gantt-section {
+        page-break-inside: avoid;
+    }
+
+    /* Set page margins */
+    @page {
+        margin: 1cm;
+    }
+}

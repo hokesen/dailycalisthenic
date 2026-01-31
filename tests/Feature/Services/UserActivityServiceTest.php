@@ -131,11 +131,15 @@ class UserActivityServiceTest extends TestCase
     {
         $user = User::factory()->create(['timezone' => 'America/Los_Angeles']);
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
+
+        // Set a specific time that won't cross midnight when adding 1 hour
+        $baseTime = $user->now()->setTime(12, 0, 0); // Noon in user's timezone
+
         $session1 = Session::factory()->create([
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->timezone('UTC'),
+            'completed_at' => $baseTime->copy()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
@@ -143,7 +147,7 @@ class UserActivityServiceTest extends TestCase
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => SessionStatus::Completed,
-            'completed_at' => $user->now()->timezone('UTC')->addHour(),
+            'completed_at' => $baseTime->copy()->addHour()->timezone('UTC'),
             'total_duration_seconds' => 300,
         ]);
 
