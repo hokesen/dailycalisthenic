@@ -33,8 +33,13 @@ class DashboardController extends Controller
 
         $allExercises = $this->exerciseRepository->getAvailableForUser($user);
 
+        // Get days filter from request (default: 7)
+        $days = (int) $request->query('days', 7);
+        // Validate days parameter
+        $days = in_array($days, [7, 14, 30]) ? $days : 7;
+
         $userNow = $user->now();
-        $startDate = $userNow->copy()->subDays(6)->startOfDay();
+        $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
         $endDate = $userNow->copy()->endOfDay();
         $startDateUtc = $startDate->copy()->timezone('UTC');
         $endDateUtc = $endDate->copy()->timezone('UTC');
@@ -63,7 +68,7 @@ class DashboardController extends Controller
                 'user' => $user,
                 'templates' => $authUserTemplates,
                 'currentStreak' => $this->streakService->calculateStreak($user),
-                'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($user, 7),
+                'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($user, $days),
                 'topTemplateId' => $authUserTemplates->first()->id ?? null,
             ]);
         }
@@ -100,13 +105,13 @@ class DashboardController extends Controller
                     'user' => $otherUser,
                     'templates' => $publicTemplates,
                     'currentStreak' => $this->streakService->calculateStreak($otherUser),
-                    'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($otherUser, 7),
+                    'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($otherUser, $days),
                     'topTemplateId' => $publicTemplates->first()->id,
                 ]);
             }
         }
 
-        $progressionGanttData = $user->getProgressionGanttData(7);
+        $progressionGanttData = $user->getProgressionGanttData($days);
 
         $todayStartUtc = $userNow->copy()->startOfDay()->timezone('UTC');
         $todayEndUtc = $userNow->copy()->endOfDay()->timezone('UTC');

@@ -8,12 +8,51 @@
                 :streak="$authUserStreak"
             />
 
-            <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
-            @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
+            <!-- Tab Navigation -->
+            <div class="mb-6" x-data="{ activeTab: 'activity' }">
+                <div class="border-b border-gray-200 dark:border-gray-700">
+                    <nav class="-mb-px flex gap-8" aria-label="Tabs">
+                        <button
+                            @click="activeTab = 'activity'"
+                            :class="activeTab === 'activity' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                        >
+                            Activity
+                        </button>
+                        <button
+                            @click="activeTab = 'templates'"
+                            :class="activeTab === 'templates' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                        >
+                            Templates
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Activity Tab Content -->
+                <div x-show="activeTab === 'activity'" x-transition class="mt-6">
+                    <!-- Filter Controls -->
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
+                            <select
+                                onchange="window.location.href = '{{ route('home') }}?days=' + this.value"
+                                class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="7" {{ request('days', 7) == 7 ? 'selected' : '' }}>7 days</option>
+                                <option value="14" {{ request('days', 7) == 14 ? 'selected' : '' }}>14 days</option>
+                                <option value="30" {{ request('days', 7) == 30 ? 'selected' : '' }}>30 days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
+                    @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
                     <div class="p-4 sm:p-6">
                         <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">
-                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progress</h3>
                             <div class="flex items-center gap-2">
                                 @php
                                     $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
@@ -56,6 +95,13 @@
                                     </div>
                                     <div class="w-16 sm:w-20"></div>
                                 </div>
+
+                                @php
+                                    // Calculate global max duration for proportional cell heights
+                                    $globalMaxSeconds = max($progressionGanttData['dailyMaxSeconds']);
+                                    // Ensure minimum of 60 seconds to prevent division by zero
+                                    $globalMaxSeconds = max($globalMaxSeconds, 60);
+                                @endphp
 
                                 <!-- Legend -->
                                 <div class="flex items-center justify-center gap-4 mb-3 text-xs">
@@ -103,7 +149,7 @@
                                                 $position = $exercise['order'];
                                                 $positionDisplay = $position + 1;
                                             @endphp
-                                            <div class="flex items-center gap-2">
+                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('{{ $progression['path_name'] }}', {{ $loop->index }}, {{ count($progression['exercises']) }})">
                                                 <!-- Exercise name with progression level -->
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
                                                     <span class="flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex-shrink-0">
@@ -112,15 +158,25 @@
                                                     <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
                                                 <!-- Daily cells -->
-                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1 items-end">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
                                                         @php
                                                             $isToday = $dayIndex === $progressionGanttData['today_index'];
                                                             $todayClass = $isToday ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '';
+
+                                                            // Calculate proportional height (min 1rem, max 3rem)
+                                                            $heightPercent = $seconds > 0 ? ($seconds / $globalMaxSeconds) * 100 : 0;
+                                                            $minHeight = 1; // rem
+                                                            $maxHeight = 3; // rem
+                                                            $height = $seconds > 0
+                                                                ? max($minHeight, min($maxHeight, ($heightPercent / 100) * $maxHeight))
+                                                                : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm transition-all flex items-center justify-center {{ $seconds > 0 ? $cellColorClass . ' cursor-pointer hover:brightness-110' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
+                                                            @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', '{{ addslashes($progression['path_name']) }}', {{ $exercise['order'] + 1 }})"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -144,6 +200,34 @@
                                                 </div>
                                             </div>
                                         @endforeach
+
+                                        <!-- Show More Button -->
+                                        <div
+                                            class="flex items-center justify-center mt-2"
+                                            x-show="getHiddenCount('{{ $progression['path_name'] }}', {{ count($progression['exercises']) }}) > 0"
+                                        >
+                                            <button
+                                                @click="toggleExpanded('{{ $progression['path_name'] }}')"
+                                                class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                            >
+                                                <template x-if="!isGroupExpanded('{{ $progression['path_name'] }}')">
+                                                    <span>
+                                                        Show <span x-text="getHiddenCount('{{ $progression['path_name'] }}', {{ count($progression['exercises']) }})"></span> more
+                                                        <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                                <template x-if="isGroupExpanded('{{ $progression['path_name'] }}')">
+                                                    <span>
+                                                        Show less
+                                                        <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                            </button>
+                                        </div>
                                         </div>
                                     @endforeach
 
@@ -168,20 +252,30 @@
 
                                         <div x-show="!isGroupCollapsed('standalone')" x-collapse>
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
-                                            <div class="flex items-center gap-2">
+                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('standalone', {{ $loop->index }}, {{ count($progressionGanttData['standalone']) }})">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
                                                     <div class="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-500"></div>
                                                     <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
-                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1 items-end">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
                                                         @php
                                                             $isToday = $dayIndex === $progressionGanttData['today_index'];
                                                             $todayClass = $isToday ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '';
+
+                                                            // Calculate proportional height (min 1rem, max 3rem)
+                                                            $heightPercent = $seconds > 0 ? ($seconds / $globalMaxSeconds) * 100 : 0;
+                                                            $minHeight = 1; // rem
+                                                            $maxHeight = 3; // rem
+                                                            $height = $seconds > 0
+                                                                ? max($minHeight, min($maxHeight, ($heightPercent / 100) * $maxHeight))
+                                                                : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="h-4 sm:h-5 rounded-sm transition-colors flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm transition-all flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600 cursor-pointer hover:brightness-110' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
+                                                            @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', null, null)"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -204,6 +298,34 @@
                                                 </div>
                                             </div>
                                         @endforeach
+
+                                        <!-- Show More Button for Standalone -->
+                                        <div
+                                            class="flex items-center justify-center mt-2"
+                                            x-show="getHiddenCount('standalone', {{ count($progressionGanttData['standalone']) }}) > 0"
+                                        >
+                                            <button
+                                                @click="toggleExpanded('standalone')"
+                                                class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                            >
+                                                <template x-if="!isGroupExpanded('standalone')">
+                                                    <span>
+                                                        Show <span x-text="getHiddenCount('standalone', {{ count($progressionGanttData['standalone']) }})"></span> more
+                                                        <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                                <template x-if="isGroupExpanded('standalone')">
+                                                    <span>
+                                                        Show less
+                                                        <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                            </button>
+                                        </div>
                                         </div>
                                     @endif
                                 </div>
@@ -260,13 +382,104 @@
                                         <span class="text-[10px] text-gray-500 dark:text-gray-400">Expert</span>
                                     </div>
                                 </div>
+
+                                <!-- Detail Panel (Modal) -->
+                                <div
+                                    x-show="showDetailPanel"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    @click.away="closeDetail()"
+                                    @keydown.escape.window="closeDetail()"
+                                    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+                                    style="display: none;"
+                                >
+                                    <!-- Backdrop -->
+                                    <div class="absolute inset-0 bg-black/50" @click="closeDetail()"></div>
+
+                                    <!-- Panel Content -->
+                                    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                                        <template x-if="selectedCell">
+                                            <div>
+                                                <!-- Close Button -->
+                                                <button
+                                                    @click="closeDetail()"
+                                                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                                >
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Exercise Name -->
+                                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 pr-8" x-text="selectedCell.exerciseName"></h3>
+
+                                                <!-- Details Grid -->
+                                                <div class="space-y-3">
+                                                    <!-- Date -->
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-sm text-gray-600 dark:text-gray-400">Date</span>
+                                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="selectedCell.date"></span>
+                                                    </div>
+
+                                                    <!-- Duration -->
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-sm text-gray-600 dark:text-gray-400">Duration</span>
+                                                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="formatDuration(selectedCell.seconds)"></span>
+                                                    </div>
+
+                                                    <!-- Progression Path (if applicable) -->
+                                                    <template x-if="selectedCell.progressionPath">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="text-sm text-gray-600 dark:text-gray-400">Progression</span>
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="selectedCell.progressionPath"></span>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- Progression Level (if applicable) -->
+                                                    <template x-if="selectedCell.progressionLevel">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="text-sm text-gray-600 dark:text-gray-400">Level</span>
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="'Level ' + selectedCell.progressionLevel"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            @endif
+                    @else
+                        <!-- Empty State for No Activity -->
+                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-8 sm:p-12 text-center">
+                                <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No activity yet</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                    Start practicing to see your progress. Head to the Templates tab to begin your first session.
+                                </p>
+                                <button
+                                    @click="activeTab = 'templates'"
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                                >
+                                    View Templates
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
 
-            @if ($userCarouselData->isEmpty())
+                <!-- Templates Tab Content -->
+                <div x-show="activeTab === 'templates'" x-transition class="mt-6">
+                    @if ($userCarouselData->isEmpty())
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ created: false, cardHtml: '' }">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <template x-if="!created">
@@ -490,7 +703,9 @@
                         </div>
                     @endforeach
                 </div>
-            @endif
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

@@ -255,6 +255,7 @@ class ProgressionAnalyticsService
         $dayLabels = [];
         $dayColumns = [];
         $dailyTotals = [];
+        $dailyMaxSeconds = [];
         $weeklyTotal = 0;
         $todayIndex = null;
 
@@ -274,6 +275,9 @@ class ProgressionAnalyticsService
             $dayTotal = array_sum($day['exercises']);
             $dailyTotals[] = $dayTotal;
             $weeklyTotal += $dayTotal;
+
+            // Calculate max duration for this day across all exercises
+            $dailyMaxSeconds[] = ! empty($day['exercises']) ? max($day['exercises']) : 0;
         }
 
         return [
@@ -282,6 +286,7 @@ class ProgressionAnalyticsService
             'dayLabels' => $dayLabels,
             'dayColumns' => $dayColumns,
             'dailyTotals' => $dailyTotals,
+            'dailyMaxSeconds' => $dailyMaxSeconds,
             'weeklyTotal' => $weeklyTotal,
             'date_range' => [
                 'start' => $startDate->format('M j'),
