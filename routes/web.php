@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoController;
+use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\JournalExerciseController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateExerciseController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +24,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/go', [GoController::class, 'index'])->name('go.index');
     Route::patch('/go/{session}/update', [GoController::class, 'update'])->name('go.update');
+
+    Route::post('/journal/entries', [JournalEntryController::class, 'store'])->name('journal.store');
+    Route::patch('/journal/entries/{entry}', [JournalEntryController::class, 'update'])->name('journal.update');
+    Route::delete('/journal/entries/{entry}', [JournalEntryController::class, 'destroy'])->name('journal.destroy');
+
+    Route::post('/journal/entries/{entry}/exercises', [JournalExerciseController::class, 'store'])->name('journal.exercises.store');
+    Route::patch('/journal/exercises/{exercise}', [JournalExerciseController::class, 'update'])->name('journal.exercises.update');
+    Route::delete('/journal/exercises/{exercise}', [JournalExerciseController::class, 'destroy'])->name('journal.exercises.destroy');
+
+    Route::patch('/sessions/{session}/notes', [SessionController::class, 'updateNotes'])->name('sessions.update-notes');
+    Route::patch('/sessions/{session}/exercises/{sessionExercise}/notes', [SessionController::class, 'updateExerciseNotes'])->name('sessions.update-exercise-notes');
 
     Route::post('/templates', [TemplateController::class, 'store'])->name('templates.store');
     Route::get('/templates/{template}/card', [TemplateController::class, 'card'])->name('templates.card');

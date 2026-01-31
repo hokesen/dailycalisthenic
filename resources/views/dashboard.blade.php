@@ -9,18 +9,18 @@
             />
 
             <!-- Tab Navigation -->
-            <div class="mb-6" x-data="{ activeTab: 'activity' }" @keydown.arrow-right.window="if (activeTab === 'activity') activeTab = 'templates'" @keydown.arrow-left.window="if (activeTab === 'templates') activeTab = 'activity'">
+            <div class="mb-6" x-data="{ activeTab: 'timeline' }" @keydown.arrow-right.window="if (activeTab === 'timeline') activeTab = 'templates'" @keydown.arrow-left.window="if (activeTab === 'templates') activeTab = 'timeline'">
                 <div class="border-b border-gray-200 dark:border-gray-700">
                     <nav class="-mb-px flex gap-8" aria-label="Tabs" role="tablist">
                         <button
-                            @click="activeTab = 'activity'"
-                            :class="activeTab === 'activity' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
-                            :aria-selected="activeTab === 'activity'"
+                            @click="activeTab = 'timeline'"
+                            :class="activeTab === 'timeline' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                            :aria-selected="activeTab === 'timeline'"
                             role="tab"
-                            aria-controls="activity-panel"
+                            aria-controls="timeline-panel"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
-                            Activity
+                            Timeline
                         </button>
                         <button
                             @click="activeTab = 'templates'"
@@ -35,26 +35,34 @@
                     </nav>
                 </div>
 
-                <!-- Activity Tab Content -->
-                <div x-show="activeTab === 'activity'" x-transition class="mt-6" role="tabpanel" id="activity-panel" aria-labelledby="activity-tab">
+                <!-- Timeline Tab Content -->
+                <div x-show="activeTab === 'timeline'" x-transition class="mt-6" role="tabpanel" id="timeline-panel" aria-labelledby="timeline-tab">
+                    <!-- Quick Actions -->
+                    <x-timeline.quick-actions :templates="$userTemplates" :todayEntry="$todayEntry" />
+
                     <!-- Filter Controls -->
                     <div class="mb-4 flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Activity</h3>
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Practice Log</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
                             <select
                                 onchange="window.location.href = '{{ route('home') }}?days=' + this.value"
                                 class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                             >
-                                <option value="7" {{ request('days', 7) == 7 ? 'selected' : '' }}>7 days</option>
-                                <option value="14" {{ request('days', 7) == 14 ? 'selected' : '' }}>14 days</option>
-                                <option value="30" {{ request('days', 7) == 30 ? 'selected' : '' }}>30 days</option>
+                                <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
+                                <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
+                                <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
+                                <option value="90" {{ $days == 90 ? 'selected' : '' }}>90 days</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- This Week - Progression Gantt Chart (Expanded by Default) -->
-                    @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
+                    <!-- Timeline Feed -->
+
+                    <x-timeline.feed :timelineFeed="$timelineFeed" />
+
+                    <!-- Progression Gantt Chart (Optional: can be kept for reference) -->
+                    @if (false && (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0))
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
                     <div class="p-4 sm:p-6">
                         <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">

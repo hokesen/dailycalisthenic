@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JournalEntry;
 use App\Models\Session;
 use App\Models\SessionTemplate;
 use App\Models\User;
 use App\Repositories\ExerciseRepository;
 use App\Services\StreakService;
 use App\Services\UserActivityService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -33,10 +36,10 @@ class DashboardController extends Controller
 
         $allExercises = $this->exerciseRepository->getAvailableForUser($user);
 
-        // Get days filter from request (default: 7)
-        $days = (int) $request->query('days', 7);
+        // Get days filter from request (default: 30)
+        $days = (int) $request->query('days', 30);
         // Validate days parameter
-        $days = in_array($days, [7, 14, 30]) ? $days : 7;
+        $days = in_array($days, [7, 14, 30, 90]) ? $days : 30;
 
         $userNow = $user->now();
         $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
@@ -131,6 +134,15 @@ class DashboardController extends Controller
             }
         }
 
+        $timelineFeed = $this->getTimelineFeed($user, $days);
+        $userTemplates = $authUserTemplates;
+
+        $todayEntry = JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->forDate($userNow)
+            ->with('journalExercises')
+            ->first();
+
         return view('dashboard', [
             'userCarouselData' => $userCarouselData,
             'allExercises' => $allExercises,
@@ -140,6 +152,43 @@ class DashboardController extends Controller
             'initialTemplateIndex' => $initialTemplateIndex,
             'selectedTemplateId' => $selectedTemplateId,
             'hasPracticedToday' => $hasPracticedToday,
+            'timelineFeed' => $timelineFeed,
+            'userTemplates' => $userTemplates,
+            'todayEntry' => $todayEntry,
+            'days' => $days,
         ]);
+    }
+
+    private function getTimelineFeed(User $user, int $days): Collection
+    {
+        $startDate = $user->now()->subDays($days - 1)->startOfDay();
+        $endDate = $user->now()->endOfDay();
+
+        $sessions = Session::query()
+            ->where('user_id', $user->id)
+            ->completed()
+            ->whereBetween('completed_at', [$startDate->copy()->utc(), $endDate->copy()->utc()])
+            ->with(['sessionExercises.exercise', 'template'])
+            ->get()
+            ->map(fn ($s) => [
+                'type' => 'session',
+                'date' => $s->completed_at->setTimezone($user->timezone),
+                'data' => $s,
+            ]);
+
+        $journals = JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereBetween('entry_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->with('journalExercises')
+            ->get()
+            ->map(fn ($j) => [
+                'type' => 'journal',
+                'date' => Carbon::parse($j->entry_date, $user->timezone),
+                'data' => $j,
+            ]);
+
+        return $sessions->merge($journals)
+            ->sortByDesc('date')
+            ->groupBy(fn ($item) => $item['date']->format('Y-m-d'));
     }
 }
