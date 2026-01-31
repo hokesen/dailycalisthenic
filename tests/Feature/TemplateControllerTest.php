@@ -21,7 +21,7 @@ class TemplateControllerTest extends TestCase
             ->post(route('templates.store'));
 
         $template = SessionTemplate::where('user_id', $user->id)->first();
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_templates', [
             'user_id' => $user->id,
             'name' => 'New Template',
@@ -73,7 +73,7 @@ class TemplateControllerTest extends TestCase
                 'new_exercise_id' => $exercise2->id,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseMissing('session_template_exercises', [
             'session_template_id' => $template->id,
             'exercise_id' => $exercise1->id,
@@ -109,7 +109,7 @@ class TemplateControllerTest extends TestCase
             ]);
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertNotNull($userTemplate);
         $this->assertEquals("John Doe's Beginner Workout", $userTemplate->name);
         $this->assertDatabaseHas('session_template_exercises', [
@@ -150,7 +150,7 @@ class TemplateControllerTest extends TestCase
                 'new_exercise_id' => $exercise3->id,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
 
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $template->id,
@@ -194,7 +194,7 @@ class TemplateControllerTest extends TestCase
                 'exercise_id' => $exercise1->id,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseMissing('session_template_exercises', [
             'session_template_id' => $template->id,
             'exercise_id' => $exercise1->id,
@@ -221,7 +221,7 @@ class TemplateControllerTest extends TestCase
                 'exercise_id' => $exercise->id,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $template->id,
             'exercise_id' => $exercise->id,
@@ -245,7 +245,7 @@ class TemplateControllerTest extends TestCase
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
         $this->assertNotNull($userTemplate);
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $userTemplate->id,
             'exercise_id' => $exercise->id,
@@ -276,7 +276,7 @@ class TemplateControllerTest extends TestCase
                 'rest_after_seconds' => 45,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $template->id,
             'exercise_id' => $exercise->id,
@@ -309,7 +309,7 @@ class TemplateControllerTest extends TestCase
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
         $this->assertNotNull($userTemplate);
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $userTemplate->id,
             'exercise_id' => $exercise->id,
@@ -343,7 +343,7 @@ class TemplateControllerTest extends TestCase
                 'name' => 'New Name',
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_templates', [
             'id' => $template->id,
             'name' => 'New Name',
@@ -363,7 +363,7 @@ class TemplateControllerTest extends TestCase
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
         $this->assertNotNull($userTemplate);
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertEquals('My Custom Template', $userTemplate->name);
 
         $this->assertDatabaseHas('session_templates', [
@@ -386,7 +386,7 @@ class TemplateControllerTest extends TestCase
                 'name' => 'My Custom Exercise',
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
 
         $exercise = Exercise::where('name', 'My Custom Exercise')->first();
         $this->assertNotNull($exercise);
@@ -417,7 +417,7 @@ class TemplateControllerTest extends TestCase
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
         $this->assertNotNull($userTemplate);
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertEquals("John Doe's System Workout", $userTemplate->name);
 
         $exercise = Exercise::where('name', 'My Custom Exercise')->first();
@@ -553,7 +553,7 @@ class TemplateControllerTest extends TestCase
 
         $userTemplate = SessionTemplate::where('user_id', $user->id)->first();
         $this->assertNotNull($userTemplate);
-        $response->assertRedirect(route('home', ['template' => $userTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $userTemplate->id, 'tab' => 'templates']));
         $this->assertEquals("John Doe's Beginner Workout", $userTemplate->name);
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $userTemplate->id,
@@ -584,7 +584,7 @@ class TemplateControllerTest extends TestCase
 
         $user2Template = SessionTemplate::where('user_id', $user2->id)->first();
         $this->assertNotNull($user2Template);
-        $response->assertRedirect(route('home', ['template' => $user2Template->id]));
+        $response->assertRedirect(route('home', ['template' => $user2Template->id, 'tab' => 'templates']));
         $this->assertEquals("John Doe's Advanced Workout", $user2Template->name);
         $this->assertDatabaseHas('session_template_exercises', [
             'session_template_id' => $user2Template->id,
@@ -608,7 +608,7 @@ class TemplateControllerTest extends TestCase
             ->where('name', "John Doe's My Workout")
             ->first();
         $this->assertNotNull($copiedTemplate);
-        $response->assertRedirect(route('home', ['template' => $copiedTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $copiedTemplate->id, 'tab' => 'templates']));
     }
 
     public function test_user_can_toggle_template_visibility_to_public(): void
@@ -623,7 +623,7 @@ class TemplateControllerTest extends TestCase
             ->actingAs($user)
             ->patch(route('templates.toggle-visibility', $template));
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_templates', [
             'id' => $template->id,
             'is_public' => true,
@@ -642,7 +642,7 @@ class TemplateControllerTest extends TestCase
             ->actingAs($user)
             ->patch(route('templates.toggle-visibility', $template));
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
         $this->assertDatabaseHas('session_templates', [
             'id' => $template->id,
             'is_public' => false,
@@ -752,7 +752,7 @@ class TemplateControllerTest extends TestCase
                 'exercise_id' => $exercise->id,
             ]);
 
-        $response->assertRedirect(route('home', ['template' => $template->id]));
+        $response->assertRedirect(route('home', ['template' => $template->id, 'tab' => 'templates']));
     }
 
     public function test_copy_template_redirects_to_new_template(): void
@@ -768,7 +768,7 @@ class TemplateControllerTest extends TestCase
             ->post(route('templates.copy', $originalTemplate));
 
         $newTemplate = SessionTemplate::where('user_id', $user->id)->first();
-        $response->assertRedirect(route('home', ['template' => $newTemplate->id]));
+        $response->assertRedirect(route('home', ['template' => $newTemplate->id, 'tab' => 'templates']));
     }
 
     public function test_delete_template_redirects_without_template_parameter(): void

@@ -9,11 +9,24 @@
             />
 
             <!-- Tab Navigation -->
-            <div class="mb-6" x-data="{ activeTab: 'timeline' }" @keydown.arrow-right.window="if (activeTab === 'timeline') activeTab = 'templates'" @keydown.arrow-left.window="if (activeTab === 'templates') activeTab = 'timeline'">
+            <div class="mb-6" x-data="{
+                activeTab: '{{ request()->input('tab', 'timeline') }}',
+                updateUrl(tab) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('tab', tab);
+                    history.replaceState(null, '', url);
+                }
+            }" @keydown.arrow-right.window="
+                if (activeTab === 'timeline') activeTab = 'progress';
+                else if (activeTab === 'progress') activeTab = 'templates';
+            " @keydown.arrow-left.window="
+                if (activeTab === 'templates') activeTab = 'progress';
+                else if (activeTab === 'progress') activeTab = 'timeline';
+            ">
                 <div class="border-b border-gray-200 dark:border-gray-700">
                     <nav class="-mb-px flex gap-8" aria-label="Tabs" role="tablist">
                         <button
-                            @click="activeTab = 'timeline'"
+                            @click="activeTab = 'timeline'; updateUrl('timeline')"
                             :class="activeTab === 'timeline' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                             :aria-selected="activeTab === 'timeline'"
                             role="tab"
@@ -23,7 +36,17 @@
                             Timeline
                         </button>
                         <button
-                            @click="activeTab = 'templates'"
+                            @click="activeTab = 'progress'; updateUrl('progress')"
+                            :class="activeTab === 'progress' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+                            :aria-selected="activeTab === 'progress'"
+                            role="tab"
+                            aria-controls="progress-panel"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                        >
+                            Progress
+                        </button>
+                        <button
+                            @click="activeTab = 'templates'; updateUrl('templates')"
                             :class="activeTab === 'templates' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                             :aria-selected="activeTab === 'templates'"
                             role="tab"
@@ -60,7 +83,10 @@
                     <!-- Timeline Feed -->
 
                     <x-timeline.feed :timelineFeed="$timelineFeed" />
+                </div>
 
+                <!-- Progress Tab Content -->
+                <div x-show="activeTab === 'progress'" x-transition class="mt-6" role="tabpanel" id="progress-panel" aria-labelledby="progress-tab">
                     <!-- Progression Gantt Chart -->
                     @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
@@ -481,7 +507,7 @@
                                     Start practicing to see your progress. Head to the Templates tab to begin your first session.
                                 </p>
                                 <button
-                                    @click="activeTab = 'templates'"
+                                    @click="activeTab = 'templates'; updateUrl('templates')"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                                 >
                                     View Templates

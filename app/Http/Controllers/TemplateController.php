@@ -91,7 +91,7 @@ class TemplateController extends Controller
 
     protected function redirectToTemplate(SessionTemplate $template, ?string $message = null): RedirectResponse
     {
-        $redirect = redirect()->route('home', ['template' => $template->id]);
+        $redirect = redirect()->route('home', ['template' => $template->id, 'tab' => 'templates']);
 
         if ($message) {
             $redirect->with('success', $message);
