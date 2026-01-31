@@ -37,10 +37,10 @@ class DashboardController extends Controller
 
         $allExercises = $this->exerciseRepository->getAvailableForUser($user);
 
-        // Get days filter from request (default: 30)
-        $days = (int) $request->query('days', 30);
+        // Get days filter from request (default: 7)
+        $days = (int) $request->query('days', 7);
         // Validate days parameter
-        $days = in_array($days, [7, 14, 30, 90]) ? $days : 30;
+        $days = in_array($days, [7, 14, 30, 90]) ? $days : 7;
 
         $userNow = $user->now();
         $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();

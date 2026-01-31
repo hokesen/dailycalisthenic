@@ -91,9 +91,9 @@
                     @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
                     <div class="p-4 sm:p-6">
-                        <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">
-                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progress</h3>
-                            <div class="flex items-center gap-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <button @click="showChart = !showChart" class="flex items-center gap-2">
+                                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progress</h3>
                                 @php
                                     $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
                                 @endphp
@@ -101,8 +101,19 @@
                                 <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showChart }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
+                            </button>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
+                                <select
+                                    onchange="window.location.href = '{{ route('home') }}?days=' + this.value + '&tab=progress'"
+                                    class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
+                                    <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
+                                    <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
+                                </select>
                             </div>
-                        </button>
+                        </div>
 
                         <div x-show="showChart" x-transition class="mt-4">
                             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
@@ -143,39 +154,44 @@
                                     $globalMaxSeconds = max($globalMaxSeconds, 60);
                                 @endphp
 
-                                <!-- Legend -->
-                                <div class="flex items-center justify-center gap-4 mb-3 text-xs">
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-4 h-4 rounded bg-emerald-500"></div>
-                                        <span class="text-gray-600 dark:text-gray-400">Completed</span>
+                                <!-- Legend and Instructions -->
+                                <div class="mb-4 space-y-2">
+                                    <div class="flex items-center justify-center gap-4 text-xs">
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-4 h-4 rounded bg-emerald-500"></div>
+                                            <span class="text-gray-600 dark:text-gray-400">Completed</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
+                                            <span class="text-gray-600 dark:text-gray-400">Not practiced</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-4 h-4 rounded ring-2 ring-indigo-400"></div>
+                                            <span class="text-gray-600 dark:text-gray-400">Today</span>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
-                                        <span class="text-gray-600 dark:text-gray-400">Not practiced</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-4 h-4 rounded ring-2 ring-indigo-400"></div>
-                                        <span class="text-gray-600 dark:text-gray-400">Today</span>
+                                    <div class="text-center text-xs text-gray-500 dark:text-gray-400">
+                                        Numbers in progression groups (1, 2, 3...) show level in the progression path. Box height shows practice duration. Click any box for details.
                                     </div>
                                 </div>
 
                                 <div class="space-y-1">
                                     @foreach ($progressionGanttData['progressions'] as $progression)
                                         <!-- Progression Group Header -->
-                                        <div class="flex items-center gap-2 pt-2 {{ !$loop->first ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
+                                        <div class="flex items-center gap-2 py-2 {{ !$loop->first ? 'mt-4 border-t-2 border-gray-200 dark:border-gray-700' : '' }}">
                                             <div class="w-28 sm:w-36">
                                                 <button
                                                     @click="toggleGroup('{{ $progression['path_name'] }}')"
-                                                    class="flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                    class="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                                                 >
                                                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': !isGroupCollapsed('{{ $progression['path_name'] }}') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ count($progression['exercises']) }}</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ count($progression['exercises']) }}</span>
                                                 </button>
                                             </div>
                                             <div class="flex-1">
-                                                <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">{{ ucwords($progression['path_name']) }}</span>
+                                                <span class="text-sm font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide">{{ ucwords($progression['path_name']) }}</span>
                                             </div>
                                         </div>
 
@@ -192,10 +208,13 @@
                                             <div class="flex items-center gap-2" x-show="shouldShowExercise('{{ $progression['path_name'] }}', {{ $loop->index }}, {{ count($progression['exercises']) }})">
                                                 <!-- Exercise name with progression level -->
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
-                                                    <span class="flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex-shrink-0">
+                                                    <span
+                                                        class="flex items-center justify-center w-6 h-6 text-[11px] font-bold rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 flex-shrink-0 border border-purple-200 dark:border-purple-800"
+                                                        title="Level {{ $positionDisplay }} in {{ ucwords($progression['path_name']) }} progression"
+                                                    >
                                                         {{ $positionDisplay }}
                                                     </span>
-                                                    <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
+                                                    <span class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
                                                 <!-- Daily cells -->
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1 items-end">
@@ -273,20 +292,20 @@
 
                                     @if (count($progressionGanttData['standalone']) > 0)
                                         <!-- Standalone exercises section -->
-                                        <div class="flex items-center gap-2 pt-2 {{ count($progressionGanttData['progressions']) > 0 ? 'mt-3 border-t border-gray-200 dark:border-gray-700' : '' }}">
+                                        <div class="flex items-center gap-2 py-2 {{ count($progressionGanttData['progressions']) > 0 ? 'mt-4 border-t-2 border-gray-200 dark:border-gray-700' : '' }}">
                                             <div class="w-28 sm:w-36">
                                                 <button
                                                     @click="toggleGroup('standalone')"
-                                                    class="flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                    class="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                                                 >
                                                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': !isGroupCollapsed('standalone') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ count($progressionGanttData['standalone']) }}</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ count($progressionGanttData['standalone']) }}</span>
                                                 </button>
                                             </div>
                                             <div class="flex-1">
-                                                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Other</span>
+                                                <span class="text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Other Exercises</span>
                                             </div>
                                         </div>
 
@@ -294,8 +313,10 @@
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
                                             <div class="flex items-center gap-2" x-show="shouldShowExercise('standalone', {{ $loop->index }}, {{ count($progressionGanttData['standalone']) }})">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
-                                                    <div class="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-500"></div>
-                                                    <span class="text-xs text-gray-600 dark:text-gray-400 truncate" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
+                                                    <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                                                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Standalone exercise (not part of a progression)"></div>
+                                                    </div>
+                                                    <span class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium" title="{{ $exercise['name'] }}">{{ $exercise['name'] }}</span>
                                                 </div>
                                                 <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1 items-end">
                                                     @foreach ($exercise['daily_seconds'] as $dayIndex => $seconds)
@@ -399,27 +420,6 @@
                                             $weeklyMinutes = round($progressionGanttData['weeklyTotal'] / 60);
                                         @endphp
                                         <span class="text-xs font-bold text-gray-800 dark:text-gray-200">{{ $weeklyMinutes }}m</span>
-                                    </div>
-                                </div>
-
-                                <!-- Legend -->
-                                <div class="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">Level:</span>
-                                    <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Beginner</span>
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Intermediate</span>
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Advanced</span>
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                                        <span class="text-[10px] text-gray-500 dark:text-gray-400">Expert</span>
                                     </div>
                                 </div>
 
