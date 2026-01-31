@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SessionStatus;
 use App\Models\Session;
 use App\Models\SessionExercise;
 use App\Models\User;

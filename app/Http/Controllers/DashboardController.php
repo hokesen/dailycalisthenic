@@ -10,6 +10,7 @@ use App\Repositories\ExerciseRepository;
 use App\Services\StreakService;
 use App\Services\UserActivityService;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -22,7 +23,7 @@ class DashboardController extends Controller
         private readonly UserActivityService $activityService
     ) {}
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         if (! auth()->check()) {
             if ($request->has('template')) {
@@ -164,6 +165,8 @@ class DashboardController extends Controller
         $startDate = $user->now()->subDays($days - 1)->startOfDay();
         $endDate = $user->now()->endOfDay();
 
+        $timezone = $user->timezone ?? 'UTC';
+
         $sessions = Session::query()
             ->where('user_id', $user->id)
             ->completed()
@@ -172,7 +175,7 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($s) => [
                 'type' => 'session',
-                'date' => $s->completed_at->setTimezone($user->timezone),
+                'date' => $s->completed_at->setTimezone($timezone),
                 'data' => $s,
             ]);
 
@@ -183,7 +186,7 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($j) => [
                 'type' => 'journal',
-                'date' => Carbon::parse($j->entry_date, $user->timezone),
+                'date' => Carbon::parse($j->entry_date, $timezone),
                 'data' => $j,
             ]);
 

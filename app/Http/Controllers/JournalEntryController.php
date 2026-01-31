@@ -11,18 +11,19 @@ class JournalEntryController extends Controller
 {
     public function store(StoreJournalEntryRequest $request): RedirectResponse
     {
-        $entry = JournalEntry::firstOrCreate(
-            [
-                'user_id' => auth()->id(),
-                'entry_date' => now()->toDateString(),
-            ],
-            [
-                'notes' => $request->notes,
-            ]
-        );
+        $today = now()->toDateString();
+        $userId = auth()->id();
 
-        if (! $entry->wasRecentlyCreated) {
-            $entry->update([
+        $entry = JournalEntry::where('user_id', $userId)
+            ->whereDate('entry_date', $today)
+            ->first();
+
+        if ($entry) {
+            $entry->update(['notes' => $request->notes]);
+        } else {
+            JournalEntry::create([
+                'user_id' => $userId,
+                'entry_date' => $today,
                 'notes' => $request->notes,
             ]);
         }

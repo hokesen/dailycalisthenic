@@ -61,8 +61,8 @@
 
                     <x-timeline.feed :timelineFeed="$timelineFeed" />
 
-                    <!-- Progression Gantt Chart (Optional: can be kept for reference) -->
-                    @if (false && (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0))
+                    <!-- Progression Gantt Chart -->
+                    @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
                     <div class="p-4 sm:p-6">
                         <button @click="showChart = !showChart" class="w-full flex items-center justify-between text-left">
