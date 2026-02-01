@@ -186,7 +186,7 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($j) => [
                 'type' => 'journal',
-                'date' => Carbon::parse($j->entry_date, $timezone),
+                'date' => Carbon::parse($j->entry_date->format('Y-m-d'), $timezone)->endOfDay(),
                 'data' => $j,
             ]);
 
