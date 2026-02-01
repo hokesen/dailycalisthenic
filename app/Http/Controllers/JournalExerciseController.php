@@ -15,7 +15,7 @@ class JournalExerciseController extends Controller
         if ($entry === 'new') {
             $entry = JournalEntry::firstOrCreate([
                 'user_id' => auth()->id(),
-                'entry_date' => now()->toDateString(),
+                'entry_date' => auth()->user()->now()->toDateString(),
             ]);
         } else {
             $entry = JournalEntry::findOrFail($entry);

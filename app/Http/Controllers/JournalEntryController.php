@@ -11,7 +11,7 @@ class JournalEntryController extends Controller
 {
     public function store(StoreJournalEntryRequest $request): RedirectResponse
     {
-        $today = now()->toDateString();
+        $today = auth()->user()->now()->toDateString();
         $userId = auth()->id();
 
         $entry = JournalEntry::where('user_id', $userId)

@@ -26,7 +26,7 @@ class JournalEntryTest extends TestCase
         $entry = JournalEntry::where('user_id', $user->id)->first();
         $this->assertNotNull($entry);
         $this->assertEquals($user->id, $entry->user_id);
-        $this->assertEquals(now()->toDateString(), $entry->entry_date->toDateString());
+        $this->assertEquals($user->now()->toDateString(), $entry->entry_date->toDateString());
         $this->assertEquals('Great practice session today!', $entry->notes);
     }
 
@@ -148,7 +148,7 @@ class JournalEntryTest extends TestCase
         $user = User::factory()->create();
         $existingEntry = JournalEntry::factory()->create([
             'user_id' => $user->id,
-            'entry_date' => now()->toDateString(),
+            'entry_date' => $user->now()->toDateString(),
             'notes' => 'Original notes',
         ]);
 
@@ -161,7 +161,7 @@ class JournalEntryTest extends TestCase
         $response->assertRedirect(route('home'));
 
         $this->assertEquals(1, JournalEntry::where('user_id', $user->id)
-            ->whereDate('entry_date', now()->toDateString())
+            ->whereDate('entry_date', $user->now()->toDateString())
             ->count());
 
         $this->assertDatabaseHas('journal_entries', [
@@ -185,7 +185,7 @@ class JournalEntryTest extends TestCase
 
         $entry = JournalEntry::where('user_id', $user->id)->first();
         $this->assertNotNull($entry);
-        $this->assertEquals(now()->toDateString(), $entry->entry_date->toDateString());
+        $this->assertEquals($user->now()->toDateString(), $entry->entry_date->toDateString());
 
         $this->assertDatabaseHas('journal_exercises', [
             'name' => 'Running',
