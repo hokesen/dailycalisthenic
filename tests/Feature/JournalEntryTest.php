@@ -73,16 +73,20 @@ class JournalEntryTest extends TestCase
         ]);
     }
 
-    public function test_user_can_delete_journal_entry(): void
+    public function test_deleting_last_exercise_deletes_entry(): void
     {
         $user = User::factory()->create();
         $entry = JournalEntry::factory()->create(['user_id' => $user->id]);
+        $exercise = JournalExercise::factory()->create(['journal_entry_id' => $entry->id]);
 
         $response = $this
             ->actingAs($user)
-            ->delete(route('journal.destroy', $entry));
+            ->delete(route('journal.exercises.destroy', $exercise));
 
         $response->assertRedirect(route('home'));
+        $this->assertDatabaseMissing('journal_exercises', [
+            'id' => $exercise->id,
+        ]);
         $this->assertDatabaseMissing('journal_entries', [
             'id' => $entry->id,
         ]);
@@ -107,15 +111,19 @@ class JournalEntryTest extends TestCase
     {
         $user = User::factory()->create();
         $entry = JournalEntry::factory()->create(['user_id' => $user->id]);
-        $exercise = JournalExercise::factory()->create(['journal_entry_id' => $entry->id]);
+        $exercise1 = JournalExercise::factory()->create(['journal_entry_id' => $entry->id]);
+        $exercise2 = JournalExercise::factory()->create(['journal_entry_id' => $entry->id]);
 
         $response = $this
             ->actingAs($user)
-            ->delete(route('journal.exercises.destroy', $exercise));
+            ->delete(route('journal.exercises.destroy', $exercise1));
 
         $response->assertRedirect(route('home'));
         $this->assertDatabaseMissing('journal_exercises', [
-            'id' => $exercise->id,
+            'id' => $exercise1->id,
+        ]);
+        $this->assertDatabaseHas('journal_entries', [
+            'id' => $entry->id,
         ]);
     }
 

@@ -181,7 +181,7 @@ class DashboardController extends Controller
 
         $journals = JournalEntry::query()
             ->where('user_id', $user->id)
-            ->whereBetween('entry_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereBetween('entry_date', [$startDate, $endDate])
             ->with('journalExercises')
             ->get()
             ->map(fn ($j) => [

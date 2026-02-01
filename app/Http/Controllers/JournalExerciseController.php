@@ -49,7 +49,14 @@ class JournalExerciseController extends Controller
             abort(403);
         }
 
+        $entry = $exercise->journalEntry;
         $exercise->delete();
+
+        if ($entry->journalExercises()->count() === 0) {
+            $entry->delete();
+
+            return redirect()->route('home')->with('success', 'Journal entry deleted successfully');
+        }
 
         return redirect()->route('home')->with('success', 'Journal exercise deleted successfully');
     }

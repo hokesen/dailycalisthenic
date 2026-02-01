@@ -39,15 +39,4 @@ class JournalEntryController extends Controller
 
         return redirect()->route('home')->with('success', 'Journal entry updated successfully');
     }
-
-    public function destroy(JournalEntry $entry): RedirectResponse
-    {
-        if ($entry->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        $entry->delete();
-
-        return redirect()->route('home')->with('success', 'Journal entry deleted successfully');
-    }
 }

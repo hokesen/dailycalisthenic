@@ -55,18 +55,4 @@
         :notes="$entry->notes"
         updateRoute="journal.update"
     />
-
-    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <form action="{{ route('journal.destroy', $entry) }}" method="POST" class="inline">
-            @csrf
-            @method('DELETE')
-            <button
-                type="submit"
-                onclick="return confirm('Delete this journal entry and all its exercises?')"
-                class="text-xs text-red-600 dark:text-red-400 hover:underline"
-            >
-                Delete Entry
-            </button>
-        </form>
-    </div>
 </div>

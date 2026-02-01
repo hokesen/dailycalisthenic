@@ -20,7 +20,7 @@
             type="button"
             class="block p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800 rounded-lg hover:shadow-lg transition-all group text-left"
         >
-            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Log Activity</h4>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Journal</h4>
             <p class="text-xs text-gray-600 dark:text-gray-400">Quick journal entry</p>
             <p class="text-xs text-green-600 dark:text-green-400 mt-2 font-medium group-hover:underline">Add Entry →</p>
         </button>

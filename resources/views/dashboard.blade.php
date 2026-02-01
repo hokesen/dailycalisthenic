@@ -589,43 +589,21 @@
                     </div>
                 </div>
             @else
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-6">
                     @foreach ($userCarouselData as $carouselData)
                         @php
-                            // Collect all unique exercises across the week for Gantt chart
                             $allExercisesInWeek = collect($carouselData['weeklyBreakdown'])
                                 ->flatMap(fn($day) => collect($day['exercises'])->pluck('name'))
                                 ->unique()
                                 ->values()
                                 ->toArray();
                         @endphp
-                        @php
-                            $isAuthUser = $carouselData['user']->id === auth()->id();
-                            $templateIds = $carouselData['templates']->pluck('id')->toArray();
-                        @endphp
-                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg"
-                             x-data="{
-                                 currentIndex: {{ $isAuthUser ? ($initialTemplateIndex ?? 0) : 0 }},
-                                 templateCount: {{ $carouselData['templates']->count() }},
-                                 templateIds: {{ Js::from($templateIds) }},
-                                 isAuthUser: {{ Js::from($isAuthUser) }},
-                                 weeklyData: {{ Js::from($carouselData['weeklyBreakdown']) }},
-                                 allExercises: {{ Js::from($allExercisesInWeek) }},
-                                 updateUrl() {
-                                     if (this.isAuthUser) {
-                                         const url = new URL(window.location);
-                                         url.searchParams.set('template', this.templateIds[this.currentIndex]);
-                                         history.replaceState(null, '', url);
-                                     }
-                                 }
-                             }"
-                             x-init="updateUrl()"
-                             x-effect="updateUrl()">
-                            <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                                         {{ $carouselData['user']->name }}
-                                    </h4>
+                                    </h3>
                                     <div class="flex items-center gap-2 px-2 py-1 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded">
                                         <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
@@ -634,111 +612,91 @@
                                     </div>
                                 </div>
 
-                                <!-- Gantt Chart for Exercises (Only for other users, auth user has it in the combined section above) -->
-                                @if ($carouselData['user']->id !== auth()->id())
-                                    <template x-if="allExercises.length > 0">
-                                        <div class="mb-6">
-                                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
-                                                <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">This Week</div>
-                                                <div class="space-y-2">
-                                                    <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
-                                                        <div class="flex items-center gap-2">
-                                                            <div class="w-20 sm:w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
-                                                            <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
-                                                                <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
-                                                                    <div
-                                                                        class="h-3 sm:h-4 rounded-sm transition-colors"
-                                                                        :class="{
-                                                                            'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
-                                                                            'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise)
-                                                                        }"
-                                                                    ></div>
-                                                                </template>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                                <!-- Day labels -->
-                                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                    <div class="w-20 sm:w-24"></div>
+                                @if ($carouselData['user']->id === auth()->id())
+                                    <button
+                                        @click="
+                                            $el.disabled = true;
+                                            $el.querySelector('span').textContent = 'Creating...';
+                                            fetch('{{ route('templates.store') }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                    'Accept': 'application/json'
+                                                }
+                                            })
+                                            .then(r => {
+                                                if (!r.ok) throw new Error('Failed to create template');
+                                                return r.json();
+                                            })
+                                            .then((template) => {
+                                                window.location.href = '{{ route('home') }}?tab=templates&template=' + template.id;
+                                            })
+                                            .catch((e) => {
+                                                console.error(e);
+                                                $el.disabled = false;
+                                                $el.querySelector('span').textContent = 'New Template';
+                                                alert('Failed to create template');
+                                            });
+                                        "
+                                        class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors disabled:opacity-50"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <span>New Template</span>
+                                    </button>
+                                @endif
+                            </div>
+
+                            <!-- Gantt Chart for Exercises (Only for other users, auth user has it in the combined section above) -->
+                            @if ($carouselData['user']->id !== auth()->id() && count($allExercisesInWeek) > 0)
+                                <div class="mb-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-4 sm:p-6"
+                                     x-data="{
+                                         weeklyData: {{ Js::from($carouselData['weeklyBreakdown']) }},
+                                         allExercises: {{ Js::from($allExercisesInWeek) }}
+                                     }">
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+                                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">This Week</div>
+                                        <div class="space-y-2">
+                                            <template x-for="(exercise, exIndex) in allExercises" :key="exIndex">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-20 sm:w-24 text-xs text-gray-600 dark:text-gray-400 truncate" x-text="exercise"></div>
                                                     <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
-                                                        @foreach ($carouselData['weeklyBreakdown'] as $day)
-                                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
-                                                        @endforeach
+                                                        <template x-for="(day, dayIdx) in weeklyData" :key="dayIdx">
+                                                            <div
+                                                                class="h-3 sm:h-4 rounded-sm transition-colors"
+                                                                :class="{
+                                                                    'bg-green-500 dark:bg-green-600': day.exercises.some(e => e.name === exercise),
+                                                                    'bg-gray-200 dark:bg-gray-700': !day.exercises.some(e => e.name === exercise)
+                                                                }"
+                                                            ></div>
+                                                        </template>
                                                     </div>
                                                 </div>
+                                            </template>
+                                        </div>
+                                        <!-- Day labels -->
+                                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <div class="w-20 sm:w-24"></div>
+                                            <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+                                                @foreach ($carouselData['weeklyBreakdown'] as $day)
+                                                    <div class="text-[10px] text-gray-500 dark:text-gray-400 text-center">{{ substr($day['dayName'], 0, 1) }}</div>
+                                                @endforeach
                                             </div>
                                         </div>
-                                    </template>
-                                @endif
-
-                                <!-- Template Carousel -->
-                                <div>
-                                    <div class="flex items-center justify-between gap-2 mb-3">
-                                        <!-- New Template button (only for auth user) -->
-                                        @if ($carouselData['user']->id === auth()->id())
-                                            <button
-                                                @click="
-                                                    $el.disabled = true;
-                                                    $el.querySelector('span').textContent = 'Creating...';
-                                                    fetch('{{ route('templates.store') }}', {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                            'Accept': 'application/json'
-                                                        }
-                                                    })
-                                                    .then(r => {
-                                                        if (!r.ok) throw new Error('Failed to create template');
-                                                        return r.json();
-                                                    })
-                                                    .then((template) => {
-                                                        window.location.href = '{{ route('home') }}?template=' + template.id;
-                                                    })
-                                                    .catch((e) => {
-                                                        console.error(e);
-                                                        $el.disabled = false;
-                                                        $el.querySelector('span').textContent = 'New Template';
-                                                        alert('Failed to create template');
-                                                    });
-                                                "
-                                                class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors disabled:opacity-50"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                                <span>New Template</span>
-                                            </button>
-                                        @else
-                                            <div></div>
-                                        @endif
-
-                                        <!-- Carousel controls -->
-                                        @if ($carouselData['templates']->count() > 1)
-                                            <div class="flex items-center gap-2">
-                                                <button @click="currentIndex = (currentIndex - 1 + templateCount) % templateCount"
-                                                        class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                                                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                                    </svg>
-                                                </button>
-                                                <span class="text-sm text-gray-600 dark:text-gray-400" x-text="`${currentIndex + 1} / ${templateCount}`"></span>
-                                                <button @click="currentIndex = (currentIndex + 1) % templateCount"
-                                                        class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                                                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        @endif
                                     </div>
+                                </div>
+                            @endif
 
-                                    @foreach ($carouselData['templates'] as $index => $template)
-                                        <div x-show="currentIndex === {{ $index }}" x-transition>
+                            <!-- Templates Grid -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                @foreach ($carouselData['templates'] as $template)
+                                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                                        <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                                             <x-template-card :template="$template" :allExercises="$allExercises" />
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach

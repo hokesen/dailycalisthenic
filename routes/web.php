@@ -27,7 +27,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/journal/entries', [JournalEntryController::class, 'store'])->name('journal.store');
     Route::patch('/journal/entries/{entry}', [JournalEntryController::class, 'update'])->name('journal.update');
-    Route::delete('/journal/entries/{entry}', [JournalEntryController::class, 'destroy'])->name('journal.destroy');
 
     Route::post('/journal/entries/{entry}/exercises', [JournalExerciseController::class, 'store'])->name('journal.exercises.store');
     Route::patch('/journal/exercises/{exercise}', [JournalExerciseController::class, 'update'])->name('journal.exercises.update');

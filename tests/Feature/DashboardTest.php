@@ -316,9 +316,11 @@ class DashboardTest extends TestCase
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
+        $exercise = \App\Models\Exercise::factory()->create();
+        $template->exercises()->attach($exercise->id, ['order' => 1]);
 
-        // Create a session for today
-        \App\Models\Session::factory()->create([
+        // Create a session for today with exercise
+        $session = \App\Models\Session::factory()->create([
             'user_id' => $user->id,
             'session_template_id' => $template->id,
             'status' => \App\Enums\SessionStatus::Completed,
@@ -326,13 +328,21 @@ class DashboardTest extends TestCase
             'total_duration_seconds' => 300,
         ]);
 
+        \App\Models\SessionExercise::factory()->create([
+            'session_id' => $session->id,
+            'exercise_id' => $exercise->id,
+            'duration_seconds' => 300,
+            'order' => 1,
+        ]);
+
         $response = $this
             ->actingAs($user)
-            ->get('/');
+            ->get('/?tab=progress');
 
         $response->assertOk();
-        // Check for day names (Mon, Tue, etc.)
-        $response->assertSee(now()->format('D'));
+        // Check that progress tab content is rendered (even if hidden by Alpine.js)
+        $response->assertSee('Progress', false);
+        $response->assertSee($exercise->name, false);
     }
 
     public function test_weekly_exercise_breakdown_returns_correct_structure(): void
