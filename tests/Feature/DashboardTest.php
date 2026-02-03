@@ -340,8 +340,8 @@ class DashboardTest extends TestCase
             ->get('/?tab=progress');
 
         $response->assertOk();
-        // Check that progress tab content is rendered (even if hidden by Alpine.js)
-        $response->assertSee('Progress', false);
+        // Check that goals tab content is rendered (even if hidden by Alpine.js)
+        $response->assertSee('Goals', false);
         $response->assertSee($exercise->name, false);
     }
 

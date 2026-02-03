@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateExerciseController;
+use App\Http\Controllers\UserGoalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/journal/entries/{entry}/exercises', [JournalExerciseController::class, 'store'])->name('journal.exercises.store');
     Route::patch('/journal/exercises/{exercise}', [JournalExerciseController::class, 'update'])->name('journal.exercises.update');
     Route::delete('/journal/exercises/{exercise}', [JournalExerciseController::class, 'destroy'])->name('journal.exercises.destroy');
+
+    Route::patch('/user-goals/exercise-goals', [UserGoalController::class, 'updateExerciseGoals'])->name('user-goals.update-exercise-goals');
 
     Route::patch('/sessions/{session}/notes', [SessionController::class, 'updateNotes'])->name('sessions.update-notes');
     Route::patch('/sessions/{session}/exercises/{sessionExercise}/notes', [SessionController::class, 'updateExerciseNotes'])->name('sessions.update-exercise-notes');

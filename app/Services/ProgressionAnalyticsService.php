@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Models\Exercise;
 use App\Models\SessionExercise;
 use App\Models\User;
+use App\Repositories\ExerciseRepository;
 use App\Support\TimezoneConverter;
 
 class ProgressionAnalyticsService
 {
     public function __construct(
-        private readonly StreakService $streakService
+        private readonly StreakService $streakService,
+        private readonly ExerciseRepository $exerciseRepository
     ) {}
 
     public function getWeeklyProgressionSummary(User $user, int $days = 7): array
@@ -117,6 +119,10 @@ class ProgressionAnalyticsService
 
         [$startDateUtc, $endDateUtc] = TimezoneConverter::convertDateRangeToUtc($startDate, $endDate, $timezone);
 
+        // Get user's goal exercises
+        $activeGoal = $user->goals()->active()->first();
+        $goalExerciseIds = $activeGoal?->exercise_goals ?? [];
+
         $sessions = $user->sessions()
             ->whereNotNull('started_at')
             ->where(function ($query) use ($startDateUtc, $endDateUtc) {
@@ -160,9 +166,17 @@ class ProgressionAnalyticsService
             }
         }
 
-        $allExercises = $sessions->flatMap(fn ($s) => $s->sessionExercises->filter(fn ($se) => $se->completed_at)->pluck('exercise'))
-            ->unique('id')
-            ->keyBy('id');
+        // If user has goal exercises, filter to only those exercises
+        if (! empty($goalExerciseIds)) {
+            $allExercises = collect($goalExerciseIds)
+                ->map(fn ($id) => $this->exerciseRepository->find($id))
+                ->filter()
+                ->keyBy('id');
+        } else {
+            $allExercises = $sessions->flatMap(fn ($s) => $s->sessionExercises->filter(fn ($se) => $se->completed_at)->pluck('exercise'))
+                ->unique('id')
+                ->keyBy('id');
+        }
 
         $progressionPaths = [];
         $standaloneExercises = [];
@@ -204,7 +218,8 @@ class ProgressionAnalyticsService
                         $weeklyTotal += $seconds;
                     }
 
-                    if ($weeklyTotal > 0) {
+                    // Show exercise if it's in goals OR if it has activity
+                    if ($weeklyTotal > 0 || in_array($exerciseId, $goalExerciseIds)) {
                         $exercisesInPath[] = [
                             'id' => $exerciseId,
                             'name' => $pathExercise->name,
@@ -240,7 +255,8 @@ class ProgressionAnalyticsService
                     $weeklyTotal += $seconds;
                 }
 
-                if ($weeklyTotal > 0) {
+                // Show exercise if it's in goals OR if it has activity
+                if ($weeklyTotal > 0 || in_array($exerciseId, $goalExerciseIds)) {
                     $standaloneExercises[] = [
                         'id' => $exerciseId,
                         'name' => $exercise->name,

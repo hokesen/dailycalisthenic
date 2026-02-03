@@ -14,12 +14,14 @@ class UserGoal extends Model
         'user_id',
         'sessions_per_week',
         'minimum_session_duration_minutes',
+        'exercise_goals',
         'is_active',
         'starts_at',
         'ends_at',
     ];
 
     protected $casts = [
+        'exercise_goals' => 'array',
         'is_active' => 'boolean',
         'starts_at' => 'date',
         'ends_at' => 'date',

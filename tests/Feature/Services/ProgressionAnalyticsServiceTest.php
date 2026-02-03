@@ -23,7 +23,8 @@ class ProgressionAnalyticsServiceTest extends TestCase
     {
         parent::setUp();
         $streakService = new \App\Services\StreakService;
-        $this->service = new ProgressionAnalyticsService($streakService);
+        $exerciseRepository = app(\App\Repositories\ExerciseRepository::class);
+        $this->service = new ProgressionAnalyticsService($streakService, $exerciseRepository);
     }
 
     public function test_get_weekly_progression_summary_returns_empty_when_no_sessions(): void

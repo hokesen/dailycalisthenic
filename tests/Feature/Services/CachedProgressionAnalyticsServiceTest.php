@@ -27,7 +27,8 @@ class CachedProgressionAnalyticsServiceTest extends TestCase
     {
         parent::setUp();
         $streakService = new StreakService;
-        $this->analyticsService = new ProgressionAnalyticsService($streakService);
+        $exerciseRepository = app(\App\Repositories\ExerciseRepository::class);
+        $this->analyticsService = new ProgressionAnalyticsService($streakService, $exerciseRepository);
         $this->cachedService = new CachedProgressionAnalyticsService($this->analyticsService);
         Cache::flush();
     }

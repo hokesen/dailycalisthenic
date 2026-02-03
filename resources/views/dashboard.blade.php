@@ -43,7 +43,7 @@
                             aria-controls="progress-panel"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
-                            Progress
+                            Goals
                         </button>
                         <button
                             @click="activeTab = 'templates'; updateUrl('templates')"
@@ -53,7 +53,7 @@
                             aria-controls="templates-panel"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                         >
-                            Templates
+                            Practices
                         </button>
                     </nav>
                 </div>
@@ -85,23 +85,147 @@
                     <x-timeline.feed :timelineFeed="$timelineFeed" />
                 </div>
 
-                <!-- Progress Tab Content -->
+                <!-- Goals Tab Content -->
                 <div x-show="activeTab === 'progress'" x-transition class="mt-6" role="tabpanel" id="progress-panel" aria-labelledby="progress-tab">
-                    <!-- Progression Gantt Chart -->
+                    <!-- Goals Selection -->
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{
+                            showGoalSelection: false,
+                            selectedExercises: {{ json_encode($currentUserGoal?->exercise_goals ?? []) }},
+                            saving: false,
+                            saveGoals() {
+                                this.saving = true;
+                                fetch('{{ route('user-goals.update-exercise-goals') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        _method: 'PATCH',
+                                        exercise_ids: this.selectedExercises
+                                    })
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    this.saving = false;
+                                    if (data.success) {
+                                        window.location.reload();
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(error);
+                                    this.saving = false;
+                                    alert('Failed to save goals');
+                                });
+                            },
+                            toggleExercise(exerciseId) {
+                                const index = this.selectedExercises.indexOf(exerciseId);
+                                if (index > -1) {
+                                    this.selectedExercises.splice(index, 1);
+                                } else {
+                                    this.selectedExercises.push(exerciseId);
+                                }
+                            },
+                            isSelected(exerciseId) {
+                                return this.selectedExercises.includes(exerciseId);
+                            }
+                        }">
+                        <div class="p-4 sm:p-6">
+                            <div class="flex items-center justify-between">
+                                <button @click="showGoalSelection = !showGoalSelection" class="flex items-center gap-2">
+                                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Select Your Goals</h3>
+                                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showGoalSelection }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <button
+                                    @click="saveGoals()"
+                                    :disabled="saving"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                    <span x-show="!saving">Save Goals</span>
+                                    <span x-show="saving">Saving...</span>
+                                </button>
+                            </div>
+
+                            <div x-show="showGoalSelection" x-transition class="mt-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    Choose which exercises you want to focus on. Your goals chart below will show only these exercises.
+                                </p>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                @foreach ($allExercises->groupBy('category') as $category => $exercises)
+                                    <div class="col-span-full">
+                                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-2">{{ ucfirst($category) }}</h4>
+                                    </div>
+                                    @foreach ($exercises as $exercise)
+                                        <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                :checked="isSelected({{ $exercise->id }})"
+                                                @change="toggleExercise({{ $exercise->id }})"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                            >
+                                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ $exercise->name }}</span>
+                                        </label>
+                                    @endforeach
+                                @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goals Chart -->
                     @if (count($progressionGanttData['progressions']) > 0 || count($progressionGanttData['standalone']) > 0)
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ showChart: true, ...ganttChart() }" x-init="init()">
+                @php
+                    $hasGoals = $currentUserGoal && !empty($currentUserGoal->exercise_goals);
+                    $goalExerciseIds = $hasGoals ? $currentUserGoal->exercise_goals : [];
+                @endphp
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{
+                    showOnlyGoals: {{ $hasGoals ? 'true' : 'false' }},
+                    goalExerciseIds: {{ json_encode($goalExerciseIds) }},
+                    isGoalExercise(exerciseId) {
+                        return this.goalExerciseIds.includes(exerciseId);
+                    },
+                    shouldShowExerciseInGoalMode(exerciseId) {
+                        return !this.showOnlyGoals || this.isGoalExercise(exerciseId);
+                    },
+                    ...ganttChart()
+                }" x-init="init()">
                     <div class="p-4 sm:p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <button @click="showChart = !showChart" class="flex items-center gap-2">
-                                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Progress</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Goals</h3>
                                 @php
                                     $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
                                 @endphp
                                 <span class="text-sm text-gray-500 dark:text-gray-400">{{ $totalExercises }} exercises</span>
-                                <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': showChart }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                @if ($hasGoals)
+                                    <button
+                                        @click="showOnlyGoals = !showOnlyGoals"
+                                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                    >
+                                        <template x-if="showOnlyGoals">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </template>
+                                        <template x-if="!showOnlyGoals">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                            </svg>
+                                        </template>
+                                        <span x-text="showOnlyGoals ? 'Show All' : 'Show Goals Only'"></span>
+                                    </button>
+                                @endif
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
                                 <select
@@ -115,7 +239,7 @@
                             </div>
                         </div>
 
-                        <div x-show="showChart" x-transition class="mt-4">
+                        <div class="mt-4">
                             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
                                 <!-- Date Range Header -->
                                 <div class="mb-3 text-center">
@@ -205,7 +329,7 @@
                                                 $position = $exercise['order'];
                                                 $positionDisplay = $position + 1;
                                             @endphp
-                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('{{ $progression['path_name'] }}', {{ $loop->index }}, {{ count($progression['exercises']) }})">
+                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('{{ $progression['path_name'] }}', {{ $loop->index }}, {{ count($progression['exercises']) }}) && shouldShowExerciseInGoalMode({{ $exercise['id'] }})">
                                                 <!-- Exercise name with progression level -->
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
                                                     <span
@@ -232,10 +356,9 @@
                                                                 : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="rounded-sm transition-all duration-200 ease-in-out flex items-center justify-center {{ $seconds > 0 ? $cellColorClass . ' cursor-pointer hover:brightness-110 hover:scale-105 hover:shadow-md' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm flex items-center justify-center {{ $seconds > 0 ? $cellColorClass : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
                                                             style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
-                                                            @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', '{{ addslashes($progression['path_name']) }}', {{ $exercise['order'] + 1 }})"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -244,18 +367,6 @@
                                                             @endif
                                                         </div>
                                                     @endforeach
-                                                </div>
-                                                <!-- Weekly total & streak -->
-                                                <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><x-duration-display :seconds="$exercise['weekly_seconds']" />m</span>
-                                                    @if ($exercise['streak'] > 0)
-                                                        <span class="flex items-center gap-0.5 text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">
-                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-                                                            </svg>
-                                                            {{ $exercise['streak'] }}
-                                                        </span>
-                                                    @endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -311,7 +422,7 @@
 
                                         <div x-show="!isGroupCollapsed('standalone')" x-collapse>
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
-                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('standalone', {{ $loop->index }}, {{ count($progressionGanttData['standalone']) }})">
+                                            <div class="flex items-center gap-2" x-show="shouldShowExercise('standalone', {{ $loop->index }}, {{ count($progressionGanttData['standalone']) }}) && shouldShowExerciseInGoalMode({{ $exercise['id'] }})">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
                                                     <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                                         <div class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Standalone exercise (not part of a progression)"></div>
@@ -333,10 +444,9 @@
                                                                 : $minHeight;
                                                         @endphp
                                                         <div
-                                                            class="rounded-sm transition-all duration-200 ease-in-out flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600 cursor-pointer hover:brightness-110 hover:scale-105 hover:shadow-md' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
+                                                            class="rounded-sm flex items-center justify-center {{ $seconds > 0 ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700' }} {{ $todayClass }}"
                                                             style="height: {{ $height }}rem;"
                                                             title="{{ $seconds > 0 ? round($seconds / 60) . 'm' : '0m' }}"
-                                                            @click="openDetail('{{ addslashes($exercise['name']) }}', {{ $exercise['id'] }}, {{ $seconds }}, '{{ $progressionGanttData['dayColumns'][$dayIndex]['date'] }}', null, null)"
                                                         >
                                                             @if ($seconds > 0)
                                                                 <span class="text-[8px] sm:text-[10px] text-white font-medium">
@@ -345,17 +455,6 @@
                                                             @endif
                                                         </div>
                                                     @endforeach
-                                                </div>
-                                                <div class="w-16 sm:w-20 flex items-center gap-1 justify-end">
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><x-duration-display :seconds="$exercise['weekly_seconds']" />m</span>
-                                                    @if ($exercise['streak'] > 0)
-                                                        <span class="flex items-center gap-0.5 text-xs text-orange-600 dark:text-orange-400" title="{{ $exercise['streak'] }} day streak">
-                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-                                                            </svg>
-                                                            {{ $exercise['streak'] }}
-                                                        </span>
-                                                    @endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -400,27 +499,6 @@
                                         @endforeach
                                     </div>
                                     <div class="w-16 sm:w-20"></div>
-                                </div>
-
-                                <!-- Daily & Weekly Totals -->
-                                <div class="flex items-center gap-2 mt-1">
-                                    <div class="w-28 sm:w-36 text-xs font-medium text-gray-600 dark:text-gray-400 text-right pr-1">Total</div>
-                                    <div class="flex-1 grid grid-cols-7 gap-0.5 sm:gap-1">
-                                        @foreach ($progressionGanttData['dailyTotals'] as $dailyTotal)
-                                            @php
-                                                $dailyMinutes = round($dailyTotal / 60);
-                                            @endphp
-                                            <div class="text-[10px] sm:text-xs font-semibold text-center {{ $dailyTotal > 0 ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600' }}">
-                                                {{ $dailyMinutes > 0 ? $dailyMinutes : '-' }}
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <div class="w-16 sm:w-20 flex items-center justify-end">
-                                        @php
-                                            $weeklyMinutes = round($progressionGanttData['weeklyTotal'] / 60);
-                                        @endphp
-                                        <span class="text-xs font-bold text-gray-800 dark:text-gray-200">{{ $weeklyMinutes }}m</span>
-                                    </div>
                                 </div>
 
                                 <!-- Detail Panel (Modal) -->
@@ -504,20 +582,21 @@
                                 </svg>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No activity yet</h3>
                                 <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                                    Start practicing to see your progress. Head to the Templates tab to begin your first session.
+                                    Start practicing to see your progress. Head to the Practices tab to begin your first session.
                                 </p>
                                 <button
                                     @click="activeTab = 'templates'; updateUrl('templates')"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                                 >
-                                    View Templates
+                                    View Practices
                                 </button>
                             </div>
                         </div>
                     @endif
                 </div>
+                </div> <!-- END Goals Tab Content -->
 
-                <!-- Templates Tab Content -->
+                <!-- Practices Tab Content -->
                 <div x-show="activeTab === 'templates'" x-transition class="mt-6" role="tabpanel" id="templates-panel" aria-labelledby="templates-tab">
                     @if ($userCarouselData->isEmpty())
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ created: false, cardHtml: '' }">
@@ -634,7 +713,7 @@
                                             .catch((e) => {
                                                 console.error(e);
                                                 $el.disabled = false;
-                                                $el.querySelector('span').textContent = 'New Template';
+                                                $el.querySelector('span').textContent = 'New Practice';
                                                 alert('Failed to create template');
                                             });
                                         "
@@ -643,7 +722,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                         </svg>
-                                        <span>New Template</span>
+                                        <span>New Practice</span>
                                     </button>
                                 @endif
                             </div>
@@ -688,7 +767,7 @@
                                 </div>
                             @endif
 
-                            <!-- Templates Grid -->
+                            <!-- Practices Grid -->
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 @foreach ($carouselData['templates'] as $template)
                                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">

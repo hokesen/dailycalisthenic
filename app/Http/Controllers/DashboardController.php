@@ -35,7 +35,34 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        $allExercises = $this->exerciseRepository->getAvailableForUser($user);
+        // Get exercises from user's templates and recent sessions
+        // This ensures we show the actual exercises being used, not just defaults
+        $templateExercises = \App\Models\Exercise::query()
+            ->whereHas('sessionTemplates', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
+
+        $sessionExercises = \App\Models\Exercise::query()
+            ->whereHas('sessions', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
+
+        // Merge and get unique exercises the user has actually used
+        $userUsedExercises = $templateExercises->merge($sessionExercises)->unique('id');
+
+        // Also include available exercises for selection
+        $availableExercises = $this->exerciseRepository->getAvailableForUser($user);
+
+        // Combine both lists, preferring actual used exercises
+        // Filter out duplicates by both ID and name to avoid showing default and DB versions of same exercise
+        $allExercises = $userUsedExercises->merge(
+            $availableExercises->filter(fn ($e) =>
+                ! $userUsedExercises->contains('id', $e->id) &&
+                ! $userUsedExercises->contains('name', $e->name)
+            )
+        )->sortBy('name');
 
         // Get days filter from request (default: 7)
         $days = (int) $request->query('days', 7);
@@ -144,6 +171,8 @@ class DashboardController extends Controller
             ->with('journalExercises')
             ->first();
 
+        $currentUserGoal = $user->goals()->active()->first();
+
         return view('dashboard', [
             'userCarouselData' => $userCarouselData,
             'allExercises' => $allExercises,
@@ -157,6 +186,7 @@ class DashboardController extends Controller
             'userTemplates' => $userTemplates,
             'todayEntry' => $todayEntry,
             'days' => $days,
+            'currentUserGoal' => $currentUserGoal,
         ]);
     }
 
