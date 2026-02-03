@@ -25,7 +25,7 @@ class TemplateExerciseController extends Controller
         private readonly TemplateReplicationService $replicationService
     ) {}
 
-    public function swap(SwapExerciseRequest $request, SessionTemplate $template): RedirectResponse
+    public function swap(SwapExerciseRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
@@ -35,6 +35,10 @@ class TemplateExerciseController extends Controller
             ->first();
 
         if (! $exercise) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Exercise not found in template'], 404);
+            }
+
             return back()->with('error', 'Exercise not found in template');
         }
 
@@ -43,6 +47,10 @@ class TemplateExerciseController extends Controller
         if ($newExerciseId < 0) {
             $materialized = $this->exerciseRepository->materialize($newExerciseId);
             if (! $materialized) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'Exercise not found'], 404);
+                }
+
                 return back()->with('error', 'Exercise not found');
             }
             $newExerciseId = $materialized->id;
@@ -53,16 +61,24 @@ class TemplateExerciseController extends Controller
         $template->exercises()->wherePivot('order', $request->order)->detach();
         $template->exercises()->attach($newExerciseId, $pivotData);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return $this->redirectToTemplate($template, 'Exercise swapped successfully');
     }
 
-    public function remove(RemoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
+    public function remove(RemoveExerciseRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
         $template->exercises()->detach($request->exercise_id);
 
         $this->orderService->reorder($template);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return $this->redirectToTemplate($template, 'Exercise removed successfully');
     }
@@ -122,7 +138,7 @@ class TemplateExerciseController extends Controller
         return $this->redirectToTemplate($template, 'Custom exercise created and added successfully');
     }
 
-    public function update(UpdateExerciseRequest $request, SessionTemplate $template): RedirectResponse
+    public function update(UpdateExerciseRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
@@ -136,10 +152,14 @@ class TemplateExerciseController extends Controller
             'intensity' => $request->intensity,
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return $this->redirectToTemplate($template, 'Exercise updated successfully');
     }
 
-    public function moveUp(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
+    public function moveUp(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
@@ -147,16 +167,24 @@ class TemplateExerciseController extends Controller
 
         $this->orderService->moveUp($template, $exerciseId);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return $this->redirectToTemplate($template, 'Exercise moved up');
     }
 
-    public function moveDown(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse
+    public function moveDown(MoveExerciseRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
         $exerciseId = $request->validated('exercise_id');
 
         $this->orderService->moveDown($template, $exerciseId);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return $this->redirectToTemplate($template, 'Exercise moved down');
     }

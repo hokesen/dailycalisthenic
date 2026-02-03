@@ -25,7 +25,7 @@
             <p class="text-xs text-green-600 dark:text-green-400 mt-2 font-medium group-hover:underline">Add Entry →</p>
         </button>
 
-        <div x-show="showJournalForm" x-collapse class="col-span-2 sm:col-span-3 lg:col-span-4">
+        <div x-show="showJournalForm" x-transition class="col-span-2 sm:col-span-3 lg:col-span-4">
             <x-timeline.journal-form :todayEntry="$todayEntry" />
         </div>
     </div>

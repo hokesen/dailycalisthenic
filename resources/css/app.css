@@ -2,6 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    :root {
+        --app-ink: #e7e1d8;
+        --app-ink-muted: #b9b2a6;
+        --app-surface: #0b1114;
+        --app-surface-2: #111b1f;
+        --app-card: rgba(17, 27, 31, 0.88);
+        --app-accent: #14b8a6;
+        --app-accent-strong: #0f766e;
+        --app-warm: #f59e0b;
+        --app-ring: rgba(20, 184, 166, 0.35);
+    }
+
+    .theme-nightfall {
+        color: var(--app-ink);
+        background-color: var(--app-surface);
+        font-family: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .theme-nightfall h1,
+    .theme-nightfall h2,
+    .theme-nightfall h3,
+    .theme-nightfall h4,
+    .theme-nightfall h5,
+    .theme-nightfall h6 {
+        font-family: "Fraunces", "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        letter-spacing: -0.01em;
+    }
+
+    .app-shell {
+        position: relative;
+        background:
+            radial-gradient(900px 450px at 15% -10%, rgba(20, 184, 166, 0.18), transparent 60%),
+            radial-gradient(700px 420px at 85% 0%, rgba(245, 158, 11, 0.14), transparent 60%),
+            linear-gradient(180deg, #0b1114 0%, #0f171c 45%, #0b1114 100%);
+    }
+
+    .app-shell::before,
+    .app-shell::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        border-radius: 999px;
+        filter: blur(0);
+        opacity: 0.55;
+        mix-blend-mode: screen;
+    }
+
+    .app-shell::before {
+        width: 480px;
+        height: 480px;
+        left: -120px;
+        bottom: -160px;
+        background: radial-gradient(circle, rgba(20, 184, 166, 0.25), transparent 70%);
+    }
+
+    .app-shell::after {
+        width: 420px;
+        height: 420px;
+        right: -140px;
+        top: 120px;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.2), transparent 70%);
+    }
+}
+
 /* Print Styles */
 @media print {
     /* Hide navigation, header, and non-essential elements */

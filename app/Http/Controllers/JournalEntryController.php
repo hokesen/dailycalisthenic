@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
 use App\Models\JournalEntry;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 class JournalEntryController extends Controller
@@ -31,11 +32,15 @@ class JournalEntryController extends Controller
         return redirect()->route('home')->with('success', 'Journal entry saved successfully');
     }
 
-    public function update(UpdateJournalEntryRequest $request, JournalEntry $entry): RedirectResponse
+    public function update(UpdateJournalEntryRequest $request, JournalEntry $entry): RedirectResponse|JsonResponse
     {
         $entry->update([
             'notes' => $request->notes,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('home')->with('success', 'Journal entry updated successfully');
     }

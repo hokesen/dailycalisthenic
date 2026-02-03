@@ -10,7 +10,7 @@
 
             <!-- Tab Navigation -->
             <div class="mb-6" x-data="{
-                activeTab: '{{ request()->input('tab', 'timeline') }}',
+                activeTab: {{ Js::from(request()->input('tab', 'timeline')) }},
                 updateUrl(tab) {
                     const url = new URL(window.location);
                     url.searchParams.set('tab', tab);
@@ -319,7 +319,7 @@
                                             </div>
                                         </div>
 
-                                        <div x-show="!isGroupCollapsed('{{ $progression['path_name'] }}')" x-collapse>
+                                        <div x-show="!isGroupCollapsed('{{ $progression['path_name'] }}')" x-transition>
                                         @foreach ($progression['exercises'] as $exercise)
                                             @php
                                                 // Simplified binary color scheme
@@ -420,7 +420,7 @@
                                             </div>
                                         </div>
 
-                                        <div x-show="!isGroupCollapsed('standalone')" x-collapse>
+                                        <div x-show="!isGroupCollapsed('standalone')" x-transition>
                                         @foreach ($progressionGanttData['standalone'] as $exercise)
                                             <div class="flex items-center gap-2" x-show="shouldShowExercise('standalone', {{ $loop->index }}, {{ count($progressionGanttData['standalone']) }}) && shouldShowExerciseInGoalMode({{ $exercise['id'] }})">
                                                 <div class="w-28 sm:w-36 flex items-center gap-1.5">
@@ -609,22 +609,19 @@
                                 </div>
 
                                 <div class="grid gap-3 sm:grid-cols-2 mb-6">
-                                    @php
-                                        $starterTemplates = \App\Models\SessionTemplate::whereNull('user_id')
-                                            ->where('is_public', true)
-                                            ->with('exercises')
-                                            ->get();
-                                    @endphp
-
-                                    @foreach($starterTemplates as $starter)
-                                        <a href="{{ route('home') }}?template={{ $starter->id }}" class="block p-4 bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                                    @forelse($systemTemplates as $starter)
+                                        <a href="{{ route('home') }}?template={{ $starter->id }}&tab=templates" class="block p-4 bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
                                             <div class="flex items-start justify-between mb-2">
                                                 <h3 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ $starter->name }}</h3>
                                                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ $starter->exercises->count() }} exercises</span>
                                             </div>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">Click to view and copy</p>
                                         </a>
-                                    @endforeach
+                                    @empty
+                                        <div class="sm:col-span-2 text-sm text-gray-500 dark:text-gray-400">
+                                            No starter templates yet. Create a blank template to get started.
+                                        </div>
+                                    @endforelse
                                 </div>
 
                                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -644,7 +641,7 @@
                                                 return r.json();
                                             })
                                             .then((template) => {
-                                                window.location.href = '{{ route('home') }}?template=' + template.id;
+                                                window.location.href = '{{ route('home') }}?tab=templates&template=' + template.id;
                                             })
                                             .catch(() => {
                                                 $el.disabled = false;
@@ -668,6 +665,24 @@
                     </div>
                 </div>
             @else
+                @if ($systemTemplates->isNotEmpty())
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Starter Templates</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Quick starts you can copy or practice as-is.</p>
+                                </div>
+                            </div>
+                            <div class="grid gap-4 md:grid-cols-2">
+                                @foreach ($systemTemplates as $starter)
+                                    <x-template-card :template="$starter" :allExercises="$allExercises" />
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="space-y-6">
                     @foreach ($userCarouselData as $carouselData)
                         @php

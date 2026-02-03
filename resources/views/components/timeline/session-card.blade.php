@@ -7,7 +7,7 @@
                 {{ $session->name }}
             </h4>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ $session->completed_at->format('g:i A') }} • {{ round($session->total_duration_seconds / 60) }}m total
+                {{ $session->completed_at->format('g:i A') }} • <x-duration-display :seconds="$session->total_duration_seconds" /> total
             </p>
         </div>
         <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">
@@ -21,7 +21,7 @@
                 <div class="text-sm">
                     <span class="text-gray-700 dark:text-gray-300">{{ $se->exercise->name }}</span>
                     @if($se->duration_seconds)
-                        <span class="text-gray-500 dark:text-gray-400">• {{ round($se->duration_seconds / 60) }}m</span>
+                        <span class="text-gray-500 dark:text-gray-400">• <x-duration-display :seconds="$se->duration_seconds" /></span>
                     @endif
                 </div>
             @endforeach

@@ -5,21 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateSessionNotesRequest;
 use App\Models\Session;
 use App\Models\SessionExercise;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class SessionController extends Controller
 {
-    public function updateNotes(UpdateSessionNotesRequest $request, Session $session): RedirectResponse
+    public function updateNotes(UpdateSessionNotesRequest $request, Session $session): RedirectResponse|JsonResponse
     {
         $session->update([
             'notes' => $request->notes,
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->route('home')->with('success', 'Session notes updated successfully');
     }
 
-    public function updateExerciseNotes(Request $request, Session $session, SessionExercise $sessionExercise): RedirectResponse
+    public function updateExerciseNotes(Request $request, Session $session, SessionExercise $sessionExercise): RedirectResponse|JsonResponse
     {
         if ($session->user_id !== auth()->id()) {
             abort(403);
@@ -36,6 +41,10 @@ class SessionController extends Controller
         $sessionExercise->update([
             'notes' => $request->notes,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('home')->with('success', 'Exercise notes updated successfully');
     }

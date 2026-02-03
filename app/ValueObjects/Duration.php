@@ -26,7 +26,11 @@ class Duration
     public function format(): string
     {
         if ($this->seconds < 60) {
-            return '0m';
+            if ($this->seconds === 0) {
+                return '0m';
+            }
+
+            return '<1m';
         }
 
         $hours = (int) floor($this->seconds / 3600);

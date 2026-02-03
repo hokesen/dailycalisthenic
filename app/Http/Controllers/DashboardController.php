@@ -7,6 +7,7 @@ use App\Models\Session;
 use App\Models\SessionTemplate;
 use App\Models\User;
 use App\Repositories\ExerciseRepository;
+use App\Services\StarterTemplateService;
 use App\Services\StreakService;
 use App\Services\UserActivityService;
 use Carbon\Carbon;
@@ -20,7 +21,8 @@ class DashboardController extends Controller
     public function __construct(
         private readonly ExerciseRepository $exerciseRepository,
         private readonly StreakService $streakService,
-        private readonly UserActivityService $activityService
+        private readonly UserActivityService $activityService,
+        private readonly StarterTemplateService $starterTemplateService
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -32,6 +34,8 @@ class DashboardController extends Controller
 
             return view('welcome');
         }
+
+        $this->starterTemplateService->ensureStarterTemplates();
 
         $user = auth()->user();
 
@@ -92,6 +96,18 @@ class DashboardController extends Controller
                     ->whereBetween('completed_at', [$startDateUtc, $endDateUtc]);
             }], 'total_duration_seconds')
             ->orderByDesc('sessions_sum_total_duration_seconds')
+            ->get();
+
+        $systemTemplates = SessionTemplate::query()
+            ->whereNull('user_id')
+            ->where('is_public', true)
+            ->with([
+                'user',
+                'exercises' => function ($query) {
+                    $query->with(['progression.easierExercise', 'progression.harderExercise'])
+                        ->orderByPivot('order');
+                },
+            ])
             ->get();
 
         if ($authUserTemplates->isNotEmpty()) {
@@ -187,6 +203,7 @@ class DashboardController extends Controller
             'todayEntry' => $todayEntry,
             'days' => $days,
             'currentUserGoal' => $currentUserGoal,
+            'systemTemplates' => $systemTemplates,
         ]);
     }
 

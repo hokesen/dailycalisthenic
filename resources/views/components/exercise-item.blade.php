@@ -147,6 +147,9 @@
                     @if ($exercise->pivot->intensity)
                         <span class="text-gray-500">• {{ $exercise->pivot->intensity->label() }} Intensity</span>
                     @endif
+                    @if ($template->user_id === auth()->id())
+                        <button type="button" @click="showEdit = true" class="ml-2 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500">Edit details</button>
+                    @endif
                 </div>
 
                 <!-- Edit Form -->
@@ -154,7 +157,7 @@
                     const formData = new FormData($el);
                     fetch($el.action, {
                         method: 'PATCH',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify({
                             exercise_id: {{ $exercise->id }},
                             sets: formData.get('sets'),
@@ -221,7 +224,7 @@
                         <form action="{{ route('templates.swap-exercise', $template) }}" method="POST" @submit.prevent="
                             fetch($el.action, {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     exercise_id: {{ $exercise->id }},
                                     order: {{ $exercise->pivot->order }},
@@ -274,7 +277,7 @@
                             <button
                                 @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
                                     method: 'POST',
-                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                     body: JSON.stringify({
                                         exercise_id: {{ $exercise->id }},
                                         order: {{ $exercise->pivot->order }},
@@ -290,7 +293,7 @@
                             <button
                                 @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
                                     method: 'POST',
-                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                     body: JSON.stringify({
                                         exercise_id: {{ $exercise->id }},
                                         order: {{ $exercise->pivot->order }},
@@ -309,7 +312,7 @@
                     if(confirm('Remove this exercise?')) {
                         fetch($el.action, {
                             method: 'DELETE',
-                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                             body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
                         }).then(() => location.reload())
                     }

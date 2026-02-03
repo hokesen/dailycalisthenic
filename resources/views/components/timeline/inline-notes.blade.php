@@ -11,9 +11,16 @@
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ notes: this.notes })
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to save notes');
+                }
+                return response.json().catch(() => ({}));
             })
             .then(() => {
                 this.saving = false;
@@ -28,11 +35,21 @@
     }"
     class="mt-2"
 >
-    <div x-show="!editing" @click="editing = true" class="cursor-pointer group">
-        <p
-            class="text-sm text-gray-600 dark:text-gray-400 italic group-hover:text-gray-800 dark:group-hover:text-gray-300"
-            x-text="notes || 'Add notes...'"
-        ></p>
+    <div x-show="!editing" class="flex items-start justify-between gap-3 cursor-pointer group">
+        <div @click="editing = true">
+            <p class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Notes</p>
+            <p
+                class="text-sm text-gray-600 dark:text-gray-400 italic group-hover:text-gray-800 dark:group-hover:text-gray-300"
+                x-text="notes || 'Add notes...'"
+            ></p>
+        </div>
+        <button
+            type="button"
+            @click.stop="editing = true"
+            class="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500"
+        >
+            <span x-text="notes ? 'Edit' : 'Add'"></span>
+        </button>
     </div>
 
     <div x-show="editing" class="space-y-2">

@@ -10,13 +10,13 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=sora:300,400,500,600,700&family=fraunces:400,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
-        <div class="h-dvh flex flex-col bg-gray-100 dark:bg-gray-900 overflow-hidden">
+    <body class="antialiased theme-nightfall" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
+        <div class="h-dvh flex flex-col app-shell overflow-hidden">
 
             <!-- Page Heading -->
             @isset($header)

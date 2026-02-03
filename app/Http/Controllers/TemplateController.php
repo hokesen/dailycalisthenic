@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTemplateNameRequest;
 use App\Models\SessionTemplate;
 use App\Repositories\ExerciseRepository;
 use App\Services\TemplateReplicationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -44,7 +45,7 @@ class TemplateController extends Controller
         ]);
     }
 
-    public function updateName(UpdateTemplateNameRequest $request, SessionTemplate $template): RedirectResponse
+    public function updateName(UpdateTemplateNameRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template = $this->ensureUserOwnsTemplate($template);
 
@@ -52,10 +53,14 @@ class TemplateController extends Controller
             'name' => $request->name,
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return $this->redirectToTemplate($template, 'Template name updated successfully');
     }
 
-    public function toggleVisibility(SessionTemplate $template): RedirectResponse
+    public function toggleVisibility(SessionTemplate $template): RedirectResponse|JsonResponse
     {
         if ($template->user_id !== auth()->id()) {
             abort(403);
@@ -67,19 +72,31 @@ class TemplateController extends Controller
 
         $status = $template->is_public ? 'public' : 'private';
 
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'status' => $status]);
+        }
+
         return $this->redirectToTemplate($template, "Template is now {$status}");
     }
 
-    public function destroy(DeleteTemplateRequest $request, SessionTemplate $template): RedirectResponse
+    public function destroy(DeleteTemplateRequest $request, SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $template->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('home')->with('success', 'Template deleted successfully');
     }
 
-    public function copy(SessionTemplate $template): RedirectResponse
+    public function copy(SessionTemplate $template): RedirectResponse|JsonResponse
     {
         $newTemplate = $this->replicationService->replicateForUser($template, auth()->user());
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'template_id' => $newTemplate->id]);
+        }
 
         return $this->redirectToTemplate($newTemplate, 'Template copied successfully');
     }

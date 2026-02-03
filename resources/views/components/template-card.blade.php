@@ -1,6 +1,16 @@
+@use('Illuminate\Support\Js')
 @props(['template', 'allExercises'])
 
-<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-2 sm:p-4 flex flex-col" x-data="{ editingName: false }">
+<div
+    class="border border-gray-200 dark:border-gray-700 rounded-lg p-2 sm:p-4 flex flex-col"
+    x-data="{ editingName: false }"
+    x-init="
+        if ({{ $template->user_id === auth()->id() ? 'true' : 'false' }} && {{ Js::from($template->name) }} === 'New Template') {
+            editingName = true;
+            $nextTick(() => $refs.nameInput?.focus());
+        }
+    "
+>
     <div class="mb-2">
         <div x-show="!editingName" class="flex items-center justify-between gap-2">
             <div class="flex-grow">
@@ -17,7 +27,7 @@
                 <form action="{{ route('templates.copy', $template) }}" method="POST" @submit.prevent="
                     fetch($el.action, {
                         method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 ">
                     @csrf
@@ -30,7 +40,7 @@
                 <form action="{{ route('templates.toggle-visibility', $template) }}" method="POST" @submit.prevent="
                     fetch($el.action, {
                         method: 'PATCH',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 ">
                     @csrf
@@ -47,21 +57,21 @@
                 const formData = new FormData($el);
                 fetch($el.action, {
                     method: 'PATCH',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ name: formData.get('name') })
                 }).then(() => location.reload())
             ">
                 @csrf
                 @method('PATCH')
-                <input type="text" name="name" value="{{ $template->name }}" class="flex-grow border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-lg px-3 py-1.5 text-base focus:border-blue-500 dark:focus:border-blue-600 focus:outline-none">
-                <button type="submit" class="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium text-sm">Save</button>
+                <input x-ref="nameInput" type="text" name="name" value="{{ $template->name }}" class="flex-grow border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-lg px-3 py-1.5 text-base focus:border-emerald-500 dark:focus:border-emerald-600 focus:outline-none">
+                <button type="submit" class="bg-emerald-600 dark:bg-emerald-700 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 font-medium text-sm">Save</button>
                 <button type="button" @click="editingName = false" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium text-sm">Cancel</button>
             </form>
             <form action="{{ route('templates.destroy', $template) }}" method="POST" @submit.prevent="
                 if(confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
                     fetch($el.action, {
                         method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 }
             ">
