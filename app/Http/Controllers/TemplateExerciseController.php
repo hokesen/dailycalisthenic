@@ -149,7 +149,7 @@ class TemplateExerciseController extends Controller
             'reps' => $request->reps,
             'notes' => $request->notes,
             'tempo' => $request->tempo,
-            'intensity' => $request->intensity,
+            'intensity' => null,
         ]);
 
         if ($request->expectsJson()) {

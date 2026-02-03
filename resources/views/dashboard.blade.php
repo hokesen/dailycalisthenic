@@ -144,14 +144,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <button
-                                    @click="saveGoals()"
-                                    :disabled="saving"
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    <span x-show="!saving">Save Goals</span>
-                                    <span x-show="saving">Saving...</span>
-                                </button>
                             </div>
 
                             <div x-show="showGoalSelection" x-transition class="mt-4">
@@ -177,6 +169,16 @@
                                     @endforeach
                                 @endforeach
                                 </div>
+                                <div class="flex justify-end pt-4">
+                                    <button
+                                        @click="saveGoals()"
+                                        :disabled="saving"
+                                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                        <span x-show="!saving">Save Goals</span>
+                                        <span x-show="saving">Saving...</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -199,43 +201,63 @@
                     ...ganttChart()
                 }" x-init="init()">
                     <div class="p-4 sm:p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Goals</h3>
-                                @php
-                                    $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
-                                @endphp
-                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $totalExercises }} exercises</span>
+                        <div class="flex flex-col gap-3 mb-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Goals</h3>
+                                    @php
+                                        $totalExercises = array_sum(array_map(fn($p) => count($p['exercises']), $progressionGanttData['progressions'])) + count($progressionGanttData['standalone']);
+                                    @endphp
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $totalExercises }} exercises</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    @if ($hasGoals)
+                                        <button
+                                            @click="showOnlyGoals = !showOnlyGoals"
+                                            class="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1"
+                                        >
+                                            <template x-if="showOnlyGoals">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </template>
+                                            <template x-if="!showOnlyGoals">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                </svg>
+                                            </template>
+                                            <span x-text="showOnlyGoals ? 'Show All' : 'Show Goals Only'"></span>
+                                        </button>
+                                    @endif
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
+                                        <select
+                                            onchange="window.location.href = '{{ route('home') }}?days=' + this.value + '&tab=progress'"
+                                            class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                        >
+                                            <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
+                                            <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
+                                            <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-4">
-                                @if ($hasGoals)
-                                    <button
-                                        @click="showOnlyGoals = !showOnlyGoals"
-                                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
-                                    >
-                                        <template x-if="showOnlyGoals">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </template>
-                                        <template x-if="!showOnlyGoals">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                            </svg>
-                                        </template>
-                                        <span x-text="showOnlyGoals ? 'Show All' : 'Show Goals Only'"></span>
-                                    </button>
-                                @endif
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Show:</span>
-                                <select
-                                    onchange="window.location.href = '{{ route('home') }}?days=' + this.value + '&tab=progress'"
-                                    class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                    <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
-                                    <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
-                                    <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
-                                </select>
+                            <div class="flex flex-wrap items-center justify-center gap-4 text-xs">
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-4 h-4 rounded bg-emerald-500"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Completed</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Not practiced</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-4 h-4 rounded ring-2 ring-indigo-400"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Today</span>
+                                </div>
+                                <div class="text-center text-xs text-gray-500 dark:text-gray-400">
+                                    Numbers in progression groups (1, 2, 3...) show level in the progression path. Box height shows practice duration. Click any box for details.
+                                </div>
                             </div>
                         </div>
 
@@ -277,27 +299,6 @@
                                     // Ensure minimum of 60 seconds to prevent division by zero
                                     $globalMaxSeconds = max($globalMaxSeconds, 60);
                                 @endphp
-
-                                <!-- Legend and Instructions -->
-                                <div class="mb-4 space-y-2">
-                                    <div class="flex items-center justify-center gap-4 text-xs">
-                                        <div class="flex items-center gap-1.5">
-                                            <div class="w-4 h-4 rounded bg-emerald-500"></div>
-                                            <span class="text-gray-600 dark:text-gray-400">Completed</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <div class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
-                                            <span class="text-gray-600 dark:text-gray-400">Not practiced</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <div class="w-4 h-4 rounded ring-2 ring-indigo-400"></div>
-                                            <span class="text-gray-600 dark:text-gray-400">Today</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-center text-xs text-gray-500 dark:text-gray-400">
-                                        Numbers in progression groups (1, 2, 3...) show level in the progression path. Box height shows practice duration. Click any box for details.
-                                    </div>
-                                </div>
 
                                 <div class="space-y-1">
                                     @foreach ($progressionGanttData['progressions'] as $progression)
@@ -593,7 +594,6 @@
                             </div>
                         </div>
                     @endif
-                </div>
                 </div> <!-- END Goals Tab Content -->
 
                 <!-- Practices Tab Content -->

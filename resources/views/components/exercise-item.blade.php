@@ -121,14 +121,18 @@
                                 class="absolute z-10 left-0 mt-2 w-64 p-3 bg-gray-800 text-gray-200 text-sm rounded-lg shadow-lg"
                             >
                                 {{ $exercise->description }}
+                                @if ($exercise->category || $exercise->difficulty_level)
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        @if ($exercise->category)
+                                            <x-exercise-category-badge :category="$exercise->category" />
+                                        @endif
+                                        @if ($exercise->difficulty_level)
+                                            <x-exercise-difficulty-badge :difficulty="$exercise->difficulty_level" />
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         </button>
-                    @endif
-                    @if ($exercise->category)
-                        <x-exercise-category-badge :category="$exercise->category" />
-                    @endif
-                    @if ($exercise->difficulty_level)
-                        <x-exercise-difficulty-badge :difficulty="$exercise->difficulty_level" />
                     @endif
                 </div>
                 <div class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base" x-show="!showEdit">
@@ -144,11 +148,11 @@
                     @if ($exercise->pivot->tempo)
                         <span class="text-gray-500">• {{ $exercise->pivot->tempo->label() }}</span>
                     @endif
-                    @if ($exercise->pivot->intensity)
-                        <span class="text-gray-500">• {{ $exercise->pivot->intensity->label() }} Intensity</span>
+                    @if ($exercise->pivot->tempo)
+                        <span class="text-gray-500">• {{ $exercise->pivot->tempo->label() }}</span>
                     @endif
                     @if ($template->user_id === auth()->id())
-                        <button type="button" @click="showEdit = true" class="ml-2 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500">Edit details</button>
+                        <button type="button" @click="showEdit = true" class="ml-2 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500">Edit</button>
                     @endif
                 </div>
 
@@ -158,15 +162,14 @@
                     fetch($el.action, {
                         method: 'PATCH',
                     headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify({
-                            exercise_id: {{ $exercise->id }},
-                            sets: formData.get('sets'),
-                            reps: formData.get('reps'),
-                            duration_seconds: formData.get('duration_seconds'),
-                            rest_after_seconds: formData.get('rest_after_seconds'),
-                            tempo: formData.get('tempo'),
-                            intensity: formData.get('intensity')
-                        })
+                            body: JSON.stringify({
+                                exercise_id: {{ $exercise->id }},
+                                sets: formData.get('sets'),
+                                reps: formData.get('reps'),
+                                duration_seconds: formData.get('duration_seconds'),
+                                rest_after_seconds: formData.get('rest_after_seconds'),
+                                tempo: formData.get('tempo')
+                            })
                     }).then(() => location.reload())
                 ">
                     @csrf
@@ -189,24 +192,13 @@
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Rest (seconds)</label>
                             <input type="number" name="rest_after_seconds" placeholder="Rest" value="{{ $exercise->pivot->rest_after_seconds }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
                         </div>
-                        <div>
+                        <div class="col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tempo</label>
-                            <select name="tempo" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
+                            <select name="tempo" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-emerald-500 focus:outline-none">
                                 <option value="">Default</option>
                                 @foreach(\App\Enums\ExerciseTempo::cases() as $tempo)
                                     <option value="{{ $tempo->value }}" {{ $exercise->pivot->tempo?->value === $tempo->value ? 'selected' : '' }}>
                                         {{ $tempo->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Intensity</label>
-                            <select name="intensity" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
-                                <option value="">Default</option>
-                                @foreach(\App\Enums\ExerciseIntensity::cases() as $intensity)
-                                    <option value="{{ $intensity->value }}" {{ $exercise->pivot->intensity?->value === $intensity->value ? 'selected' : '' }}>
-                                        {{ $intensity->label() }}
                                     </option>
                                 @endforeach
                             </select>
@@ -270,44 +262,41 @@
         <!-- Action Buttons -->
         @if ($template->user_id === auth()->id())
             <div class="flex gap-1 sm:gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
-                @if (count($easierVariations) > 0 || count($harderVariations) > 0)
-                    <div class="flex gap-0.5 bg-gray-200 dark:bg-gray-600 rounded">
-                        @if (count($easierVariations) > 0)
-                            @php $firstEasier = $easierVariations[0]; @endphp
-                            <button
-                                @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
-                                    method: 'POST',
-                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                                    body: JSON.stringify({
-                                        exercise_id: {{ $exercise->id }},
-                                        order: {{ $exercise->pivot->order }},
-                                        new_exercise_id: {{ $firstEasier->id }}
-                                    })
-                                }).then(() => location.reload())"
-                                class="px-1.5 py-1 text-sm font-bold text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-l transition-colors"
-                                title="Swap to easier: {{ $firstEasier->name }}"
-                            >↓</button>
-                        @endif
-                        @if (count($harderVariations) > 0)
-                            @php $firstHarder = $harderVariations[0]; @endphp
-                            <button
-                                @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
-                                    method: 'POST',
-                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                                    body: JSON.stringify({
-                                        exercise_id: {{ $exercise->id }},
-                                        order: {{ $exercise->pivot->order }},
-                                        new_exercise_id: {{ $firstHarder->id }}
-                                    })
-                                }).then(() => location.reload())"
-                                class="px-1.5 py-1 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 {{ count($easierVariations) > 0 ? '' : 'rounded-l' }} rounded-r transition-colors"
-                                title="Swap to harder: {{ $firstHarder->name }}"
-                            >↑</button>
-                        @endif
-                    </div>
-                @endif
-                <button @click="showSwap = !showSwap" class="bg-slate-500 text-gray-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-blue-200 hover:text-gray-600 transition-colors">More</button>
-                <button @click="showEdit = !showEdit" class="bg-slate-500 text-gray-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-sm font-medium hover:bg-green-200 hover:text-gray-600 transition-colors">Edit</button>
+                <div class="flex items-center rounded-lg overflow-hidden border border-slate-600/60 bg-slate-600/80">
+                    @if (count($easierVariations) > 0)
+                        @php $firstEasier = $easierVariations[0]; @endphp
+                        <button
+                            @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                body: JSON.stringify({
+                                    exercise_id: {{ $exercise->id }},
+                                    order: {{ $exercise->pivot->order }},
+                                    new_exercise_id: {{ $firstEasier->id }}
+                                })
+                            }).then(() => location.reload())"
+                            class="px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors uppercase tracking-wide"
+                            title="Swap to easier: {{ $firstEasier->name }}"
+                        >↓ Easier</button>
+                    @endif
+                    @if (count($harderVariations) > 0)
+                        @php $firstHarder = $harderVariations[0]; @endphp
+                        <button
+                            @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                body: JSON.stringify({
+                                    exercise_id: {{ $exercise->id }},
+                                    order: {{ $exercise->pivot->order }},
+                                    new_exercise_id: {{ $firstHarder->id }}
+                                })
+                            }).then(() => location.reload())"
+                            class="px-2 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/20 transition-colors uppercase tracking-wide"
+                            title="Swap to harder: {{ $firstHarder->name }}"
+                        >↑ Harder</button>
+                    @endif
+                    <button @click="showSwap = !showSwap" class="px-2 py-1 sm:px-3 sm:py-1.5 text-sm font-medium text-gray-100 border-l border-slate-500/60 hover:bg-emerald-500/20 hover:text-emerald-100 transition-colors">Swap List</button>
+                </div>
                 <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
                     if(confirm('Remove this exercise?')) {
                         fetch($el.action, {
