@@ -139,7 +139,8 @@ class StreakService
                 )->format('Y-m-d');
             })
             ->unique()
-            ->values();
+            ->values()
+            ->toBase();
 
         $journalDates = $user->journalEntries()
             ->where('entry_date', '>=', $lookbackDate->toDateString())
@@ -148,7 +149,8 @@ class StreakService
                 return $entry->entry_date->toDateString();
             })
             ->unique()
-            ->values();
+            ->values()
+            ->toBase();
 
         return $sessionDates->merge($journalDates)->unique()->values();
     }
