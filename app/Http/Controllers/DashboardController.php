@@ -237,7 +237,7 @@ class DashboardController extends Controller
                 'data' => $j,
             ]);
 
-        return $sessions->merge($journals)
+        return $sessions->toBase()->merge($journals->toBase())
             ->sortByDesc('date')
             ->groupBy(fn ($item) => $item['date']->format('Y-m-d'));
     }
