@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
 use App\Models\JournalEntry;
+use App\Services\CachedStreakService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
@@ -29,6 +30,8 @@ class JournalEntryController extends Controller
             ]);
         }
 
+        app(CachedStreakService::class)->invalidateUserCache($userId);
+
         return redirect()->route('home')->with('success', 'Journal entry saved successfully');
     }
 
@@ -37,6 +40,8 @@ class JournalEntryController extends Controller
         $entry->update([
             'notes' => $request->notes,
         ]);
+
+        app(CachedStreakService::class)->invalidateUserCache($entry->user_id);
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true]);

@@ -18,27 +18,16 @@ class StreakService
         // Fetch sessions from last 400 days to account for timezone conversions
         $lookbackDate = $currentDate->copy()->subDays(400);
 
-        $sessionDates = $user->sessions()
-            ->completed()
-            ->where('completed_at', '>=', $lookbackDate->copy()->timezone('UTC'))
-            ->get()
-            ->map(function ($session) use ($user) {
-                return TimezoneConverter::toUserTimezone(
-                    $session->completed_at,
-                    $user->timezone ?? 'America/Los_Angeles'
-                )->format('Y-m-d');
-            })
-            ->unique()
-            ->values();
+        $activityDates = $this->getActivityDates($user, $lookbackDate);
 
-        if ($sessionDates->isEmpty()) {
+        if ($activityDates->isEmpty()) {
             return 0;
         }
 
         while (true) {
             $dateString = $currentDate->format('Y-m-d');
 
-            if (! $sessionDates->contains($dateString)) {
+            if (! $activityDates->contains($dateString)) {
                 break;
             }
 
@@ -59,21 +48,10 @@ class StreakService
         // Fetch sessions from last 400 days to account for timezone conversions
         $lookbackDate = $currentDate->copy()->subDays(400);
 
-        $sessionDates = $user->sessions()
-            ->completed()
-            ->where('completed_at', '>=', $lookbackDate->copy()->timezone('UTC'))
-            ->get()
-            ->map(function ($session) use ($user) {
-                return TimezoneConverter::toUserTimezone(
-                    $session->completed_at,
-                    $user->timezone ?? 'America/Los_Angeles'
-                )->format('Y-m-d');
-            })
-            ->unique()
-            ->values();
+        $activityDates = $this->getActivityDates($user, $lookbackDate);
 
         $todayString = $currentDate->format('Y-m-d');
-        $hasPracticedToday = $sessionDates->contains($todayString);
+        $hasPracticedToday = $activityDates->contains($todayString);
 
         if ($hasPracticedToday) {
             return $this->calculateStreak($user);
@@ -85,7 +63,7 @@ class StreakService
         while (true) {
             $dateString = $currentDate->format('Y-m-d');
 
-            if (! $sessionDates->contains($dateString)) {
+            if (! $activityDates->contains($dateString)) {
                 break;
             }
 
@@ -139,5 +117,39 @@ class StreakService
         }
 
         return $streak;
+    }
+
+    /**
+     * Get unique activity dates from sessions and journal entries.
+     *
+     * @return \Illuminate\Support\Collection<int, string>
+     */
+    private function getActivityDates(User $user, \Carbon\Carbon $lookbackDate): \Illuminate\Support\Collection
+    {
+        $timezone = $user->timezone ?? 'America/Los_Angeles';
+
+        $sessionDates = $user->sessions()
+            ->completed()
+            ->where('completed_at', '>=', $lookbackDate->copy()->timezone('UTC'))
+            ->get()
+            ->map(function ($session) use ($timezone) {
+                return TimezoneConverter::toUserTimezone(
+                    $session->completed_at,
+                    $timezone
+                )->format('Y-m-d');
+            })
+            ->unique()
+            ->values();
+
+        $journalDates = $user->journalEntries()
+            ->where('entry_date', '>=', $lookbackDate->toDateString())
+            ->get()
+            ->map(function ($entry) {
+                return $entry->entry_date->toDateString();
+            })
+            ->unique()
+            ->values();
+
+        return $sessionDates->merge($journalDates)->unique()->values();
     }
 }
