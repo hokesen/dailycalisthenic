@@ -210,6 +210,12 @@
         z-index: -1;
     }
 
+    .go-screen--rest::before {
+        background:
+            radial-gradient(620px 440px at 50% 30%, rgba(56, 189, 248, 0.22), transparent 70%),
+            radial-gradient(520px 380px at 78% 62%, rgba(34, 211, 238, 0.18), transparent 70%);
+    }
+
     .go-orb {
         position: relative;
         border-radius: 999px;
@@ -240,15 +246,16 @@
     }
 
     .edge-pulse {
-        animation: edgePulse 3.4s linear infinite;
-        opacity: 0.6;
+        animation: edgePulse 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        opacity: 0.8;
     }
 
     @keyframes edgePulse {
-        0% { stroke-dashoffset: 0; opacity: 0.06; }
-        35% { opacity: 0.32; }
-        70% { opacity: 0.18; }
-        100% { stroke-dashoffset: -22; opacity: 0.04; }
+        0% { stroke-dashoffset: 0; opacity: 0.08; }
+        25% { opacity: 0.3; }
+        50% { opacity: 0.5; }
+        75% { opacity: 0.28; }
+        100% { stroke-dashoffset: -22; opacity: 0.06; }
     }
 
     .edge-pulse-paused .edge-pulse {

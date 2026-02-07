@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="h-full overflow-hidden flex flex-col go-screen">
+    <div class="h-full overflow-hidden flex flex-col go-screen" :class="isResting ? 'go-screen--rest' : ''">
         <div class="w-full flex-1 flex items-center justify-center min-h-0">
             <div class="w-full h-full flex items-center justify-center">
                 <div class="w-full h-full text-white">
@@ -76,40 +76,53 @@
                                                             0 0 0 0.9 0"
                                                 />
                                             </filter>
+                                            <filter id="edgePulseBlur" x="-30%" y="-30%" width="160%" height="160%">
+                                                <feGaussianBlur stdDeviation="1.35" result="blur" />
+                                                <feColorMatrix
+                                                    in="blur"
+                                                    type="matrix"
+                                                    values="0 0 0 0 0.22
+                                                            0 0 0 0 0.90
+                                                            0 0 0 0 0.72
+                                                            0 0 0 0.75 0"
+                                                />
+                                            </filter>
                                             <mask id="edgeProgressMask">
                                                 <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
                                                     fill="none"
                                                     stroke="white"
                                                     stroke-width="1.6"
                                                     pathLength="100"
-                                                    stroke-dasharray="100"
-                                                    :stroke-dashoffset="100 * (1 - progress)" />
+                                                    :stroke-dasharray="state === 'ready' ? '0 100' : ((progress * 100) + ' 100')"
+                                                    stroke-dashoffset="-8.5" />
                                             </mask>
                                         </defs>
                                         <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
                                             fill="none"
-                                            stroke="rgba(52, 211, 153, 0.9)"
+                                            :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(52, 211, 153, 0.9)'"
                                             stroke-width="1.4"
                                             pathLength="100"
-                                            stroke-dasharray="100"
-                                            :stroke-dashoffset="state === 'ready' ? 100 : 100 * (1 - progress)"
+                                            :stroke-dasharray="state === 'ready' ? '0 100' : ((progress * 100) + ' 100')"
+                                            stroke-dashoffset="-8.5"
                                             stroke-linecap="round"
                                             filter="url(#edgeGlow)"
                                             :style="state === 'ready' ? 'opacity: 0;' : 'opacity: 1;'" />
                                         <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
                                             fill="none"
-                                            stroke="rgba(94, 234, 212, 0.7)"
-                                            stroke-width="1.2"
+                                            :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(94, 234, 212, 0.82)'"
+                                            stroke-width="1.35"
                                             pathLength="100"
-                                            stroke-dasharray="4 18"
+                                            stroke-dasharray="14 32"
                                             stroke-linecap="round"
                                             :class="state === 'running' && progress > 0.02 ? 'edge-pulse' : ''"
                                             mask="url(#edgeProgressMask)"
+                                            filter="url(#edgePulseBlur)"
+                                            style="mix-blend-mode: screen;"
                                             :style="state === 'running' && progress > 0.02 ? 'opacity: 1;' : 'opacity: 0;'" />
                                     </svg>
                                 </div>
                                 <!-- Main Content -->
-                                <div class="md:col-span-10 flex flex-col justify-between items-center h-full w-full py-2">
+                                <div class="md:col-span-8 flex flex-col justify-between items-center h-full w-full py-2">
                                     <!-- Status and Progress -->
                                     <div class="text-center shrink-0">
                                         <div>
@@ -207,11 +220,11 @@
                                 </div>
 
                                 <!-- Next Exercise -->
-                                <div class="md:col-span-2 hidden md:block md:pr-4">
+                                <div class="md:col-span-4 hidden md:flex flex-col items-center">
                                     <div x-show="currentExerciseIndex < exercises.length - 1" class="space-y-4">
                                         <div class="text-2xl text-white/60 text-center mb-4">Next</div>
                                         <template x-for="(exercise, index) in exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 2)" :key="exercise.id">
-                                            <div class="text-center p-5 app-card app-card--nested rounded-xl">
+                                            <div class="text-center p-5 app-card app-card--nested rounded-xl min-w-[16rem]">
                                                 <div class="text-2xl font-semibold text-white/80 line-clamp-3" x-text="exercise.name"></div>
                                             </div>
                                         </template>
