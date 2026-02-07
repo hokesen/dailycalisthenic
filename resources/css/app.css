@@ -193,6 +193,77 @@
         letter-spacing: 0.08em;
         color: rgba(231, 225, 216, 0.58);
     }
+
+    .go-screen {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .go-screen::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(600px 420px at 50% 30%, rgba(39, 194, 176, 0.18), transparent 70%),
+            radial-gradient(520px 380px at 80% 60%, rgba(100, 226, 214, 0.16), transparent 70%);
+        opacity: 0.9;
+        z-index: -1;
+    }
+
+    .go-orb {
+        position: relative;
+        border-radius: 999px;
+        box-shadow: 0 0 60px -30px rgba(39, 194, 176, 0.45);
+    }
+
+    .go-ring {
+        filter: drop-shadow(0 0 10px rgba(39, 194, 176, 0.2));
+    }
+
+    .go-pill {
+        background: rgba(12, 21, 25, 0.8);
+        border: 1px solid rgba(94, 234, 212, 0.25);
+        box-shadow: inset 0 0 0 1px rgba(5, 12, 15, 0.5);
+    }
+
+    .go-cta {
+        box-shadow: 0 16px 40px -28px rgba(16, 185, 129, 0.7);
+    }
+
+    @keyframes goFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+
+    .go-float {
+        animation: goFloat 6s ease-in-out infinite;
+    }
+
+    .edge-pulse {
+        animation: edgePulse 3.4s linear infinite;
+        opacity: 0.6;
+    }
+
+    @keyframes edgePulse {
+        0% { stroke-dashoffset: 0; opacity: 0.06; }
+        35% { opacity: 0.32; }
+        70% { opacity: 0.18; }
+        100% { stroke-dashoffset: -22; opacity: 0.04; }
+    }
+
+    .edge-pulse-paused .edge-pulse {
+        animation-play-state: paused;
+        opacity: 0.12;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .go-float {
+            animation: none;
+        }
+        .edge-pulse {
+            animation: none;
+        }
+    }
 }
 
 /* Print Styles */

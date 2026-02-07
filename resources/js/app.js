@@ -25,6 +25,11 @@ Alpine.data('workoutTimer', (config) => ({
     timeRemaining: 0,
     totalElapsedSeconds: 0,
     intervalId: null,
+    timerHandle: null,
+    lastFrameTime: null,
+    currentSegmentMs: 0,
+    remainingMs: 0,
+    totalElapsedMs: 0,
     exerciseCompletionStatus: [],
 
     get currentExercise() {
@@ -32,11 +37,10 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     get progress() {
-        const total = this.isResting ? this.currentExercise.rest_after_seconds : this.currentExercise.duration_seconds;
-        if (total === 0) {
+        if (this.currentSegmentMs === 0) {
             return 1;
         }
-        return 1 - (this.timeRemaining / total);
+        return 1 - (this.remainingMs / this.currentSegmentMs);
     },
 
     get completedExercises() {
@@ -46,7 +50,7 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     init() {
-        this.timeRemaining = this.currentExercise.duration_seconds;
+        this.setSegment(this.currentExercise.duration_seconds);
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -100,21 +104,44 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     startTimer() {
-        this.intervalId = setInterval(() => {
-            if (this.timeRemaining > 0) {
-                this.timeRemaining--;
-                this.totalElapsedSeconds++;
-            } else {
-                this.handleTimerComplete();
-            }
-        }, 1000);
+        if (!this.tick) {
+            this.tick = (now) => {
+                if (this.state !== 'running') {
+                    return;
+                }
+
+                if (!this.lastFrameTime) {
+                    this.lastFrameTime = now;
+                }
+
+                const delta = now - this.lastFrameTime;
+                this.lastFrameTime = now;
+
+                this.remainingMs = Math.max(0, this.remainingMs - delta);
+                this.totalElapsedMs += delta;
+
+                this.timeRemaining = Math.max(0, Math.ceil(this.remainingMs / 1000));
+                this.totalElapsedSeconds = Math.floor(this.totalElapsedMs / 1000);
+
+                if (this.remainingMs <= 0) {
+                    this.handleTimerComplete();
+                    return;
+                }
+
+                this.timerHandle = requestAnimationFrame(this.tick);
+            };
+        }
+
+        this.lastFrameTime = performance.now();
+        this.timerHandle = requestAnimationFrame(this.tick);
     },
 
     stopTimer() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
+        if (this.timerHandle) {
+            cancelAnimationFrame(this.timerHandle);
+            this.timerHandle = null;
         }
+        this.lastFrameTime = null;
     },
 
     handleTimerComplete() {
@@ -123,12 +150,17 @@ Alpine.data('workoutTimer', (config) => ({
             this.updateExerciseCompletion(this.currentExerciseIndex, 'completed');
             if (this.currentExercise.rest_after_seconds > 0 && this.currentExerciseIndex < this.exercises.length - 1) {
                 this.isResting = true;
-                this.timeRemaining = this.currentExercise.rest_after_seconds;
+                this.setSegment(this.currentExercise.rest_after_seconds);
             } else {
                 this.moveToNextExercise();
             }
         } else {
             this.moveToNextExercise();
+        }
+
+        if (this.state === 'running') {
+            this.lastFrameTime = performance.now();
+            this.timerHandle = requestAnimationFrame(this.tick);
         }
     },
 
@@ -139,7 +171,7 @@ Alpine.data('workoutTimer', (config) => ({
         if (this.currentExerciseIndex >= this.exercises.length) {
             this.completeWorkout();
         } else {
-            this.timeRemaining = this.currentExercise.duration_seconds;
+            this.setSegment(this.currentExercise.duration_seconds);
         }
     },
 
@@ -185,6 +217,13 @@ Alpine.data('workoutTimer', (config) => ({
         this.stopTimer();
         this.state = 'completed';
         this.updateSessionStatus('completed');
+    },
+
+    setSegment(seconds) {
+        const duration = Number(seconds || 0);
+        this.currentSegmentMs = duration * 1000;
+        this.remainingMs = this.currentSegmentMs;
+        this.timeRemaining = duration;
     },
 
     updateSessionStatus(status) {
