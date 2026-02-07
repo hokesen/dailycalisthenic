@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use DateTimeZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,22 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $allTimezones = DateTimeZone::listIdentifiers();
+        $usPrimaryTimezones = [
+            'America/Los_Angeles',
+            'America/Denver',
+            'America/Chicago',
+            'America/New_York',
+            'America/Anchorage',
+            'America/Adak',
+            'Pacific/Honolulu',
+        ];
+        $usTimezones = array_values(array_intersect($usPrimaryTimezones, $allTimezones));
+        $otherTimezones = array_values(array_diff($allTimezones, $usTimezones));
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'timezones' => array_merge($usTimezones, $otherTimezones),
         ]);
     }
 
