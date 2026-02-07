@@ -246,6 +246,6 @@ class DashboardController extends Controller
 
         return $sessions->toBase()->merge($journals->toBase())
             ->sortByDesc('date')
-            ->groupBy(fn ($item) => $item['date']->format('Y-m-d'));
+            ->groupBy(fn ($item) => $item['date']->copy()->setTimezone($timezone)->format('Y-m-d'));
     }
 }
