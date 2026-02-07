@@ -10,11 +10,21 @@ class UserActivityService
     public function hasPracticedToday(User $user): bool
     {
         $today = $user->now()->startOfDay();
+        $timezone = $user->timezone ?? 'America/Los_Angeles';
 
-        return $user->sessions()
-            ->completed()
-            ->onDate($today, $user->timezone ?? 'America/Los_Angeles')
-            ->exists();
+        $sessions = $user->sessions()
+            ->whereIn('status', ['completed', 'in_progress'])
+            ->where('total_duration_seconds', '>', 0)
+            ->where(function ($query) use ($today, $timezone) {
+                $startOfDayUtc = $today->copy()->timezone($timezone)->startOfDay()->timezone('UTC');
+                $endOfDayUtc = $today->copy()->timezone($timezone)->endOfDay()->timezone('UTC');
+
+                $query->whereBetween('completed_at', [$startOfDayUtc, $endOfDayUtc])
+                    ->orWhereBetween('started_at', [$startOfDayUtc, $endOfDayUtc]);
+            })
+            ->get();
+
+        return $sessions->isNotEmpty();
     }
 
     public function getPastDaysWithActivity(User $user, int $days = 7): array
@@ -24,9 +34,17 @@ class UserActivityService
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = $today->copy()->subDays($i);
+            $timezone = $user->timezone ?? 'America/Los_Angeles';
+            $startOfDayUtc = $date->copy()->timezone($timezone)->startOfDay()->timezone('UTC');
+            $endOfDayUtc = $date->copy()->timezone($timezone)->endOfDay()->timezone('UTC');
+
             $hasSession = $user->sessions()
-                ->completed()
-                ->onDate($date, $user->timezone ?? 'America/Los_Angeles')
+                ->whereIn('status', ['completed', 'in_progress'])
+                ->where('total_duration_seconds', '>', 0)
+                ->where(function ($query) use ($startOfDayUtc, $endOfDayUtc) {
+                    $query->whereBetween('completed_at', [$startOfDayUtc, $endOfDayUtc])
+                        ->orWhereBetween('started_at', [$startOfDayUtc, $endOfDayUtc]);
+                })
                 ->exists();
 
             $result[] = [
@@ -48,8 +66,12 @@ class UserActivityService
         [$startDateUtc, $endDateUtc] = TimezoneConverter::convertDateRangeToUtc($startDate, $endDate, $user->timezone ?? 'America/Los_Angeles');
 
         $sessions = $user->sessions()
-            ->completed()
-            ->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
+            ->whereIn('status', ['completed', 'in_progress'])
+            ->where('total_duration_seconds', '>', 0)
+            ->where(function ($query) use ($startDateUtc, $endDateUtc) {
+                $query->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
+                    ->orWhereBetween('started_at', [$startDateUtc, $endDateUtc]);
+            })
             ->with(['sessionExercises.exercise'])
             ->get();
 
@@ -60,8 +82,9 @@ class UserActivityService
             $date = $userNow->copy()->subDays($i)->startOfDay();
 
             $daySessions = $sessions->filter(function ($session) use ($date, $timezone) {
+                $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
                 $sessionInTz = TimezoneConverter::fromTimestampToTimezone(
-                    $session->completed_at->getTimestamp(),
+                    $activityAt->getTimestamp(),
                     $timezone
                 );
 

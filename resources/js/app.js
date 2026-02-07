@@ -31,6 +31,8 @@ Alpine.data('workoutTimer', (config) => ({
     remainingMs: 0,
     totalElapsedMs: 0,
     exerciseCompletionStatus: [],
+    autosaveIntervalId: null,
+    autosaveIntervalMs: 15000,
 
     get currentExercise() {
         return this.exercises[this.currentExerciseIndex] || {};
@@ -51,6 +53,7 @@ Alpine.data('workoutTimer', (config) => ({
 
     init() {
         this.setSegment(this.currentExercise.duration_seconds);
+        this.setupAutosaveListeners();
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -91,16 +94,19 @@ Alpine.data('workoutTimer', (config) => ({
         this.state = 'running';
         this.startTimer();
         this.updateSessionStatus('in_progress');
+        this.startAutosave();
     },
 
     pause() {
         this.state = 'paused';
         this.stopTimer();
+        this.updateSessionStatus('in_progress');
     },
 
     resume() {
         this.state = 'running';
         this.startTimer();
+        this.startAutosave();
     },
 
     startTimer() {
@@ -217,6 +223,7 @@ Alpine.data('workoutTimer', (config) => ({
         this.stopTimer();
         this.state = 'completed';
         this.updateSessionStatus('completed');
+        this.stopAutosave();
     },
 
     setSegment(seconds) {
@@ -226,9 +233,48 @@ Alpine.data('workoutTimer', (config) => ({
         this.timeRemaining = duration;
     },
 
-    updateSessionStatus(status) {
+    startAutosave() {
+        if (this.autosaveIntervalId) {
+            return;
+        }
+
+        this.autosaveIntervalId = setInterval(() => {
+            if (this.state === 'running' || this.state === 'paused') {
+                this.flushAutosave();
+            }
+        }, this.autosaveIntervalMs);
+    },
+
+    stopAutosave() {
+        if (this.autosaveIntervalId) {
+            clearInterval(this.autosaveIntervalId);
+            this.autosaveIntervalId = null;
+        }
+    },
+
+    setupAutosaveListeners() {
+        const flush = () => {
+            if (this.state === 'running' || this.state === 'paused') {
+                this.flushAutosave(true);
+            }
+        };
+
+        window.addEventListener('pagehide', flush);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                flush();
+            }
+        });
+    },
+
+    flushAutosave(useKeepalive = false) {
+        this.updateSessionStatus('in_progress', { keepalive: useKeepalive });
+    },
+
+    updateSessionStatus(status, options = {}) {
         csrfFetch(`/go/${this.sessionId}/update`, {
             method: 'PATCH',
+            keepalive: options.keepalive === true,
             body: JSON.stringify({
                 status: status,
                 total_duration_seconds: this.totalElapsedSeconds

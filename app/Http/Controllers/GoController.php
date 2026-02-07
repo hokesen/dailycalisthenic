@@ -80,6 +80,10 @@ class GoController extends Controller
             $updateData['started_at'] = now();
         }
 
+        if ($request->validated('status') === SessionStatus::InProgress->value && $session->completed_at !== null) {
+            $updateData['completed_at'] = null;
+        }
+
         $wasJustCompleted = false;
         if ($request->validated('status') === SessionStatus::Completed->value && $session->completed_at === null) {
             $updateData['completed_at'] = now();

@@ -129,12 +129,19 @@ class StreakService
         $timezone = $user->timezone ?? 'America/Los_Angeles';
 
         $sessionDates = $user->sessions()
-            ->completed()
-            ->where('completed_at', '>=', $lookbackDate->copy()->timezone('UTC'))
+            ->whereIn('status', ['completed', 'in_progress'])
+            ->where('total_duration_seconds', '>', 0)
+            ->where(function ($query) use ($lookbackDate) {
+                $utcLookback = $lookbackDate->copy()->timezone('UTC');
+                $query->where('completed_at', '>=', $utcLookback)
+                    ->orWhere('started_at', '>=', $utcLookback);
+            })
             ->get()
             ->map(function ($session) use ($timezone) {
+                $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
+
                 return TimezoneConverter::toUserTimezone(
-                    $session->completed_at,
+                    $activityAt,
                     $timezone
                 )->format('Y-m-d');
             })
