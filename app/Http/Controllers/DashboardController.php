@@ -223,11 +223,15 @@ class DashboardController extends Controller
             ->whereBetween('completed_at', [$startDate->copy()->utc(), $endDate->copy()->utc()])
             ->with(['sessionExercises.exercise', 'template'])
             ->get()
-            ->map(fn ($s) => [
-                'type' => 'session',
-                'date' => $s->completed_at->setTimezone($timezone),
-                'data' => $s,
-            ]);
+            ->map(function ($s) use ($timezone) {
+                $s->completed_at = $s->completed_at->copy()->setTimezone($timezone);
+
+                return [
+                    'type' => 'session',
+                    'date' => $s->completed_at,
+                    'data' => $s,
+                ];
+            });
 
         $journals = JournalEntry::query()
             ->where('user_id', $user->id)
