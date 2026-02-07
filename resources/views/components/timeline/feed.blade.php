@@ -1,4 +1,4 @@
-@props(['timelineFeed'])
+@props(['timelineFeed', 'timezone', 'userNow'])
 
 @if($timelineFeed->isEmpty())
     <div class="text-center py-12 app-panel rounded-2xl">
@@ -12,8 +12,8 @@
     @foreach($timelineFeed as $date => $items)
         <div class="mb-6">
             <h3 class="app-meta mb-3 flex items-center gap-2">
-                {{ \Carbon\Carbon::parse($date)->format('F j, Y') }}
-                @if(\Carbon\Carbon::parse($date)->isToday())
+                {{ \Carbon\Carbon::parse($date, $timezone)->format('F j, Y') }}
+                @if(\Carbon\Carbon::parse($date, $timezone)->isSameDay($userNow))
                     <span class="app-chip">Today</span>
                 @endif
             </h3>

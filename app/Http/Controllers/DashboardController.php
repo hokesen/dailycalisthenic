@@ -74,6 +74,7 @@ class DashboardController extends Controller
         $days = in_array($days, [7, 14, 30, 90]) ? $days : 7;
 
         $userNow = $user->now();
+        $userTimezone = $user->timezone ?? 'America/Los_Angeles';
         $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
         $endDate = $userNow->copy()->endOfDay();
         $startDateUtc = $startDate->copy()->timezone('UTC');
@@ -199,6 +200,8 @@ class DashboardController extends Controller
             'selectedTemplateId' => $selectedTemplateId,
             'hasPracticedToday' => $hasPracticedToday,
             'timelineFeed' => $timelineFeed,
+            'userTimezone' => $userTimezone,
+            'userNow' => $userNow,
             'userTemplates' => $userTemplates,
             'todayEntry' => $todayEntry,
             'days' => $days,
@@ -212,7 +215,7 @@ class DashboardController extends Controller
         $startDate = $user->now()->subDays($days - 1)->startOfDay();
         $endDate = $user->now()->endOfDay();
 
-        $timezone = $user->timezone ?? 'UTC';
+        $timezone = $user->timezone ?? 'America/Los_Angeles';
 
         $sessions = Session::query()
             ->where('user_id', $user->id)

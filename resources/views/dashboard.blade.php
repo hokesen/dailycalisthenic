@@ -82,7 +82,7 @@
 
                     <!-- Timeline Feed -->
 
-                    <x-timeline.feed :timelineFeed="$timelineFeed" />
+                    <x-timeline.feed :timelineFeed="$timelineFeed" :timezone="$userTimezone" :userNow="$userNow" />
                 </div>
 
                 <!-- Goals Tab Content -->
