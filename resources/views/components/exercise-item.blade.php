@@ -6,11 +6,11 @@
     $harderVariations = $exerciseRepo->getHarderVariations($exercise)->all();
 @endphp
 
-<div data-exercise-item class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
+<div data-exercise-item class="app-card rounded-xl p-2 sm:p-3 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
     <!-- Collapsed View -->
     <div x-show="!expanded" class="flex items-center justify-center gap-2 cursor-pointer" @click="expanded = true">
-        <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg truncate" title="{{ $exercise->name }}">{{ $exercise->name }}</span>
-        <span class="text-gray-400 text-xl font-bold">+</span>
+        <span class="font-bold text-white text-base sm:text-lg truncate" title="{{ $exercise->name }}">{{ $exercise->name }}</span>
+        <span class="text-white/40 text-xl font-bold">+</span>
     </div>
 
     <!-- Expanded View -->
@@ -53,7 +53,7 @@
                             }
                         })
                         .catch(error => console.error('Error:', error))
-                    " class="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors" title="Move up">
+                    " class="text-white/40 hover:text-white/70 transition-colors" title="Move up">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"/>
                         </svg>
@@ -92,24 +92,24 @@
                             }
                         })
                         .catch(error => console.error('Error:', error))
-                    " class="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors" title="Move down">
+                    " class="text-white/40 hover:text-white/70 transition-colors" title="Move down">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
                     </button>
                 </div>
             @endif
-            <span class="text-gray-500 dark:text-gray-400 font-bold text-base sm:text-lg flex-shrink-0" data-order-number>{{ $exercise->pivot->order }}.</span>
+            <span class="text-white/50 font-bold text-base sm:text-lg flex-shrink-0" data-order-number>{{ $exercise->pivot->order }}.</span>
             <div class="flex-grow min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg leading-tight">{{ $exercise->name }}</span>
+                    <span class="font-bold text-white text-base sm:text-lg leading-tight">{{ $exercise->name }}</span>
                     @if ($exercise->description)
                         <button
                             type="button"
                             x-data="{ showDesc: false }"
                             @click="showDesc = !showDesc"
                             @click.outside="showDesc = false"
-                            class="relative text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            class="relative text-white/40 hover:text-white/70 transition-colors"
                             title="{{ $exercise->description }}"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@
                             <div
                                 x-show="showDesc"
                                 x-transition
-                                class="absolute z-10 left-0 mt-2 w-64 p-3 bg-gray-800 text-gray-200 text-sm rounded-lg shadow-lg"
+                                class="absolute z-10 left-0 mt-2 w-64 p-3 app-panel text-white/80 text-sm rounded-lg shadow-lg"
                             >
                                 {{ $exercise->description }}
                                 @if ($exercise->category || $exercise->difficulty_level)
@@ -135,7 +135,7 @@
                         </button>
                     @endif
                 </div>
-                <div class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base" x-show="!showEdit">
+                <div class="text-white/70 mt-1 text-sm sm:text-base" x-show="!showEdit">
                     @if ($exercise->pivot->sets && $exercise->pivot->reps)
                         <span class="font-semibold">{{ $exercise->pivot->sets }} × {{ $exercise->pivot->reps }}</span>
                     @endif
@@ -143,16 +143,16 @@
                         <span class="font-semibold">{{ $exercise->pivot->duration_seconds }}s</span>
                     @endif
                     @if ($exercise->pivot->rest_after_seconds)
-                        <span class="text-gray-500">• Rest: {{ $exercise->pivot->rest_after_seconds }}s</span>
+                        <span class="text-white/40">• Rest: {{ $exercise->pivot->rest_after_seconds }}s</span>
                     @endif
                     @if ($exercise->pivot->tempo)
-                        <span class="text-gray-500">• {{ $exercise->pivot->tempo->label() }}</span>
+                        <span class="text-white/40">• {{ $exercise->pivot->tempo->label() }}</span>
                     @endif
                     @if ($exercise->pivot->tempo)
-                        <span class="text-gray-500">• {{ $exercise->pivot->tempo->label() }}</span>
+                        <span class="text-white/40">• {{ $exercise->pivot->tempo->label() }}</span>
                     @endif
                     @if ($template->user_id === auth()->id())
-                        <button type="button" @click="showEdit = true" class="ml-2 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500">Edit</button>
+                        <button type="button" @click="showEdit = true" class="ml-2 text-xs font-semibold uppercase tracking-wide text-emerald-300 hover:text-emerald-200">Edit</button>
                     @endif
                 </div>
 
@@ -177,24 +177,24 @@
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sets</label>
-                            <input type="number" name="sets" placeholder="Sets" value="{{ $exercise->pivot->sets }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-white/70 mb-1">Sets</label>
+                            <input type="number" name="sets" placeholder="Sets" value="{{ $exercise->pivot->sets }}" class="w-full rounded-lg px-3 py-2 text-base app-field placeholder:text-white/40 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Reps</label>
-                            <input type="number" name="reps" placeholder="Reps" value="{{ $exercise->pivot->reps }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-white/70 mb-1">Reps</label>
+                            <input type="number" name="reps" placeholder="Reps" value="{{ $exercise->pivot->reps }}" class="w-full rounded-lg px-3 py-2 text-base app-field placeholder:text-white/40 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Duration (seconds)</label>
-                            <input type="number" name="duration_seconds" placeholder="Duration" value="{{ $exercise->pivot->duration_seconds }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-white/70 mb-1">Duration (seconds)</label>
+                            <input type="number" name="duration_seconds" placeholder="Duration" value="{{ $exercise->pivot->duration_seconds }}" class="w-full rounded-lg px-3 py-2 text-base app-field placeholder:text-white/40 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Rest (seconds)</label>
-                            <input type="number" name="rest_after_seconds" placeholder="Rest" value="{{ $exercise->pivot->rest_after_seconds }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-white/70 mb-1">Rest (seconds)</label>
+                            <input type="number" name="rest_after_seconds" placeholder="Rest" value="{{ $exercise->pivot->rest_after_seconds }}" class="w-full rounded-lg px-3 py-2 text-base app-field placeholder:text-white/40 focus:outline-none">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tempo</label>
-                            <select name="tempo" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-emerald-500 focus:outline-none">
+                            <label class="block text-sm font-semibold text-white/70 mb-1">Tempo</label>
+                            <select name="tempo" class="w-full rounded-lg px-3 py-2 text-base app-field focus:outline-none">
                                 <option value="">Default</option>
                                 @foreach(\App\Enums\ExerciseTempo::cases() as $tempo)
                                     <option value="{{ $tempo->value }}" {{ $exercise->pivot->tempo?->value === $tempo->value ? 'selected' : '' }}>
@@ -205,8 +205,8 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-base">Save</button>
-                        <button type="button" @click="showEdit = false" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 font-medium text-base">Cancel</button>
+                        <button type="submit" class="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 font-medium text-base">Save</button>
+                        <button type="button" @click="showEdit = false" class="bg-white/10 text-white/80 px-4 py-2 rounded-lg hover:bg-white/20 font-medium text-base">Cancel</button>
                     </div>
                 </form>
 
@@ -226,7 +226,7 @@
                         ">
                             @csrf
                             <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                            <select name="new_exercise_id" @change="if($event.target.value) $event.target.form.requestSubmit()" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-base text-gray-900 dark:text-gray-100 dark:bg-gray-700 focus:border-blue-500 focus:outline-none">
+                            <select name="new_exercise_id" @change="if($event.target.value) $event.target.form.requestSubmit()" class="w-full rounded-lg px-3 py-2.5 text-base app-field focus:outline-none">
                                 <option value="">Select exercise...</option>
                                 @if (count($easierVariations) > 0)
                                     <optgroup label="Easier">
@@ -254,7 +254,7 @@
                             </select>
                         </form>
                     @endif
-                    <button @click="showSwap = false" class="text-sm text-gray-200 mt-2 hover:text-gray-800 underline">Cancel</button>
+                    <button @click="showSwap = false" class="text-sm text-white/70 mt-2 hover:text-white underline">Cancel</button>
                 </div>
             </div>
         </div>
@@ -262,7 +262,7 @@
         <!-- Action Buttons -->
         @if ($template->user_id === auth()->id())
             <div class="flex gap-1 sm:gap-2 flex-shrink-0" x-show="!showSwap && !showEdit">
-                <div class="flex items-center rounded-lg overflow-hidden border border-slate-600/60 bg-slate-600/80">
+                <div class="flex items-center rounded-lg overflow-hidden border border-white/10 bg-white/10">
                     @if (count($easierVariations) > 0)
                         @php $firstEasier = $easierVariations[0]; @endphp
                         <button
@@ -295,7 +295,7 @@
                             title="Swap to harder: {{ $firstHarder->name }}"
                         >↑ Harder</button>
                     @endif
-                    <button @click="showSwap = !showSwap" class="px-2 py-1 sm:px-3 sm:py-1.5 text-sm font-medium text-gray-100 border-l border-slate-500/60 hover:bg-emerald-500/20 hover:text-emerald-100 transition-colors">Swap List</button>
+                    <button @click="showSwap = !showSwap" class="px-2 py-1 sm:px-3 sm:py-1.5 text-sm font-medium text-white/80 border-l border-white/10 hover:bg-emerald-500/20 hover:text-emerald-100 transition-colors">Swap List</button>
                 </div>
                 <form action="{{ route('templates.remove-exercise', $template) }}" method="POST" @submit.prevent="
                     if(confirm('Remove this exercise?')) {
@@ -309,12 +309,12 @@
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-                    <button type="submit" class="bg-slate-500 text-red-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-700 hover:text-red-300 transition-colors">✕</button>
+                    <button type="submit" class="bg-red-500/20 text-red-200 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded font-bold text-sm hover:bg-red-500/40 hover:text-red-100 transition-colors">✕</button>
                 </form>
-                <button @click="expanded = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-bold px-2 transition-colors" title="Hide details">−</button>
+                <button @click="expanded = false" class="text-white/40 hover:text-white/70 text-xl font-bold px-2 transition-colors" title="Hide details">−</button>
             </div>
         @else
-            <button @click="expanded = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-bold px-2 transition-colors flex-shrink-0" title="Hide details">−</button>
+            <button @click="expanded = false" class="text-white/40 hover:text-white/70 text-xl font-bold px-2 transition-colors flex-shrink-0" title="Hide details">−</button>
         @endif
     </div>
     </div><!-- end expanded -->

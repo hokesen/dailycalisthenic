@@ -1,16 +1,16 @@
 @props(['session'])
 
-<div class="bg-white dark:bg-gray-800 border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
+<div class="app-card rounded-xl p-4 border-l-4 border-emerald-400">
     <div class="flex justify-between items-start mb-2">
         <div>
-            <h4 class="font-semibold text-gray-900 dark:text-gray-100">
+            <h4 class="font-semibold text-white">
                 {{ $session->name }}
             </h4>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-white/60">
                 {{ $session->completed_at->format('g:i A') }} • <x-duration-display :seconds="$session->total_duration_seconds" /> total
             </p>
         </div>
-        <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">
+        <span class="app-chip">
             Session
         </span>
     </div>
@@ -19,9 +19,9 @@
         <div class="space-y-1 mb-3">
             @foreach($session->sessionExercises as $se)
                 <div class="text-sm">
-                    <span class="text-gray-700 dark:text-gray-300">{{ $se->exercise->name }}</span>
+                    <span class="text-white/80">{{ $se->exercise->name }}</span>
                     @if($se->duration_seconds)
-                        <span class="text-gray-500 dark:text-gray-400">• <x-duration-display :seconds="$se->duration_seconds" /></span>
+                        <span class="text-white/50">• <x-duration-display :seconds="$se->duration_seconds" /></span>
                     @endif
                 </div>
             @endforeach
