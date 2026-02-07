@@ -6,7 +6,7 @@
     $harderVariations = $exerciseRepo->getHarderVariations($exercise)->all();
 @endphp
 
-<div data-exercise-item class="app-card rounded-xl p-2 sm:p-3 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
+<div data-exercise-item class="app-card app-card--nested rounded-xl p-2 sm:p-3 transition-colors" x-data="{ showSwap: false, showEdit: false, expanded: false }" :class="expanded ? 'col-span-2' : 'col-span-1'">
     <!-- Collapsed View -->
     <div x-show="!expanded" class="flex items-center justify-center gap-2 cursor-pointer" @click="expanded = true">
         <span class="font-bold text-white text-base sm:text-lg truncate" title="{{ $exercise->name }}">{{ $exercise->name }}</span>

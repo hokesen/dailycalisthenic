@@ -2,7 +2,7 @@
 @props(['template', 'allExercises'])
 
 <div
-    class="app-card rounded-2xl p-2 sm:p-4 flex flex-col"
+    class="app-card app-card--stack rounded-2xl p-2 sm:p-4 flex flex-col"
     x-data="{ editingName: false }"
     x-init="
         if ({{ $template->user_id === auth()->id() ? 'true' : 'false' }} && {{ Js::from($template->name) }} === 'New Template') {

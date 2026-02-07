@@ -284,7 +284,7 @@
                     Your back can't wait another day
                 </h2>
                 <p class="text-xl text-emerald-50/90 mb-8 max-w-2xl mx-auto">
-                    Start building better habits today. 15 minutes a day. Free to use.
+                    Build better habits today, totally free.
                 </p>
                 @guest
                     <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-white text-emerald-700 text-lg font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
