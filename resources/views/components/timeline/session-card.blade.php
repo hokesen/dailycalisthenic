@@ -1,13 +1,21 @@
 @props(['session'])
 
 <div class="app-card rounded-xl p-4 border-l-4 border-emerald-400">
+    @php
+        $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
+        $isInProgress = $session->status?->value === 'in_progress' || $session->status === 'in_progress';
+    @endphp
+
     <div class="flex justify-between items-start mb-2">
         <div>
             <h4 class="font-semibold text-white">
                 {{ $session->name }}
             </h4>
             <p class="text-sm text-white/60">
-                {{ $session->completed_at->format('g:i A') }} • <x-duration-display :seconds="$session->total_duration_seconds" /> total
+                {{ $activityAt?->format('g:i A') ?? '-' }} • <x-duration-display :seconds="$session->total_duration_seconds" /> total
+                @if($isInProgress)
+                    <span class="text-white/50">• In progress</span>
+                @endif
             </p>
         </div>
         <span class="app-chip">

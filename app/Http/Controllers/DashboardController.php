@@ -219,16 +219,24 @@ class DashboardController extends Controller
 
         $sessions = Session::query()
             ->where('user_id', $user->id)
-            ->completed()
-            ->whereBetween('completed_at', [$startDate->copy()->utc(), $endDate->copy()->utc()])
+            ->whereIn('status', ['completed', 'in_progress'])
+            ->where('total_duration_seconds', '>', 0)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $startUtc = $startDate->copy()->utc();
+                $endUtc = $endDate->copy()->utc();
+
+                $query->whereBetween('completed_at', [$startUtc, $endUtc])
+                    ->orWhereBetween('started_at', [$startUtc, $endUtc]);
+            })
             ->with(['sessionExercises.exercise', 'template'])
             ->get()
             ->map(function ($s) use ($timezone) {
-                $s->completed_at = $s->completed_at->copy()->setTimezone($timezone);
+                $activityAt = $s->completed_at ?? $s->started_at ?? $s->updated_at;
+                $activityAt = $activityAt?->copy()->setTimezone($timezone);
 
                 return [
                     'type' => 'session',
-                    'date' => $s->completed_at,
+                    'date' => $activityAt,
                     'data' => $s,
                 ];
             });
