@@ -87,31 +87,27 @@
                                                             0 0 0 0.75 0"
                                                 />
                                             </filter>
+                                            <path id="edgePath"
+                                                d="M50 2 H92 A6 6 0 0 1 98 8 V92 A6 6 0 0 1 92 98 H8 A6 6 0 0 1 2 92 V8 A6 6 0 0 1 8 2 H50"
+                                                fill="none"
+                                                pathLength="100" />
                                             <mask id="edgeProgressMask">
-                                                <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
-                                                    fill="none"
+                                                <use href="#edgePath"
                                                     stroke="white"
                                                     stroke-width="1.6"
-                                                    pathLength="100"
-                                                    :stroke-dasharray="state === 'ready' ? '0 100' : ((progress * 100) + ' 100')"
-                                                    stroke-dashoffset="-8.5" />
+                                                    :stroke-dasharray="state === 'ready' ? '0 100' : ((Math.min(100, (progress * 100) + (progress > 0 ? 0.8 : 0))) + ' 100')" />
                                             </mask>
                                         </defs>
-                                        <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
-                                            fill="none"
+                                        <use href="#edgePath"
                                             :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(52, 211, 153, 0.9)'"
                                             stroke-width="1.4"
-                                            pathLength="100"
-                                            :stroke-dasharray="state === 'ready' ? '0 100' : ((progress * 100) + ' 100')"
-                                            stroke-dashoffset="-8.5"
+                                            :stroke-dasharray="state === 'ready' ? '0 100' : ((Math.min(100, (progress * 100) + (progress > 0 ? 0.8 : 0))) + ' 100')"
                                             stroke-linecap="round"
                                             filter="url(#edgeGlow)"
                                             :style="state === 'ready' ? 'opacity: 0;' : 'opacity: 1;'" />
-                                        <rect x="2" y="2" width="96" height="96" rx="6" ry="6"
-                                            fill="none"
+                                        <use href="#edgePath"
                                             :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(94, 234, 212, 0.82)'"
                                             stroke-width="1.35"
-                                            pathLength="100"
                                             stroke-dasharray="14 32"
                                             stroke-linecap="round"
                                             :class="state === 'running' && progress > 0.02 ? 'edge-pulse' : ''"

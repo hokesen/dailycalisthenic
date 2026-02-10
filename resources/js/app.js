@@ -130,7 +130,9 @@ Alpine.data('workoutTimer', (config) => ({
                 this.totalElapsedSeconds = Math.floor(this.totalElapsedMs / 1000);
 
                 if (this.remainingMs <= 0) {
-                    this.handleTimerComplete();
+                    this.remainingMs = 0;
+                    this.timeRemaining = 0;
+                    requestAnimationFrame(() => this.handleTimerComplete());
                     return;
                 }
 
