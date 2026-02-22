@@ -23,9 +23,11 @@
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow shrink-0">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+                <header class="shrink-0 sticky top-0 z-30 border-b border-white/10 bg-[#0b1114]/75 backdrop-blur-xl">
+                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                        <div class="app-panel rounded-2xl px-4 py-3 sm:px-6 sm:py-4">
+                            {{ $header }}
+                        </div>
                     </div>
                 </header>
             @endisset

@@ -22,7 +22,7 @@
     </head>
     <body class="antialiased theme-nightfall app-shell">
         <!-- Navigation -->
-        <nav class="border-b border-white/10 backdrop-blur">
+        <nav class="border-b border-white/10 backdrop-blur app-reveal">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
@@ -31,11 +31,11 @@
                     @if (Route::has('login'))
                         <div class="flex items-center gap-4">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="text-white/70 hover:text-white transition-colors">Dashboard</a>
+                                <a href="{{ url('/dashboard') }}" class="app-link text-sm sm:text-base">Dashboard</a>
                             @else
-                                <a href="{{ route('login') }}" class="text-white/70 hover:text-white transition-colors">Log in</a>
+                                <a href="{{ route('login') }}" class="app-link text-sm sm:text-base">Log in</a>
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">Get Started</a>
+                                    <a href="{{ route('register') }}" class="app-btn app-btn-primary normal-case tracking-normal text-sm">Get Started</a>
                                 @endif
                             @endauth
                         </div>
@@ -45,7 +45,7 @@
         </nav>
 
         <!-- Hero Section -->
-        <div class="relative overflow-hidden">
+        <div class="relative overflow-hidden app-reveal" style="animation-delay: 80ms;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
                 <div class="text-center">
                     <h2 class="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
@@ -56,7 +56,7 @@
                         This app helps you practice movement every day.
                     </p>
                     @guest
-                        <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-emerald-500 text-white text-lg font-semibold rounded-lg hover:bg-emerald-600 transition-colors">
+                        <a href="{{ route('register') }}" class="inline-flex app-btn app-btn-primary normal-case tracking-normal text-lg px-8 py-4">
                             Begin
                         </a>
                     @endguest
@@ -65,7 +65,7 @@
         </div>
 
         <!-- The Problem Section -->
-        <div class="py-16">
+        <div class="py-16 app-reveal" style="animation-delay: 140ms;">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-white text-center mb-4">Sound familiar?</h2>
                 <p class="text-white/60 text-center mb-12 text-lg">The daily reality of desk work</p>
@@ -123,7 +123,7 @@
         </div>
 
         <!-- The Real Cost Section -->
-        <div class="py-16">
+        <div class="py-16 app-reveal" style="animation-delay: 170ms;">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl font-bold text-white mb-6">Neglect compounds</h2>
                 <p class="text-xl text-white/60 mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -150,7 +150,7 @@
         </div>
 
         <!-- The Turnaround -->
-        <div class="py-16">
+        <div class="py-16 app-reveal" style="animation-delay: 200ms;">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <p class="text-cyan-300 font-medium mb-4">There's a better way</p>
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
@@ -163,7 +163,7 @@
         </div>
 
         <!-- How It Helps -->
-        <div class="py-16">
+        <div class="py-16 app-reveal" style="animation-delay: 240ms;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-white text-center mb-4">Built for busy people</h2>
                 <p class="text-white/60 text-center mb-12 text-lg">Fits into your schedule, not the other way around</p>
@@ -246,7 +246,7 @@
         </div>
 
         <!-- Simple Steps -->
-        <div class="py-16">
+        <div class="py-16 app-reveal" style="animation-delay: 280ms;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-white text-center mb-12">Get started in under a minute</h2>
                 <div class="grid md:grid-cols-3 gap-8">
@@ -278,7 +278,7 @@
         </div>
 
         <!-- CTA Section -->
-        <div class="bg-gradient-to-r from-emerald-600 to-cyan-500 py-16">
+        <div class="bg-gradient-to-r from-emerald-600 to-cyan-500 py-16 app-reveal" style="animation-delay: 320ms;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
                     Your back can't wait another day
@@ -287,11 +287,11 @@
                     Build better habits today, totally free.
                 </p>
                 @guest
-                    <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-white text-emerald-700 text-lg font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
+                    <a href="{{ route('register') }}" class="inline-flex app-btn app-btn-secondary bg-white/95 text-emerald-800 border-white normal-case tracking-normal text-lg px-8 py-4 hover:bg-white">
                         Begin Your First Session
                     </a>
                 @else
-                    <a href="{{ url('/dashboard') }}" class="inline-block px-8 py-4 bg-white text-emerald-700 text-lg font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
+                    <a href="{{ url('/dashboard') }}" class="inline-flex app-btn app-btn-secondary bg-white/95 text-emerald-800 border-white normal-case tracking-normal text-lg px-8 py-4 hover:bg-white">
                         Go to Dashboard
                     </a>
                 @endguest

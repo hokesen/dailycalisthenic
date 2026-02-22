@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="h-full overflow-hidden flex flex-col go-screen" :class="isResting ? 'go-screen--rest' : ''">
+    <div class="h-full overflow-hidden flex flex-col go-screen app-reveal" :class="isResting ? 'go-screen--rest' : ''">
         <div class="w-full flex-1 flex items-center justify-center min-h-0">
             <div class="w-full h-full flex items-center justify-center">
                 <div class="w-full h-full text-white">

@@ -1,1 +1,1 @@
-<h1 class="text-gray-800 dark:text-gray-200 text-lg font-semibold">Daily Calisthenics</h1>
+<h1 {{ $attributes->merge(['class' => 'text-lg font-semibold text-white']) }}>Daily Calisthenics</h1>

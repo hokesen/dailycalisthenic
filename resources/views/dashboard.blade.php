@@ -9,7 +9,7 @@
             />
 
             <!-- Tab Navigation -->
-            <div class="mb-6" x-data="{
+            <div class="mb-6 app-reveal" x-data="{
                 activeTab: {{ Js::from(request()->input('tab', 'timeline')) }},
                 updateUrl(tab) {
                     const url = new URL(window.location);
@@ -23,8 +23,8 @@
                 if (activeTab === 'templates') activeTab = 'progress';
                 else if (activeTab === 'progress') activeTab = 'timeline';
             ">
-                <div class="border-b border-white/10">
-                    <nav class="-mb-px flex gap-8" aria-label="Tabs" role="tablist">
+                <div class="app-panel rounded-2xl px-4 sm:px-6">
+                    <nav class="-mb-px flex gap-4 sm:gap-8 overflow-x-auto" aria-label="Tabs" role="tablist">
                         <button
                             @click="activeTab = 'timeline'; updateUrl('timeline')"
                             :class="activeTab === 'timeline' ? 'app-tab active' : 'app-tab'"

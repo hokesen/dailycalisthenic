@@ -14,16 +14,16 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="text-gray-900 dark:text-gray-100 antialiased theme-nightfall">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 app-shell">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500 dark:text-gray-400" />
+    <body class="antialiased theme-nightfall">
+        <div class="min-h-screen app-shell flex items-center justify-center px-4 py-10 sm:px-6">
+            <div class="app-auth-shell app-reveal">
+                <a href="/" class="app-auth-brand">
+                    <x-application-logo class="text-base sm:text-lg" />
                 </a>
-            </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
+                <div class="app-auth-card px-6 py-7 sm:px-8 sm:py-9">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
     </body>

@@ -37,16 +37,16 @@
 >
     <div x-show="!editing" class="flex items-start justify-between gap-3 cursor-pointer group">
         <div @click="editing = true">
-            <p class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Notes</p>
+            <p class="text-xs uppercase tracking-wide text-white/40 mb-1">Notes</p>
             <p
-                class="text-sm text-gray-600 dark:text-gray-400 italic group-hover:text-gray-800 dark:group-hover:text-gray-300"
+                class="text-sm text-white/60 italic group-hover:text-white/80"
                 x-text="notes || 'Add notes...'"
             ></p>
         </div>
         <button
             type="button"
             @click.stop="editing = true"
-            class="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 hover:text-emerald-500"
+            class="text-xs font-semibold uppercase tracking-wide text-emerald-300 hover:text-emerald-200"
         >
             <span x-text="notes ? 'Edit' : 'Add'"></span>
         </button>
@@ -55,7 +55,7 @@
     <div x-show="editing" class="space-y-2">
         <textarea
             x-model="notes"
-            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+            class="app-input px-3 py-2.5 text-sm sm:text-base"
             rows="3"
             placeholder="Add notes about this practice..."
             @keydown.escape="editing = false"
@@ -64,7 +64,7 @@
             <button
                 @click="saveNotes()"
                 :disabled="saving"
-                class="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="app-btn app-btn-primary"
             >
                 <span x-show="!saving">Save</span>
                 <span x-show="saving">Saving...</span>
@@ -72,7 +72,7 @@
             <button
                 @click="editing = false; notes = @js($notes ?? '')"
                 :disabled="saving"
-                class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="app-btn app-btn-secondary"
             >
                 Cancel
             </button>
