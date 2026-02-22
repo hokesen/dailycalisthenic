@@ -19,7 +19,7 @@ class AuthenticateHokesenAssertion
 
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
+        $token = $this->resolveToken($request);
         if (! is_string($token) || trim($token) === '') {
             return $this->authenticationError('missing_token', 'Missing bearer assertion token.');
         }
@@ -62,5 +62,20 @@ class AuthenticateHokesenAssertion
                 'message' => $message,
             ],
         ], 401);
+    }
+
+    private function resolveToken(Request $request): ?string
+    {
+        $token = $request->bearerToken();
+        if (is_string($token) && trim($token) !== '') {
+            return $token;
+        }
+
+        $fallbackToken = $request->header('X-Hokesen-Assertion');
+        if (is_string($fallbackToken) && trim($fallbackToken) !== '') {
+            return trim($fallbackToken);
+        }
+
+        return null;
     }
 }

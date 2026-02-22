@@ -47,6 +47,21 @@ class HokesenIntegrationTest extends TestCase
         $response->assertJsonPath('error.code', 'missing_token');
     }
 
+    public function test_quick_stats_accepts_assertion_from_fallback_header(): void
+    {
+        User::factory()->create([
+            'email' => 'user@example.com',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/integrations/hokesen/v1/quick-stats', [
+            'X-Hokesen-Assertion' => $this->makeAssertion('user@example.com'),
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('email', 'user@example.com');
+    }
+
     public function test_quick_stats_rejects_invalid_signature(): void
     {
         User::factory()->create([
@@ -158,6 +173,23 @@ class HokesenIntegrationTest extends TestCase
             'First one-line note'."\n".'Second one-line note',
             $entry->notes
         );
+    }
+
+    public function test_journal_line_accepts_assertion_from_fallback_header(): void
+    {
+        User::factory()->create([
+            'email' => 'header@example.com',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/integrations/hokesen/v1/journal-line', [
+            'text' => 'Header auth works',
+        ], [
+            'X-Hokesen-Assertion' => $this->makeAssertion('header@example.com'),
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('created', true);
     }
 
     public function test_journal_line_idempotency_key_prevents_duplicate_writes(): void
