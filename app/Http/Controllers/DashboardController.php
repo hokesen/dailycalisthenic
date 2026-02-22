@@ -62,8 +62,7 @@ class DashboardController extends Controller
         // Combine both lists, preferring actual used exercises
         // Filter out duplicates by both ID and name to avoid showing default and DB versions of same exercise
         $allExercises = $userUsedExercises->merge(
-            $availableExercises->filter(fn ($e) =>
-                ! $userUsedExercises->contains('id', $e->id) &&
+            $availableExercises->filter(fn ($e) => ! $userUsedExercises->contains('id', $e->id) &&
                 ! $userUsedExercises->contains('name', $e->name)
             )
         )->sortBy('name');
@@ -180,6 +179,7 @@ class DashboardController extends Controller
         }
 
         $timelineFeed = $this->getTimelineFeed($user, $days);
+        $recentHistory = $this->activityService->getRecentHistorySnapshot($user, 14);
         $userTemplates = $authUserTemplates;
 
         $todayEntry = JournalEntry::query()
@@ -200,6 +200,7 @@ class DashboardController extends Controller
             'selectedTemplateId' => $selectedTemplateId,
             'hasPracticedToday' => $hasPracticedToday,
             'timelineFeed' => $timelineFeed,
+            'recentHistory' => $recentHistory,
             'userTimezone' => $userTimezone,
             'userNow' => $userNow,
             'userTemplates' => $userTemplates,

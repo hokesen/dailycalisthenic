@@ -181,6 +181,28 @@ class DashboardTest extends TestCase
         $response->assertSee('Practice');
     }
 
+    public function test_dashboard_displays_recent_history_panel(): void
+    {
+        $user = User::factory()->create();
+        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'Test Template']);
+
+        \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'session_template_id' => $template->id,
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => now(),
+            'total_duration_seconds' => 420,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Recent History');
+        $response->assertSee('active days');
+    }
+
     public function test_home_shows_marketing_page_for_guests(): void
     {
         $response = $this->get('/');

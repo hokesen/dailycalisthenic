@@ -15,6 +15,12 @@
                     const url = new URL(window.location);
                     url.searchParams.set('tab', tab);
                     history.replaceState(null, '', url);
+                },
+                goToDays(dayCount, tab = this.activeTab) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('days', dayCount);
+                    url.searchParams.set('tab', tab);
+                    window.location.href = url.toString();
                 }
             }" @keydown.arrow-right.window="
                 if (activeTab === 'timeline') activeTab = 'progress';
@@ -63,20 +69,25 @@
                     <!-- Quick Actions -->
                     <x-timeline.quick-actions :templates="$userTemplates" :todayEntry="$todayEntry" />
 
+                    <!-- Lightweight Recent History -->
+                    <x-timeline.recent-history :recentHistory="$recentHistory" />
+
                     <!-- Filter Controls -->
-                    <div class="mb-4 flex items-center justify-between">
+                    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="app-section-title">Practice Log</h3>
                         <div class="flex items-center gap-2">
-                            <span class="text-sm text-white/60">Show:</span>
-                            <select
-                                onchange="window.location.href = '{{ route('home') }}?days=' + this.value"
-                                class="text-sm rounded-md px-3 py-1 app-field focus:ring-0 focus:outline-none"
-                            >
-                                <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
-                                <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
-                                <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
-                                <option value="90" {{ $days == 90 ? 'selected' : '' }}>90 days</option>
-                            </select>
+                            <span class="text-sm text-white/60">Range:</span>
+                            <div class="inline-flex rounded-full border border-white/10 bg-black/20 p-1">
+                                @foreach ([7, 14, 30, 90] as $range)
+                                    <button
+                                        type="button"
+                                        @click="goToDays({{ $range }}, 'timeline')"
+                                        class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors {{ $days === $range ? 'bg-emerald-500/30 text-emerald-200' : 'text-white/60 hover:text-white hover:bg-white/10' }}"
+                                    >
+                                        {{ $range }}d
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
 
@@ -230,15 +241,18 @@
                                         </button>
                                     @endif
                                     <div class="flex items-center gap-2">
-                                        <span class="text-sm text-white/60">Show:</span>
-                                        <select
-                                            onchange="window.location.href = '{{ route('home') }}?days=' + this.value + '&tab=progress'"
-                                            class="text-sm rounded-md px-3 py-1 app-field focus:ring-0 focus:outline-none"
-                                        >
-                                            <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
-                                            <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
-                                            <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>
-                                        </select>
+                                        <span class="text-sm text-white/60">Range:</span>
+                                        <div class="inline-flex rounded-full border border-white/10 bg-black/20 p-1">
+                                            @foreach ([7, 14, 30] as $range)
+                                                <button
+                                                    type="button"
+                                                    @click="goToDays({{ $range }}, 'progress')"
+                                                    class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors {{ $days === $range ? 'bg-emerald-500/30 text-emerald-200' : 'text-white/60 hover:text-white hover:bg-white/10' }}"
+                                                >
+                                                    {{ $range }}d
+                                                </button>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
                             </div>

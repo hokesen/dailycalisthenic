@@ -10,7 +10,7 @@
     </div>
 @else
     @foreach($timelineFeed as $date => $items)
-        <div class="mb-6">
+        <div class="mb-6 scroll-mt-24" id="timeline-day-{{ $date }}">
             <h3 class="app-meta mb-3 flex items-center gap-2">
                 {{ \Carbon\Carbon::parse($date, $timezone)->format('F j, Y') }}
                 @if(\Carbon\Carbon::parse($date, $timezone)->isSameDay($userNow))
