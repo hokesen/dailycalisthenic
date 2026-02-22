@@ -21,7 +21,7 @@
     </div>
 
     <div class="history-track">
-        @foreach ($days as $day)
+        @foreach (collect($days)->reverse()->values() as $day)
             @php
                 $intensity = $day['totalSeconds'] > 0 ? max(4, min(100, (int) round(($day['totalSeconds'] / $maxDaySeconds) * 100))) : 0;
                 $topExercises = collect($day['topExercises'] ?? [])->filter()->implode(' · ');
