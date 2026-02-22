@@ -3,14 +3,10 @@
 namespace App\Notifications\Auth;
 
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
+class VerifyEmailNotification extends BaseVerifyEmail
 {
-    use Queueable;
-
     /**
      * Build the mail representation of the notification.
      *
@@ -22,8 +18,11 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
         $appName = (string) config('app.name', 'Daily Calisthenics');
         $fromAddress = (string) (config('mail.from.address') ?: 'no-reply@example.com');
         $fromName = (string) (config('mail.from.name') ?: $appName);
+        $resendKey = (string) config('services.resend.key', '');
+        $mailer = $resendKey !== '' ? 'resend' : (string) config('mail.default', 'log');
 
         return (new MailMessage)
+            ->mailer($mailer)
             ->from($fromAddress, $fromName)
             ->subject("Verify your {$appName} email")
             ->line('Click the button below to verify your email address.')

@@ -69,4 +69,36 @@ class EmailVerificationTest extends TestCase
         $response->assertSessionHas('status', 'verification-link-sent');
         Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
+
+    public function test_unverified_users_are_redirected_from_verified_routes_in_non_local_environments(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertRedirect(route('verification.notice'));
+    }
+
+    public function test_unverified_users_can_access_verified_routes_in_local_environment(): void
+    {
+        $this->app->detectEnvironment(fn () => 'local');
+
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertRedirect(route('home'));
+    }
+
+    public function test_verification_notification_prefers_resend_mailer_when_key_exists(): void
+    {
+        config()->set('services.resend.key', 're_test_key');
+        config()->set('mail.default', 'log');
+
+        $user = User::factory()->unverified()->create();
+
+        $mailMessage = (new VerifyEmailNotification)->toMail($user);
+
+        $this->assertSame('resend', $mailMessage->mailer);
+    }
 }
