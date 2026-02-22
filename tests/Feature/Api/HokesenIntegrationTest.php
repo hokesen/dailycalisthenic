@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\SessionStatus;
 use App\Models\JournalEntry;
+use App\Models\JournalExercise;
 use App\Models\Session;
 use App\Models\User;
 use Carbon\Carbon;
@@ -95,7 +96,7 @@ class HokesenIntegrationTest extends TestCase
         $response->assertJsonPath('error.code', 'user_not_linked_or_unverified');
     }
 
-    public function test_quick_stats_returns_streak_and_last_seven_day_duration(): void
+    public function test_quick_stats_returns_streak_and_last_thirty_day_activity_summary(): void
     {
         $user = User::factory()->create([
             'email' => 'CaseSensitive@example.com',
@@ -120,8 +121,36 @@ class HokesenIntegrationTest extends TestCase
         Session::factory()->create([
             'user_id' => $user->id,
             'status' => SessionStatus::Completed->value,
-            'completed_at' => $user->now()->subDays(8)->timezone('UTC'),
+            'completed_at' => $user->now()->subDays(31)->timezone('UTC'),
             'total_duration_seconds' => 999,
+        ]);
+
+        $journalEntryInRangeWithDuration = JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => $user->now()->subDays(5)->toDateString(),
+            'notes' => 'In-range entry with duration',
+        ]);
+
+        JournalExercise::factory()->create([
+            'journal_entry_id' => $journalEntryInRangeWithDuration->id,
+            'duration_minutes' => 25,
+        ]);
+
+        JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => $user->now()->subDays(10)->toDateString(),
+            'notes' => 'In-range entry without duration',
+        ]);
+
+        $journalEntryOutOfRange = JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => $user->now()->subDays(31)->toDateString(),
+            'notes' => 'Out-of-range entry',
+        ]);
+
+        JournalExercise::factory()->create([
+            'journal_entry_id' => $journalEntryOutOfRange->id,
+            'duration_minutes' => 60,
         ]);
 
         $response = $this->getJson('/api/integrations/hokesen/v1/quick-stats', [
@@ -130,8 +159,9 @@ class HokesenIntegrationTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('streak_days', 2);
-        $response->assertJsonPath('practiced_seconds_last_7_days', 2400);
-        $response->assertJsonPath('practiced_minutes_last_7_days', 40);
+        $response->assertJsonPath('practice_duration_seconds_last_30_days', 3900);
+        $response->assertJsonPath('sessions_last_30_days', 2);
+        $response->assertJsonPath('journal_entries_last_30_days', 2);
         $response->assertJsonPath('email', 'casesensitive@example.com');
         $response->assertJsonStructure(['as_of', 'timezone']);
     }

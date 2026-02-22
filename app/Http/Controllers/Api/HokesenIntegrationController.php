@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\SessionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHokesenJournalLineRequest;
 use App\Models\JournalEntry;
-use App\Models\Session;
 use App\Models\User;
 use App\Services\CachedStreakService;
+use App\Services\UserActivityService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,19 +17,22 @@ use Illuminate\Validation\ValidationException;
 class HokesenIntegrationController extends Controller
 {
     public function __construct(
-        private readonly CachedStreakService $streakService
+        private readonly CachedStreakService $streakService,
+        private readonly UserActivityService $userActivityService
     ) {}
 
     public function quickStats(Request $request): JsonResponse
     {
         $user = $this->integrationUser($request);
-        $practicedSeconds = $this->practicedSecondsLastSevenDays($user);
+        $recentHistory = $this->userActivityService->getRecentHistorySnapshot($user, 30);
+        $totals = is_array($recentHistory['totals'] ?? null) ? $recentHistory['totals'] : [];
 
         return response()->json([
             'email' => strtolower($user->email),
             'streak_days' => $this->streakService->calculateStreak($user),
-            'practiced_seconds_last_7_days' => $practicedSeconds,
-            'practiced_minutes_last_7_days' => (int) floor($practicedSeconds / 60),
+            'practice_duration_seconds_last_30_days' => (int) ($totals['totalSeconds'] ?? 0),
+            'sessions_last_30_days' => (int) ($totals['sessionCount'] ?? 0),
+            'journal_entries_last_30_days' => (int) ($totals['journalCount'] ?? 0),
             'timezone' => $user->timezone ?? 'America/Los_Angeles',
             'as_of' => now()->toIso8601String(),
         ]);
@@ -169,22 +171,5 @@ class HokesenIntegrationController extends Controller
     private function idempotencyCacheKey(int $userId, string $entryDate, string $idempotencyKey): string
     {
         return 'integrations:hokesen:journal-line:'.$userId.':'.$entryDate.':'.sha1($idempotencyKey);
-    }
-
-    private function practicedSecondsLastSevenDays(User $user): int
-    {
-        $userNow = $user->now();
-        $startUtc = $userNow->copy()->subDays(6)->startOfDay()->timezone('UTC');
-        $endUtc = $userNow->copy()->endOfDay()->timezone('UTC');
-
-        return (int) Session::query()
-            ->where('user_id', $user->id)
-            ->whereIn('status', [SessionStatus::Completed->value, SessionStatus::InProgress->value])
-            ->where('total_duration_seconds', '>', 0)
-            ->where(function ($query) use ($startUtc, $endUtc) {
-                $query->whereBetween('completed_at', [$startUtc, $endUtc])
-                    ->orWhereBetween('started_at', [$startUtc, $endUtc]);
-            })
-            ->sum('total_duration_seconds');
     }
 }

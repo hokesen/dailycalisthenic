@@ -24,7 +24,6 @@
         @foreach (collect($days)->reverse()->values() as $day)
             @php
                 $intensity = $day['totalSeconds'] > 0 ? max(4, min(100, (int) round(($day['totalSeconds'] / $maxDaySeconds) * 100))) : 0;
-                $topExercises = collect($day['topExercises'] ?? [])->filter()->implode(' · ');
             @endphp
             <a
                 href="#timeline-day-{{ $day['isoDate'] }}"
@@ -48,12 +47,6 @@
                 @if ($day['hasActivity'])
                     <div class="mt-2 text-xs text-white/80">
                         <x-duration-display :seconds="$day['totalSeconds']" />
-                    </div>
-                    <div class="mt-1 text-[11px] text-white/50">
-                        {{ $day['sessionCount'] }} sessions · {{ $day['journalCount'] }} journals
-                    </div>
-                    <div class="mt-1 text-[11px] text-white/45 truncate" title="{{ $topExercises ?: 'Journal-only activity' }}">
-                        {{ $topExercises ?: 'Journal-only activity' }}
                     </div>
                 @else
                     <div class="mt-2 text-xs text-white/45">No activity</div>
