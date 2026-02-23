@@ -24,7 +24,7 @@ class VerifyEmailNotification extends BaseVerifyEmail
         return (new MailMessage)
             ->mailer($mailer)
             ->from($fromAddress, $fromName)
-            ->subject("Verify your {$appName} email")
+            ->subject("Verify your email for {$appName}")
             ->line('Click the button below to verify your email address.')
             ->action('Verify Email Address', $verificationUrl)
             ->line('If you did not create an account, no further action is required.');
