@@ -1,5 +1,11 @@
 @props(['entry'])
 
+@php
+    $entryDateIso = $entry->entry_date->toDateString();
+    $todayIso = auth()->user()->now()->toDateString();
+    $canEditDate = $entryDateIso < $todayIso;
+@endphp
+
 <div class="app-card rounded-xl p-4 border-l-4 border-cyan-400">
     <div class="flex justify-between items-start mb-2">
         <div>
@@ -12,6 +18,91 @@
                     • {{ $entry->journalExercises->sum('duration_minutes') }}m total
                 @endif
             </p>
+
+            @if($canEditDate)
+                <div
+                    x-data="{
+                        editingDate: false,
+                        entryDate: @js($entryDateIso),
+                        originalDate: @js($entryDateIso),
+                        savingDate: false,
+                        dateError: '',
+                        async saveDate() {
+                            this.savingDate = true;
+                            this.dateError = '';
+
+                            try {
+                                const response = await fetch('{{ route('journal.update', $entry) }}', {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ entry_date: this.entryDate })
+                                });
+
+                                if (!response.ok) {
+                                    const data = await response.json().catch(() => ({}));
+                                    this.dateError = data.errors?.entry_date?.[0] ?? 'Failed to update entry date.';
+                                    throw new Error(this.dateError);
+                                }
+
+                                window.location.reload();
+                            } catch (error) {
+                                console.error('Error:', error);
+                                this.savingDate = false;
+                            }
+                        },
+                        cancelDateEdit() {
+                            this.editingDate = false;
+                            this.entryDate = this.originalDate;
+                            this.dateError = '';
+                        }
+                    }"
+                    class="mt-3"
+                >
+                    <div x-show="!editingDate">
+                        <button
+                            type="button"
+                            @click="editingDate = true"
+                            class="text-xs font-semibold uppercase tracking-wide text-cyan-300 hover:text-cyan-200"
+                        >
+                            Change date
+                        </button>
+                    </div>
+
+                    <div x-show="editingDate" class="space-y-2">
+                        <label class="block text-xs uppercase tracking-wide text-white/40">Entry date</label>
+                        <input
+                            type="date"
+                            x-model="entryDate"
+                            max="{{ $todayIso }}"
+                            class="app-input px-3 py-2.5 text-sm sm:text-base"
+                        >
+                        <p x-show="dateError" x-text="dateError" class="text-xs text-red-300"></p>
+                        <div class="flex gap-2">
+                            <button
+                                type="button"
+                                @click="saveDate()"
+                                :disabled="savingDate"
+                                class="app-btn app-btn-primary"
+                            >
+                                <span x-show="!savingDate">Save date</span>
+                                <span x-show="savingDate">Saving...</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="cancelDateEdit()"
+                                :disabled="savingDate"
+                                class="app-btn app-btn-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
         <span class="app-chip app-chip--warm">
             Journal

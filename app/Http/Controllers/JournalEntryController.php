@@ -37,9 +37,7 @@ class JournalEntryController extends Controller
 
     public function update(UpdateJournalEntryRequest $request, JournalEntry $entry): RedirectResponse|JsonResponse
     {
-        $entry->update([
-            'notes' => $request->notes,
-        ]);
+        $entry->update($request->validated());
 
         app(CachedStreakService::class)->invalidateUserCache($entry->user_id);
 

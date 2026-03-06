@@ -51,6 +51,48 @@ class JournalEntryTest extends TestCase
         ]);
     }
 
+    public function test_user_can_update_journal_entry_date(): void
+    {
+        $user = User::factory()->create();
+        $entry = JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => '2026-02-03',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('journal.update', $entry), [
+                'entry_date' => '2026-02-01',
+            ]);
+
+        $response->assertRedirect(route('home'));
+        $this->assertEquals('2026-02-01', $entry->fresh()->entry_date->toDateString());
+    }
+
+    public function test_user_cannot_move_journal_entry_to_an_existing_date(): void
+    {
+        $user = User::factory()->create();
+        $entry = JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => '2026-02-03',
+        ]);
+        JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => '2026-02-01',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('home'))
+            ->patch(route('journal.update', $entry), [
+                'entry_date' => '2026-02-01',
+            ]);
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHasErrors(['entry_date']);
+        $this->assertEquals('2026-02-03', $entry->fresh()->entry_date->toDateString());
+    }
+
     public function test_user_can_add_exercise_to_journal(): void
     {
         $user = User::factory()->create();
