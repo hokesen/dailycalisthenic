@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\JournalEntry;
 use App\Models\SessionTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -201,6 +202,23 @@ class DashboardTest extends TestCase
         $response->assertOk();
         $response->assertSee('Recent History');
         $response->assertSee('active days');
+    }
+
+    public function test_dashboard_allows_date_editing_for_todays_journal_entry(): void
+    {
+        $user = User::factory()->create();
+
+        JournalEntry::factory()->create([
+            'user_id' => $user->id,
+            'entry_date' => $user->now()->toDateString(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Change date');
     }
 
     public function test_home_shows_marketing_page_for_guests(): void
