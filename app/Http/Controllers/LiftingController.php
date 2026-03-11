@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\DB;
 
 class LiftingController extends Controller
 {
+    /**
+     * Log a lifting set for the authenticated user.
+     */
     public function logSet(LogLiftingSetRequest $request): JsonResponse
     {
         /** @var User $user */
@@ -65,6 +68,7 @@ class LiftingController extends Controller
                 'is_personal_record' => $isPersonalRecord,
                 'weight_lbs' => (float) $sessionExercise->weight_lbs,
                 'reps_completed' => (int) $sessionExercise->reps_completed,
+                'sets_completed' => (int) $sessionExercise->sets_completed,
             ];
         });
 

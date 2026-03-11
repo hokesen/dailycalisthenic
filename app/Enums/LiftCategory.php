@@ -26,12 +26,17 @@ enum LiftCategory: string
     public function movementPattern(): string
     {
         return match ($this) {
-            self::Bench => 'push',
-            self::Overhead => 'push',
-            self::Deadlift => 'pull',
+            self::Bench, self::Overhead => 'push',
+            self::Deadlift, self::Row => 'pull',
             self::Squat => 'legs',
-            self::Row => 'pull',
             self::Clean => 'full_body',
         };
+    }
+
+    public static function options(): array
+    {
+        return collect(self::cases())
+            ->mapWithKeys(fn ($case) => [$case->value => $case->label()])
+            ->toArray();
     }
 }

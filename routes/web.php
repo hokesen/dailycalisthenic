@@ -6,6 +6,7 @@ use App\Http\Controllers\DisciplineController;
 use App\Http\Controllers\GoController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\JournalExerciseController;
+use App\Http\Controllers\LiftingController;
 use App\Http\Controllers\MeditationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionController;
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/discipline', DisciplineController::class)->name('discipline.update');
     Route::post('/meditation/log', [MeditationController::class, 'store'])->name('meditation.store');
+    Route::post('/lifting/log-set', [LiftingController::class, 'logSet'])->name('lifting.log-set');
 
     Route::get('/go', [GoController::class, 'index'])->name('go.index');
     Route::patch('/go/{session}/update', [GoController::class, 'update'])->name('go.update');

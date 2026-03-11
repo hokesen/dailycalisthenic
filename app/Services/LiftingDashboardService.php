@@ -29,10 +29,13 @@ class LiftingDashboardService
     {
         return collect(LiftCategory::cases())->map(function (LiftCategory $category) use ($user) {
             $record = SessionExercise::query()
+                ->with('session')
                 ->whereHas('session', fn ($query) => $query->where('user_id', $user->id))
                 ->where('lift_category', $category->value)
                 ->whereNotNull('weight_lbs')
                 ->orderByDesc('weight_lbs')
+                ->orderByDesc('completed_at')
+                ->orderByDesc('created_at')
                 ->first();
 
             return [
@@ -41,7 +44,7 @@ class LiftingDashboardService
                 'movement_pattern' => $category->movementPattern(),
                 'weight_lbs' => $record?->weight_lbs,
                 'reps' => $record?->reps_completed,
-                'date' => $record?->session?->completed_at,
+                'date' => $this->resolveRecordDate($record),
             ];
         });
     }
@@ -51,19 +54,20 @@ class LiftingDashboardService
      */
     public function getRecentSessions(User $user, Carbon $userNow): Collection
     {
-        $startDate = $userNow->copy()->subDays(14)->startOfDay()->utc();
+        $startDate = $userNow->copy()->subDays(13)->startOfDay()->utc();
 
         return SessionExercise::query()
-            ->whereHas('session', fn ($query) => $query
-                ->where('user_id', $user->id)
-                ->where('status', 'completed')
-                ->where('completed_at', '>=', $startDate)
-            )
+            ->whereHas('session', fn ($query) => $query->where('user_id', $user->id))
             ->whereNotNull('lift_category')
+            ->where(function ($query) use ($startDate) {
+                $query
+                    ->where('completed_at', '>=', $startDate)
+                    ->orWhere('created_at', '>=', $startDate);
+            })
             ->with('session', 'exercise')
+            ->orderByDesc('completed_at')
             ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('lift_category');
+            ->get();
     }
 
     /**
@@ -77,10 +81,11 @@ class LiftingDashboardService
 
         foreach (LiftCategory::cases() as $category) {
             $sessions = SessionExercise::query()
-                ->whereHas('session', fn ($query) => $query->where('user_id', $user->id)->where('status', 'completed'))
+                ->whereHas('session', fn ($query) => $query->where('user_id', $user->id))
                 ->where('lift_category', $category->value)
                 ->whereNotNull('weight_lbs')
                 ->with('session')
+                ->orderByDesc('completed_at')
                 ->orderByDesc('created_at')
                 ->limit(10)
                 ->get();
@@ -112,5 +117,17 @@ class LiftingDashboardService
         }
 
         return 'neutral';
+    }
+
+    private function resolveRecordDate(?SessionExercise $record): ?Carbon
+    {
+        if (! $record) {
+            return null;
+        }
+
+        return $record->completed_at
+            ?? $record->session?->completed_at
+            ?? $record->session?->started_at
+            ?? $record->created_at;
     }
 }

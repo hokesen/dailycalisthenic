@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ExerciseIntensity;
 use App\Enums\ExerciseTempo;
+use App\Enums\LiftCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,14 +31,20 @@ class SessionExercise extends Model
         'is_personal_record',
     ];
 
-    protected $casts = [
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'tempo' => ExerciseTempo::class,
-        'intensity' => ExerciseIntensity::class,
-        'is_personal_record' => 'boolean',
-        'weight_lbs' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'tempo' => ExerciseTempo::class,
+            'intensity' => ExerciseIntensity::class,
+            'lift_category' => LiftCategory::class,
+            'is_personal_record' => 'boolean',
+            'weight_lbs' => 'float',
+            'reps_completed' => 'integer',
+            'sets_completed' => 'integer',
+        ];
+    }
 
     public function session(): BelongsTo
     {
