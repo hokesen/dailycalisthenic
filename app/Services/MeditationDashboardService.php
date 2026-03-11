@@ -4,62 +4,35 @@ namespace App\Services;
 
 use App\Models\MeditationLog;
 use App\Models\User;
-use Carbon\Carbon;
 
 class MeditationDashboardService
 {
     /**
-     * @return array{today_log: ?MeditationLog, total_sessions: int, total_minutes: int, current_streak: int}
+     * @return array{today_log: MeditationLog|null, recent_logs: \Illuminate\Database\Eloquent\Collection<int, MeditationLog>}
      */
-    public function buildDashboardData(User $user, Carbon $userNow): array
+    public function buildDashboardData(User $user): array
     {
-        $todayStart = $userNow->copy()->startOfDay()->utc();
-        $todayEnd = $userNow->copy()->endOfDay()->utc();
+        $userNow = $user->now();
+        $todayStartUtc = $userNow->copy()->startOfDay()->utc();
+        $todayEndUtc = $userNow->copy()->endOfDay()->utc();
 
         $todayLog = MeditationLog::query()
             ->where('user_id', $user->id)
-            ->whereBetween('practiced_at', [$todayStart, $todayEnd])
+            ->whereBetween('practiced_at', [$todayStartUtc, $todayEndUtc])
             ->latest('practiced_at')
             ->first();
 
-        $totalSessions = MeditationLog::query()
-            ->where('user_id', $user->id)
-            ->count();
+        $sevenDaysAgoUtc = $userNow->copy()->subDays(7)->startOfDay()->utc();
 
-        $totalSeconds = (int) MeditationLog::query()
+        $recentLogs = MeditationLog::query()
             ->where('user_id', $user->id)
-            ->sum('duration_seconds');
+            ->whereBetween('practiced_at', [$sevenDaysAgoUtc, $todayEndUtc])
+            ->orderByDesc('practiced_at')
+            ->get();
 
         return [
             'today_log' => $todayLog,
-            'total_sessions' => $totalSessions,
-            'total_minutes' => (int) round($totalSeconds / 60),
-            'current_streak' => $this->calculateStreak($user, $userNow),
+            'recent_logs' => $recentLogs,
         ];
-    }
-
-    private function calculateStreak(User $user, Carbon $userNow): int
-    {
-        $streak = 0;
-        $checkDate = $userNow->copy()->startOfDay();
-
-        while (true) {
-            $dayStart = $checkDate->copy()->startOfDay()->utc();
-            $dayEnd = $checkDate->copy()->endOfDay()->utc();
-
-            $hasPractice = MeditationLog::query()
-                ->where('user_id', $user->id)
-                ->whereBetween('practiced_at', [$dayStart, $dayEnd])
-                ->exists();
-
-            if (! $hasPractice) {
-                break;
-            }
-
-            $streak++;
-            $checkDate->subDay();
-        }
-
-        return $streak;
     }
 }

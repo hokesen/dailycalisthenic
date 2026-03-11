@@ -24,6 +24,8 @@ class MeditationLog extends Model
     {
         return [
             'practiced_at' => 'datetime',
+            'duration_seconds' => 'integer',
+            'breath_cycles_completed' => 'integer',
         ];
     }
 

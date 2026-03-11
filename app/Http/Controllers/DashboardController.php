@@ -61,6 +61,7 @@ class DashboardController extends Controller
 
         $isGeneralDiscipline = $selectedDiscipline === TrainingDiscipline::General->value;
         $isSoccerDiscipline = $selectedDiscipline === TrainingDiscipline::Soccer->value;
+        $isMeditationDiscipline = $selectedDiscipline === TrainingDiscipline::Meditation->value;
 
         $days = (int) $request->query('days', 7);
         $days = in_array($days, [7, 14, 30, 90], true) ? $days : 7;
@@ -164,6 +165,7 @@ class DashboardController extends Controller
 
         $currentUserGoal = $isGeneralDiscipline ? $user->goals()->active()->first() : null;
         $soccerDashboard = $isSoccerDiscipline ? $this->buildSoccerDashboardData($user, $userNow) : null;
+        $meditationDashboard = $isMeditationDiscipline ? $this->meditationDashboardService->buildDashboardData($user) : null;
 
         $isMeditationDiscipline = $selectedDiscipline === TrainingDiscipline::Meditation->value;
         $isLiftingDiscipline = $selectedDiscipline === TrainingDiscipline::Lifting->value;
