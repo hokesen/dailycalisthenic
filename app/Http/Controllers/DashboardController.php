@@ -9,6 +9,7 @@ use App\Models\SessionTemplate;
 use App\Models\User;
 use App\Repositories\ExerciseRepository;
 use App\Services\AssessmentService;
+use App\Services\MeditationDashboardService;
 use App\Services\StarterTemplateService;
 use App\Services\StreakService;
 use App\Services\TrainingCatalogService;
@@ -31,6 +32,7 @@ class DashboardController extends Controller
         private readonly TrainingCatalogService $trainingCatalogService,
         private readonly TrainingProgramService $trainingProgramService,
         private readonly AssessmentService $assessmentService,
+        private readonly MeditationDashboardService $meditationDashboardService,
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -57,6 +59,7 @@ class DashboardController extends Controller
 
         $isGeneralDiscipline = $selectedDiscipline === TrainingDiscipline::General->value;
         $isSoccerDiscipline = $selectedDiscipline === TrainingDiscipline::Soccer->value;
+        $isMeditationDiscipline = $selectedDiscipline === TrainingDiscipline::Meditation->value;
 
         $days = (int) $request->query('days', 7);
         $days = in_array($days, [7, 14, 30, 90], true) ? $days : 7;
@@ -160,6 +163,7 @@ class DashboardController extends Controller
 
         $currentUserGoal = $isGeneralDiscipline ? $user->goals()->active()->first() : null;
         $soccerDashboard = $isSoccerDiscipline ? $this->buildSoccerDashboardData($user, $userNow) : null;
+        $meditationDashboard = $isMeditationDiscipline ? $this->meditationDashboardService->buildDashboardData($user) : null;
 
         return view('dashboard', [
             'userCarouselData' => $userCarouselData,
@@ -183,6 +187,7 @@ class DashboardController extends Controller
             'selectedDiscipline' => $selectedDiscipline,
             'isDisciplineLive' => $this->trainingCatalogService->disciplineIsLive($selectedDiscipline),
             'soccerDashboard' => $soccerDashboard,
+            'meditationDashboard' => $meditationDashboard,
         ]);
     }
 

@@ -834,6 +834,8 @@
                                 </div>
                             @endforeach
                         </div>
+                    @elseif ($selectedDiscipline === 'meditation')
+                        <x-dashboard.meditation-dashboard :isDisciplineLive="$isDisciplineLive" :meditationDashboard="$meditationDashboard ?? []" />
                     @else
                         <div class="app-panel sm:rounded-2xl">
                             <div class="p-8 sm:p-12 text-center">
@@ -1405,6 +1407,8 @@
                                 @endforeach
                             </div>
                         @endif
+                    @elseif ($selectedDiscipline === 'meditation')
+                        <x-dashboard.meditation-dashboard :isDisciplineLive="$isDisciplineLive" :meditationDashboard="$meditationDashboard ?? []" />
                     @else
                         <div class="app-panel sm:rounded-2xl">
                             <div class="p-8 sm:p-12 text-center">

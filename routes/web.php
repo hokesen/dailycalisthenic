@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\AssessmentResultController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisciplineController;
 use App\Http\Controllers\GoController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\JournalExerciseController;
+use App\Http\Controllers\MeditationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AssessmentResultController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateExerciseController;
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/discipline', DisciplineController::class)->name('discipline.update');
+    Route::post('/meditation/log', [MeditationController::class, 'store'])->name('meditation.store');
 
     Route::get('/go', [GoController::class, 'index'])->name('go.index');
     Route::patch('/go/{session}/update', [GoController::class, 'update'])->name('go.update');
