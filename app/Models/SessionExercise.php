@@ -23,6 +23,11 @@ class SessionExercise extends Model
         'completed_at',
         'tempo',
         'intensity',
+        'weight_lbs',
+        'reps_completed',
+        'sets_completed',
+        'lift_category',
+        'is_personal_record',
     ];
 
     protected $casts = [
@@ -30,6 +35,8 @@ class SessionExercise extends Model
         'completed_at' => 'datetime',
         'tempo' => ExerciseTempo::class,
         'intensity' => ExerciseIntensity::class,
+        'is_personal_record' => 'boolean',
+        'weight_lbs' => 'decimal:2',
     ];
 
     public function session(): BelongsTo

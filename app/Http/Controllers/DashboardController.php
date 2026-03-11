@@ -9,6 +9,8 @@ use App\Models\SessionTemplate;
 use App\Models\User;
 use App\Repositories\ExerciseRepository;
 use App\Services\AssessmentService;
+use App\Services\LiftingDashboardService;
+use App\Services\MeditationDashboardService;
 use App\Services\StarterTemplateService;
 use App\Services\StreakService;
 use App\Services\TrainingCatalogService;
@@ -31,6 +33,8 @@ class DashboardController extends Controller
         private readonly TrainingCatalogService $trainingCatalogService,
         private readonly TrainingProgramService $trainingProgramService,
         private readonly AssessmentService $assessmentService,
+        private readonly MeditationDashboardService $meditationDashboardService,
+        private readonly LiftingDashboardService $liftingDashboardService,
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -161,6 +165,11 @@ class DashboardController extends Controller
         $currentUserGoal = $isGeneralDiscipline ? $user->goals()->active()->first() : null;
         $soccerDashboard = $isSoccerDiscipline ? $this->buildSoccerDashboardData($user, $userNow) : null;
 
+        $isMeditationDiscipline = $selectedDiscipline === TrainingDiscipline::Meditation->value;
+        $isLiftingDiscipline = $selectedDiscipline === TrainingDiscipline::Lifting->value;
+        $meditationDashboard = $isMeditationDiscipline ? $this->meditationDashboardService->buildDashboardData($user, $userNow) : null;
+        $liftingDashboard = $isLiftingDiscipline ? $this->liftingDashboardService->buildDashboardData($user, $userNow) : null;
+
         return view('dashboard', [
             'userCarouselData' => $userCarouselData,
             'allExercises' => $allExercises,
@@ -183,6 +192,8 @@ class DashboardController extends Controller
             'selectedDiscipline' => $selectedDiscipline,
             'isDisciplineLive' => $this->trainingCatalogService->disciplineIsLive($selectedDiscipline),
             'soccerDashboard' => $soccerDashboard,
+            'meditationDashboard' => $meditationDashboard,
+            'liftingDashboard' => $liftingDashboard,
         ]);
     }
 

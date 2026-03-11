@@ -13,11 +13,11 @@ return [
         ],
         'meditation' => [
             'label' => 'Meditation',
-            'status' => 'planned',
+            'status' => 'live',
         ],
         'lifting' => [
             'label' => 'Lifting',
-            'status' => 'planned',
+            'status' => 'live',
         ],
     ],
     'soccer' => [
@@ -659,5 +659,17 @@ return [
                 ],
             ],
         ],
+    ],
+    'meditation' => [
+        'drills' => [],
+        'templates' => [],
+        'programs' => [],
+        'assessments' => [],
+    ],
+    'lifting' => [
+        'drills' => [],
+        'templates' => [],
+        'programs' => [],
+        'assessments' => [],
     ],
 ];
