@@ -20,7 +20,7 @@
             <div class="space-y-3">
                 @foreach($items as $item)
                     @if($item['type'] === 'session')
-                        <x-timeline.session-card :session="$item['data']" />
+                        <x-timeline.session-card :session="$item['data']" :timezone="$timezone" />
                     @else
                         <x-timeline.journal-card :entry="$item['data']" />
                     @endif

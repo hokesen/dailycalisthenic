@@ -68,11 +68,12 @@ class PracticeSessionService
     public function buildPracticeItemFromBlock(PracticeBlock $block): SessionExerciseData
     {
         $exercise = $block->exercise;
+        $distanceLabel = $this->formatDistanceLabel($block->distance_label);
 
         return new SessionExerciseData(
             id: $block->exercise_id,
             name: $block->title,
-            linked_name: $exercise?->name,
+            linked_name: $this->formatLinkedName($exercise?->name, $distanceLabel),
             description: $exercise?->description,
             instructions: $exercise?->instructions,
             notes: $block->notes,
@@ -88,10 +89,47 @@ class PracticeSessionService
             intensity: null,
             repeats: max(1, (int) $block->repeats),
             completion_mode: ($block->completion_mode ?? PracticeBlockCompletionMode::Timed)->value,
-            distance_label: $block->distance_label,
+            distance_label: $distanceLabel,
             target_cue: $block->target_cue,
             tracking_order: $block->sort_order,
             track_completion: $block->exercise_id !== null,
         );
+    }
+
+    private function formatDistanceLabel(?string $distanceLabel): ?string
+    {
+        if ($distanceLabel === null) {
+            return null;
+        }
+
+        return preg_replace_callback('/(\d+(?:\.\d+)?)\s*yds?\b/i', function (array $matches): string {
+            $value = $matches[1];
+            $unit = (float) $value === 1.0 ? 'yard' : 'yards';
+
+            return "{$value} {$unit}";
+        }, $distanceLabel);
+    }
+
+    private function formatLinkedName(?string $linkedName, ?string $distanceLabel): ?string
+    {
+        if ($linkedName === null || $distanceLabel === null) {
+            return $linkedName;
+        }
+
+        if (preg_match('/\b(?:yds?|yards?)\b/i', $linkedName)) {
+            return $linkedName;
+        }
+
+        if (! preg_match('/^(\d+(?:\.\d+)?)\s+yards?$/i', $distanceLabel, $matches)) {
+            return $linkedName;
+        }
+
+        $distance = $matches[1];
+
+        if (! preg_match('/\b'.preg_quote($distance, '/').'$/', $linkedName)) {
+            return $linkedName;
+        }
+
+        return preg_replace('/\b'.preg_quote($distance, '/').'$/', "{$distance} yards", $linkedName) ?: $linkedName;
     }
 }

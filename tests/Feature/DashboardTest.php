@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\JournalEntry;
 use App\Models\SessionTemplate;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -202,6 +203,36 @@ class DashboardTest extends TestCase
         $response->assertOk();
         $response->assertSee('Recent History');
         $response->assertSee('active days');
+    }
+
+    public function test_dashboard_practice_log_renders_session_times_in_pacific_time(): void
+    {
+        $this->travelTo(Carbon::create(2026, 3, 11, 12, 0, 0, 'UTC'));
+
+        $user = User::factory()->create(['timezone' => User::DEFAULT_TIMEZONE]);
+        $template = SessionTemplate::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Soccer - SR22 (22yds)',
+            'discipline' => 'soccer',
+        ]);
+
+        \App\Models\Session::factory()->create([
+            'user_id' => $user->id,
+            'session_template_id' => $template->id,
+            'name' => 'Soccer - SR22 (22yds)',
+            'status' => \App\Enums\SessionStatus::Completed,
+            'completed_at' => Carbon::create(2026, 3, 11, 3, 42, 0, 'UTC'),
+            'total_duration_seconds' => 120,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/');
+
+        $response->assertOk();
+        $response->assertSee('March 10, 2026');
+        $response->assertSee('8:42 PM');
+        $response->assertDontSee('3:42 AM');
     }
 
     public function test_dashboard_allows_date_editing_for_todays_journal_entry(): void

@@ -1,8 +1,8 @@
 <x-app-layout>
-    <div class="h-full overflow-hidden flex flex-col go-screen app-reveal" :class="isResting ? 'go-screen--rest' : ''">
-        <div class="w-full flex-1 flex items-center justify-center min-h-0">
-            <div class="w-full h-full flex items-center justify-center">
-                <div class="w-full h-full text-white">
+    <div class="min-h-full xl:h-full overflow-visible xl:overflow-hidden flex flex-col go-screen app-reveal" :class="isResting ? 'go-screen--rest' : ''">
+        <div class="w-full flex-1 flex items-start xl:items-center justify-center min-h-0">
+            <div class="w-full min-h-full xl:h-full flex items-start xl:items-center justify-center">
+                <div class="w-full min-h-full xl:h-full text-white">
                     @if ($practiceItems->isEmpty())
                         <p class="text-white/60">No exercises in this template yet.</p>
                     @else
@@ -57,9 +57,9 @@
                                 </div>
                             </div>
 
-                            <div x-show="state !== 'completed'" class="h-full w-full px-6 py-6 md:px-10 md:py-8 grid grid-cols-1 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)] gap-6 items-stretch">
-                                <div class="app-panel rounded-2xl p-6 flex flex-col justify-between min-h-0">
-                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div x-show="state !== 'completed'" class="w-full min-h-full xl:h-full px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8 grid grid-cols-1 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)] gap-4 sm:gap-6 items-start xl:items-stretch">
+                                <div class="app-panel rounded-2xl p-4 sm:p-6 flex flex-col gap-6 xl:gap-0 xl:justify-between min-h-0">
+                                    <div class="flex flex-wrap items-start sm:items-center justify-between gap-3">
                                         <div class="flex flex-wrap items-center gap-3">
                                             <span class="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold"
                                                 :class="isResting ? 'border-cyan-400/30 bg-cyan-500/10 text-cyan-200' : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'">
@@ -81,17 +81,17 @@
                                         </button>
                                     </div>
 
-                                    <div class="flex-1 flex flex-col items-center justify-center text-center py-8">
-                                        <div class="text-[4.75rem] md:text-[7rem] font-bold text-white tracking-tight" x-text="formatTime(displaySeconds)"></div>
+                                    <div class="flex flex-col items-center text-center py-2 sm:py-4 xl:flex-1 xl:justify-center min-h-0">
+                                        <div class="text-[4rem] sm:text-[4.75rem] md:text-[7rem] font-bold text-white tracking-tight leading-none" x-text="formatTime(displaySeconds)"></div>
                                         <div class="mt-2 text-sm uppercase tracking-[0.35em] text-white/45" x-text="timerCaption"></div>
 
-                                        <div class="mt-8 space-y-3 max-w-3xl">
-                                            <div class="text-4xl md:text-5xl font-bold text-white" x-text="currentItem?.name"></div>
-                                            <div class="text-xl text-cyan-200" x-show="currentItem?.linked_name" x-text="currentItem?.linked_name"></div>
-                                            <div class="text-lg text-white/65" x-show="currentItem?.description" x-text="currentItem?.description"></div>
+                                        <div class="mt-6 sm:mt-8 w-full max-w-3xl space-y-2 sm:space-y-3 px-1">
+                                            <div class="text-3xl sm:text-4xl md:text-5xl font-bold text-white break-words" x-text="currentItem?.name"></div>
+                                            <div class="text-lg sm:text-xl text-cyan-200 break-words" x-show="currentItem?.linked_name" x-text="currentItem?.linked_name"></div>
+                                            <div class="text-base sm:text-lg text-white/65 break-words" x-show="currentItem?.description" x-text="currentItem?.description"></div>
                                         </div>
 
-                                        <div class="mt-6 flex flex-wrap justify-center gap-3 text-sm">
+                                        <div class="mt-5 sm:mt-6 flex flex-wrap justify-center gap-3 text-sm">
                                             <span x-show="currentItem?.distance_label" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/75" x-text="currentItem?.distance_label"></span>
                                             <span x-show="currentItem?.target_cue" class="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-cyan-200" x-text="currentItem?.target_cue"></span>
                                             <span x-show="!isResting && currentItem?.completion_mode === 'manual'" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/75">Manual complete</span>
@@ -99,24 +99,24 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex flex-wrap justify-center gap-4">
+                                    <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
                                         <button x-show="state === 'ready'" @click="start"
-                                            class="px-10 py-4 bg-emerald-500 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors go-cta">
+                                            class="px-8 py-3 sm:px-10 sm:py-4 bg-emerald-500 text-white rounded-xl text-lg sm:text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors go-cta">
                                             Start Practice
                                         </button>
 
                                         <button x-show="state === 'running'" @click="pause"
-                                            class="px-10 py-4 bg-cyan-500 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-cyan-600 transition-colors">
+                                            class="px-8 py-3 sm:px-10 sm:py-4 bg-cyan-500 text-white rounded-xl text-lg sm:text-xl md:text-2xl font-semibold hover:bg-cyan-600 transition-colors">
                                             Pause
                                         </button>
 
                                         <button x-show="state === 'paused'" @click="resume"
-                                            class="px-10 py-4 bg-emerald-500 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors">
+                                            class="px-8 py-3 sm:px-10 sm:py-4 bg-emerald-500 text-white rounded-xl text-lg sm:text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors">
                                             Resume
                                         </button>
 
                                         <button x-show="state === 'running' || state === 'paused'" @click="next"
-                                            class="px-10 py-4 bg-white/10 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-white/20 transition-colors">
+                                            class="px-8 py-3 sm:px-10 sm:py-4 bg-white/10 text-white rounded-xl text-lg sm:text-xl md:text-2xl font-semibold hover:bg-white/20 transition-colors">
                                             <span x-text="nextButtonLabel"></span>
                                         </button>
                                     </div>
@@ -128,8 +128,8 @@
                                     </div>
                                 </div>
 
-                                <div class="space-y-6 min-h-0 overflow-auto">
-                                    <div class="app-panel rounded-2xl p-5">
+                                <div class="space-y-4 sm:space-y-6 xl:min-h-0 xl:overflow-auto">
+                                    <div class="app-panel rounded-2xl p-4 sm:p-5">
                                         <div class="text-xs uppercase tracking-[0.24em] text-white/45">Current Block</div>
                                         <div class="mt-3 space-y-3 text-sm">
                                             <template x-if="currentItem?.notes">
@@ -159,7 +159,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="app-panel rounded-2xl p-5">
+                                    <div class="app-panel rounded-2xl p-4 sm:p-5">
                                         <div class="text-xs uppercase tracking-[0.24em] text-white/45">Next Segment</div>
                                         <template x-if="nextSegment">
                                             <div class="mt-3">
@@ -172,7 +172,7 @@
                                         </template>
                                     </div>
 
-                                    <div class="app-panel rounded-2xl p-5">
+                                    <div class="app-panel rounded-2xl p-4 sm:p-5">
                                         <div class="text-xs uppercase tracking-[0.24em] text-white/45">Session Flow</div>
                                         <div class="mt-3 space-y-2">
                                             <template x-for="(item, index) in items" :key="`${item.order}-${item.name}`">

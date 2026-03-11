@@ -17,6 +17,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
+    public const DEFAULT_TIMEZONE = 'America/Los_Angeles';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -54,7 +56,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function now(): \Carbon\Carbon
     {
-        return now()->timezone($this->timezone ?? 'America/Los_Angeles');
+        return now()->timezone($this->preferredTimezone());
+    }
+
+    public function preferredTimezone(): string
+    {
+        return $this->timezone ?: self::DEFAULT_TIMEZONE;
     }
 
     public function canAccessPanel(Panel $panel): bool

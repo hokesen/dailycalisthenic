@@ -66,8 +66,8 @@ class DashboardController extends Controller
         $days = (int) $request->query('days', 7);
         $days = in_array($days, [7, 14, 30, 90], true) ? $days : 7;
 
+        $userTimezone = $user->preferredTimezone();
         $userNow = $user->now();
-        $userTimezone = $user->timezone ?? 'America/Los_Angeles';
         $startDate = $userNow->copy()->subDays($days - 1)->startOfDay();
         $endDate = $userNow->copy()->endOfDay();
         $startDateUtc = $startDate->copy()->timezone('UTC');
@@ -365,7 +365,7 @@ class DashboardController extends Controller
         $startDate = $user->now()->subDays($days - 1)->startOfDay();
         $endDate = $user->now()->endOfDay();
 
-        $timezone = $user->timezone ?? 'America/Los_Angeles';
+        $timezone = $user->preferredTimezone();
 
         $sessions = Session::query()
             ->where('user_id', $user->id)

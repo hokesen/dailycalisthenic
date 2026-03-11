@@ -34,6 +34,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $this->assertNotNull($user);
+        $this->assertSame(User::DEFAULT_TIMEZONE, $user->timezone);
         Notification::assertSentTo($user, VerifyEmailNotification::class);
         $response->assertRedirect(route('home', absolute: false));
     }

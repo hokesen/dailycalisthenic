@@ -1,8 +1,8 @@
-@props(['session'])
+@props(['session', 'timezone' => \App\Models\User::DEFAULT_TIMEZONE])
 
 <div class="app-card rounded-xl p-4 border-l-4 border-emerald-400">
     @php
-        $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
+        $activityAt = ($session->completed_at ?? $session->started_at ?? $session->updated_at)?->copy()->setTimezone($timezone);
         $isInProgress = $session->status?->value === 'in_progress' || $session->status === 'in_progress';
         $totalSeconds = (int) ($session->total_duration_seconds ?? $session->sessionExercises->sum(fn ($exercise) => (int) ($exercise->duration_seconds ?? 0)));
     @endphp

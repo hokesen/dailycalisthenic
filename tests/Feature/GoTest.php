@@ -59,6 +59,20 @@ class GoTest extends TestCase
         $response->assertSee('Start Practice');
     }
 
+    public function test_go_page_formats_shuttle_run_yard_labels_for_catalog_templates(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/go?template_slug=soccer-sr22-22&discipline=soccer');
+
+        $response->assertOk();
+        $response->assertSee('Shuttle Run 22 yards');
+        $response->assertSee('22 yards');
+        $response->assertDontSee('22yds');
+    }
+
     public function test_go_page_with_template_creates_session(): void
     {
         $user = User::factory()->create();
