@@ -6,6 +6,6 @@
     </svg>
     <span class="font-bold text-cyan-200">{{ $count }}</span>
     @if ($showLabel)
-        <span class="text-xs text-cyan-200/80 hidden sm:inline">day streak</span>
+        <span class="text-xs text-cyan-200/80 hidden sm:inline">Streak</span>
     @endif
 </div>

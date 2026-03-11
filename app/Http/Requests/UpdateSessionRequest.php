@@ -25,7 +25,7 @@ class UpdateSessionRequest extends FormRequest
             'status' => 'required|string|in:planned,in_progress,completed,cancelled',
             'total_duration_seconds' => 'nullable|integer|min:0',
             'exercise_completion' => 'nullable|array',
-            'exercise_completion.*.exercise_id' => 'required|integer|exists:exercises,id',
+            'exercise_completion.*.exercise_id' => 'nullable|integer|exists:exercises,id',
             'exercise_completion.*.order' => 'required|integer|min:1',
             'exercise_completion.*.status' => 'required|string|in:completed,incomplete',
             'exercise_completion.*.duration_seconds' => 'nullable|integer|min:0',

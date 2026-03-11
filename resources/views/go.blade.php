@@ -3,15 +3,14 @@
         <div class="w-full flex-1 flex items-center justify-center min-h-0">
             <div class="w-full h-full flex items-center justify-center">
                 <div class="w-full h-full text-white">
-                    @if ($exercises->isEmpty())
+                    @if ($practiceItems->isEmpty())
                         <p class="text-white/60">No exercises in this template yet.</p>
                     @else
                         <div
-                            x-data="workoutTimer({ sessionId: {{ $session->id }}, exercises: @js($exercisesData) })"
+                            x-data="workoutTimer({ sessionId: {{ $session->id }}, items: @js($practiceItems) })"
                             x-effect="$dispatch('workout-state-changed', { running: state === 'running' })"
-                            class="w-full h-full">
-
-                            <!-- Practice Complete Screen -->
+                            class="w-full h-full"
+                        >
                             <div x-show="state === 'completed'" class="text-center py-6 flex flex-col items-center justify-between h-full overflow-hidden">
                                 <div class="shrink-0">
                                     <div class="mb-4">
@@ -23,21 +22,20 @@
                                     <p class="text-2xl md:text-4xl text-white/70">Total time: <span x-text="formatTime(totalElapsedSeconds)"></span></p>
                                 </div>
 
-                                <!-- Exercise Summary -->
                                 <div class="max-w-4xl mx-auto flex-1 min-h-0 overflow-auto my-4 w-full px-4">
                                     <div class="app-panel rounded-2xl p-4 space-y-4">
-                                        <!-- Completed Exercises -->
                                         <div>
                                             <h3 class="text-xl font-semibold text-white mb-3 flex items-center justify-center gap-2">
                                                 <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                                 </svg>
-                                                <span>Completed (<span x-text="completedExercises.length"></span>)</span>
+                                                <span>Completed Blocks (<span x-text="completedExercises.length"></span>)</span>
                                             </h3>
                                             <div class="space-y-2">
-                                                <template x-for="exercise in completedExercises" :key="exercise.id">
+                                                <template x-for="exercise in completedExercises" :key="`${exercise.order}-${exercise.name}`">
                                                     <div class="text-white/80 app-card app-card--nested rounded-lg p-2 text-base">
                                                         <span x-text="exercise.name"></span>
+                                                        <span class="text-white/45" x-show="exercise.linked_name" x-text="` · ${exercise.linked_name}`"></span>
                                                     </div>
                                                 </template>
                                             </div>
@@ -51,7 +49,7 @@
                                             Back to Dashboard
                                         </button>
                                     </a>
-                                    <a href="{{ route('go.index', ['template' => $template->id]) }}">
+                                    <a href="{{ $restartUrl }}">
                                         <button type="button" class="px-10 py-4 bg-white/10 text-white rounded-xl text-xl font-semibold hover:bg-white/20 transition-colors">
                                             Do it again
                                         </button>
@@ -59,133 +57,49 @@
                                 </div>
                             </div>
 
-                            <!-- Main Timer Screen -->
-                            <div x-show="state !== 'completed'" class="h-full w-full px-10 py-8 md:px-12 md:py-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative">
-                                <!-- Edge Progress Frame -->
-                                <div class="pointer-events-none absolute inset-1 md:inset-2" :class="state !== 'running' ? 'edge-pulse-paused' : ''">
-                                    <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                        <defs>
-                                            <filter id="edgeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                                                <feGaussianBlur stdDeviation="0.8" result="blur" />
-                                                <feColorMatrix
-                                                    in="blur"
-                                                    type="matrix"
-                                                    values="0 0 0 0 0.20
-                                                            0 0 0 0 0.85
-                                                            0 0 0 0 0.65
-                                                            0 0 0 0.9 0"
-                                                />
-                                            </filter>
-                                            <filter id="edgePulseBlur" x="-30%" y="-30%" width="160%" height="160%">
-                                                <feGaussianBlur stdDeviation="1.35" result="blur" />
-                                                <feColorMatrix
-                                                    in="blur"
-                                                    type="matrix"
-                                                    values="0 0 0 0 0.22
-                                                            0 0 0 0 0.90
-                                                            0 0 0 0 0.72
-                                                            0 0 0 0.75 0"
-                                                />
-                                            </filter>
-                                            <path id="edgePath"
-                                                d="M50 2 H92 A6 6 0 0 1 98 8 V92 A6 6 0 0 1 92 98 H8 A6 6 0 0 1 2 92 V8 A6 6 0 0 1 8 2 H50"
-                                                fill="none"
-                                                pathLength="100" />
-                                            <mask id="edgeProgressMask">
-                                                <use href="#edgePath"
-                                                    stroke="white"
-                                                    stroke-width="1.6"
-                                                    :stroke-dasharray="state === 'ready' ? '0 100' : ((Math.min(100, (progress * 100) + (progress > 0 ? 0.8 : 0))) + ' 100')" />
-                                            </mask>
-                                        </defs>
-                                        <use href="#edgePath"
-                                            :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(52, 211, 153, 0.9)'"
-                                            stroke-width="1.4"
-                                            :stroke-dasharray="state === 'ready' ? '0 100' : ((Math.min(100, (progress * 100) + (progress > 0 ? 0.8 : 0))) + ' 100')"
-                                            stroke-linecap="round"
-                                            filter="url(#edgeGlow)"
-                                            :style="state === 'ready' ? 'opacity: 0;' : 'opacity: 1;'" />
-                                        <use href="#edgePath"
-                                            :stroke="isResting ? 'rgba(56, 189, 248, 0.95)' : 'rgba(94, 234, 212, 0.82)'"
-                                            stroke-width="1.35"
-                                            stroke-dasharray="14 32"
-                                            stroke-linecap="round"
-                                            :class="state === 'running' && progress > 0.02 ? 'edge-pulse' : ''"
-                                            mask="url(#edgeProgressMask)"
-                                            filter="url(#edgePulseBlur)"
-                                            style="mix-blend-mode: screen;"
-                                            :style="state === 'running' && progress > 0.02 ? 'opacity: 1;' : 'opacity: 0;'" />
-                                    </svg>
-                                </div>
-                                <!-- Main Content -->
-                                <div class="md:col-span-8 flex flex-col justify-between items-center h-full w-full py-2">
-                                    <!-- Status and Progress -->
-                                    <div class="text-center shrink-0">
-                                        <div>
-                                            <span class="inline-block px-7 py-2 rounded-full text-xl md:text-2xl font-semibold border go-pill"
-                                                :class="isResting ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30' : 'bg-emerald-500/15 text-emerald-200 border-emerald-400/30'">
-                                                <span x-text="isResting ? 'Rest Period' : 'Exercise'"></span>
-                                                <span x-text="' ' + (currentExerciseIndex + 1) + ' of ' + exercises.length"></span>
+                            <div x-show="state !== 'completed'" class="h-full w-full px-6 py-6 md:px-10 md:py-8 grid grid-cols-1 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)] gap-6 items-stretch">
+                                <div class="app-panel rounded-2xl p-6 flex flex-col justify-between min-h-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <span class="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold"
+                                                :class="isResting ? 'border-cyan-400/30 bg-cyan-500/10 text-cyan-200' : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'">
+                                                <span x-text="isResting ? 'Rest' : 'Block'"></span>
+                                                <span class="mx-1 text-white/30">·</span>
+                                                <span x-text="`${currentItemIndex + 1} / ${items.length}`"></span>
                                             </span>
+                                            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-semibold text-white/70">
+                                                Repeat <span class="mx-1 text-white/30">·</span> <span x-text="`${currentRepeat} / ${Math.max(1, currentItem?.repeats || 1)}`"></span>
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            @click="toggleAudio()"
+                                            class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/10"
+                                            :class="audioEnabled ? 'text-emerald-200 border-emerald-400/30 bg-emerald-500/10' : ''"
+                                        >
+                                            <span x-text="audioEnabled ? 'Audio On' : 'Audio Off'"></span>
+                                        </button>
+                                    </div>
+
+                                    <div class="flex-1 flex flex-col items-center justify-center text-center py-8">
+                                        <div class="text-[4.75rem] md:text-[7rem] font-bold text-white tracking-tight" x-text="formatTime(displaySeconds)"></div>
+                                        <div class="mt-2 text-sm uppercase tracking-[0.35em] text-white/45" x-text="timerCaption"></div>
+
+                                        <div class="mt-8 space-y-3 max-w-3xl">
+                                            <div class="text-4xl md:text-5xl font-bold text-white" x-text="currentItem?.name"></div>
+                                            <div class="text-xl text-cyan-200" x-show="currentItem?.linked_name" x-text="currentItem?.linked_name"></div>
+                                            <div class="text-lg text-white/65" x-show="currentItem?.description" x-text="currentItem?.description"></div>
+                                        </div>
+
+                                        <div class="mt-6 flex flex-wrap justify-center gap-3 text-sm">
+                                            <span x-show="currentItem?.distance_label" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/75" x-text="currentItem?.distance_label"></span>
+                                            <span x-show="currentItem?.target_cue" class="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-cyan-200" x-text="currentItem?.target_cue"></span>
+                                            <span x-show="!isResting && currentItem?.completion_mode === 'manual'" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/75">Manual complete</span>
+                                            <span x-show="!isResting && currentItem?.completion_mode === 'timed'" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/75" x-text="`${currentItem?.duration_seconds || 0}s`"></span>
                                         </div>
                                     </div>
 
-                                    <!-- Circular Progress Timer -->
-                                    <div class="flex justify-center items-center flex-1 min-h-0">
-                                        <div class="relative w-full max-w-[min(55vh,520px)] aspect-square go-float">
-                                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div class="text-[5.5rem] md:text-[7.5rem] font-bold text-white tracking-tight" x-text="formatTime(timeRemaining)"></div>
-                                                <div class="text-2xl md:text-3xl text-white/60 mt-2 uppercase tracking-[0.25em]" x-text="isResting ? 'Rest' : ''"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Exercise Info -->
-                                    <div class="text-center space-y-2 shrink-0" x-data="{ showInstructions: false }">
-                                        <h3 class="text-4xl md:text-6xl font-bold text-white" x-text="currentExercise?.name"></h3>
-                                        <div x-show="currentExercise?.description" class="text-xl md:text-2xl text-white/70" x-text="currentExercise?.description"></div>
-                                        <div class="flex gap-5 justify-center text-lg md:text-xl text-white/55 flex-wrap">
-                                            <span x-show="currentExercise?.sets && currentExercise?.reps">
-                                                <span x-text="currentExercise?.sets"></span> sets × <span x-text="currentExercise?.reps"></span> reps
-                                            </span>
-                                            <span x-show="currentExercise?.duration_seconds">
-                                                <span x-text="currentExercise?.duration_seconds"></span>s
-                                            </span>
-                                            <span x-show="currentExercise?.tempo" class="text-cyan-300">
-                                                <span x-text="currentExercise?.tempo"></span>
-                                            </span>
-                                            <span x-show="currentExercise?.intensity" class="text-cyan-300">
-                                                <span x-text="currentExercise?.intensity"></span> intensity
-                                            </span>
-                                        </div>
-                                        <!-- Instructions Toggle -->
-                                        <div x-show="currentExercise?.instructions" class="pt-2">
-                                            <button
-                                                @click="showInstructions = !showInstructions"
-                                                class="inline-flex items-center gap-2 text-base md:text-lg text-cyan-300 hover:text-cyan-200 transition-colors"
-                                            >
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                </svg>
-                                                <span x-text="showInstructions ? 'Hide instructions' : 'Show instructions'"></span>
-                                            </button>
-                                            <div
-                                                x-show="showInstructions"
-                                                x-transition
-                                                class="mt-3 p-5 app-panel rounded-lg text-left max-w-2xl mx-auto"
-                                            >
-                                                <p class="text-base md:text-lg text-white/70 whitespace-pre-line" x-text="currentExercise?.instructions"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Mobile Next Exercise -->
-                                    <div x-show="currentExerciseIndex < exercises.length - 1" class="md:hidden text-center text-white/50 shrink-0 text-lg">
-                                        <span>Next: </span><span class="text-white/70" x-text="exercises[currentExerciseIndex + 1]?.name"></span>
-                                    </div>
-
-                                    <!-- Controls -->
-                                    <div class="flex gap-4 justify-center flex-wrap shrink-0">
+                                    <div class="flex flex-wrap justify-center gap-4">
                                         <button x-show="state === 'ready'" @click="start"
                                             class="px-10 py-4 bg-emerald-500 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors go-cta">
                                             Start Practice
@@ -202,28 +116,73 @@
                                         </button>
 
                                         <button x-show="state === 'running' || state === 'paused'" @click="next"
-                                            class="px-10 py-4 bg-emerald-500 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-emerald-600 transition-colors">
-                                            Next
+                                            class="px-10 py-4 bg-white/10 text-white rounded-xl text-xl md:text-2xl font-semibold hover:bg-white/20 transition-colors">
+                                            <span x-text="nextButtonLabel"></span>
                                         </button>
                                     </div>
 
-                                    <!-- Keyboard shortcuts hint (desktop only) -->
-                                    <div x-show="state !== 'completed'" class="hidden md:flex gap-4 justify-center text-sm text-white/40 mt-2">
+                                    <div x-show="state !== 'completed'" class="hidden md:flex gap-4 justify-center text-sm text-white/40 mt-4">
                                         <span x-show="state === 'ready'"><kbd class="px-1.5 py-0.5 bg-white/10 rounded text-xs">Enter</kbd> to start</span>
                                         <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-white/10 rounded text-xs">Space</kbd> pause/resume</span>
-                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-white/10 rounded text-xs">Enter</kbd> next</span>
+                                        <span x-show="state === 'running' || state === 'paused'"><kbd class="px-1.5 py-0.5 bg-white/10 rounded text-xs">Enter</kbd> <span x-text="nextButtonLabel.toLowerCase()"></span></span>
                                     </div>
                                 </div>
 
-                                <!-- Next Exercise -->
-                                <div class="md:col-span-4 hidden md:flex flex-col items-center">
-                                    <div x-show="currentExerciseIndex < exercises.length - 1" class="space-y-4">
-                                        <div class="text-2xl text-white/60 text-center mb-4">Next</div>
-                                        <template x-for="(exercise, index) in exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 2)" :key="exercise.id">
-                                            <div class="text-center p-5 app-card app-card--nested rounded-xl min-w-[16rem]">
-                                                <div class="text-2xl font-semibold text-white/80 line-clamp-3" x-text="exercise.name"></div>
+                                <div class="space-y-6 min-h-0 overflow-auto">
+                                    <div class="app-panel rounded-2xl p-5">
+                                        <div class="text-xs uppercase tracking-[0.24em] text-white/45">Current Block</div>
+                                        <div class="mt-3 space-y-3 text-sm">
+                                            <template x-if="currentItem?.notes">
+                                                <div>
+                                                    <div class="text-white/45">Block Notes</div>
+                                                    <p class="mt-1 text-white/75 whitespace-pre-line" x-text="currentItem?.notes"></p>
+                                                </div>
+                                            </template>
+                                            <template x-if="currentItem?.setup_text">
+                                                <div>
+                                                    <div class="text-white/45">Setup</div>
+                                                    <p class="mt-1 text-white/75 whitespace-pre-line" x-text="currentItem?.setup_text"></p>
+                                                </div>
+                                            </template>
+                                            <template x-if="currentItem?.instructions">
+                                                <div>
+                                                    <div class="text-white/45">Instructions</div>
+                                                    <p class="mt-1 text-white/75 whitespace-pre-line" x-text="currentItem?.instructions"></p>
+                                                </div>
+                                            </template>
+                                            <template x-if="currentItem?.field_layout_notes">
+                                                <div>
+                                                    <div class="text-white/45">Field Layout</div>
+                                                    <p class="mt-1 text-white/75 whitespace-pre-line" x-text="currentItem?.field_layout_notes"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="app-panel rounded-2xl p-5">
+                                        <div class="text-xs uppercase tracking-[0.24em] text-white/45">Next Segment</div>
+                                        <template x-if="nextSegment">
+                                            <div class="mt-3">
+                                                <div class="text-lg font-semibold text-white" x-text="nextSegment.label"></div>
+                                                <div class="mt-1 text-sm text-white/60" x-show="nextSegment.detail" x-text="nextSegment.detail"></div>
                                             </div>
                                         </template>
+                                        <template x-if="!nextSegment">
+                                            <p class="mt-3 text-sm text-white/60">This is the last segment.</p>
+                                        </template>
+                                    </div>
+
+                                    <div class="app-panel rounded-2xl p-5">
+                                        <div class="text-xs uppercase tracking-[0.24em] text-white/45">Session Flow</div>
+                                        <div class="mt-3 space-y-2">
+                                            <template x-for="(item, index) in items" :key="`${item.order}-${item.name}`">
+                                                <div class="rounded-lg border px-3 py-3 text-sm"
+                                                    :class="index === currentItemIndex ? 'border-emerald-400/30 bg-emerald-500/10 text-white' : 'border-white/10 bg-white/5 text-white/70'">
+                                                    <div class="font-semibold" x-text="item.name"></div>
+                                                    <div class="mt-1 text-xs text-white/50" x-show="item.linked_name" x-text="item.linked_name"></div>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

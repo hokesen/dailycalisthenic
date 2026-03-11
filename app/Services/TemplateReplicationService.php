@@ -33,12 +33,15 @@ class TemplateReplicationService
      */
     public function replicateForUser(SessionTemplate $template, User $user): SessionTemplate
     {
+        $template->loadMissing(['exercises', 'practiceBlocks']);
+
         $newTemplate = $template->replicate();
         $newTemplate->user_id = $user->id;
         $newTemplate->name = "{$user->name}'s {$template->name}";
         $newTemplate->save();
 
         $this->replicateExercises($template, $newTemplate);
+        $this->replicatePracticeBlocks($template, $newTemplate);
 
         return $newTemplate;
     }
@@ -56,6 +59,26 @@ class TemplateReplicationService
 
         if (! empty($pivotData)) {
             $target->exercises()->sync($pivotData);
+        }
+    }
+
+    protected function replicatePracticeBlocks(SessionTemplate $source, SessionTemplate $target): void
+    {
+        foreach ($source->practiceBlocks as $block) {
+            $target->practiceBlocks()->create([
+                'exercise_id' => $block->exercise_id,
+                'sort_order' => $block->sort_order,
+                'title' => $block->title,
+                'completion_mode' => $block->completion_mode,
+                'duration_seconds' => $block->duration_seconds,
+                'rest_after_seconds' => $block->rest_after_seconds,
+                'repeats' => $block->repeats,
+                'distance_label' => $block->distance_label,
+                'target_cue' => $block->target_cue,
+                'setup_text' => $block->setup_text,
+                'notes' => $block->notes,
+                'metadata' => $block->metadata,
+            ]);
         }
     }
 }

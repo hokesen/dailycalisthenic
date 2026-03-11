@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ExerciseCategory;
 use App\Enums\ExerciseDifficulty;
+use App\Enums\TrainingDiscipline;
 use App\Models\Concerns\HasProgressionVariations;
 use App\Models\Concerns\PivotColumns;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,14 +24,19 @@ class Exercise extends Model
         'name',
         'description',
         'instructions',
+        'setup_text',
+        'field_layout_notes',
         'difficulty_level',
         'category',
+        'discipline',
         'default_duration_seconds',
+        'media_url',
     ];
 
     protected $casts = [
         'category' => ExerciseCategory::class,
         'difficulty_level' => ExerciseDifficulty::class,
+        'discipline' => TrainingDiscipline::class,
     ];
 
     public function user(): BelongsTo
@@ -64,6 +70,11 @@ class Exercise extends Model
         return $this->hasMany(UserExerciseProgress::class);
     }
 
+    public function practiceBlocks(): HasMany
+    {
+        return $this->hasMany(PracticeBlock::class);
+    }
+
     public function scopeSystem($query)
     {
         return $query->whereNull('user_id');
@@ -93,5 +104,12 @@ class Exercise extends Model
         return $query->whereHas('progression', function ($q) use ($pathName) {
             $q->where('progression_path_name', $pathName);
         });
+    }
+
+    public function scopeForDiscipline(Builder $query, TrainingDiscipline|string $discipline): Builder
+    {
+        $disciplineValue = $discipline instanceof TrainingDiscipline ? $discipline->value : $discipline;
+
+        return $query->where('discipline', $disciplineValue);
     }
 }

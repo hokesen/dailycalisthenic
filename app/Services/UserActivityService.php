@@ -13,13 +13,7 @@ class UserActivityService
         $timezone = $user->timezone ?? 'America/Los_Angeles';
 
         $sessions = $user->sessions()
-            ->whereIn('status', ['completed', 'in_progress'])
-            ->where(function ($query) {
-                $query->where('total_duration_seconds', '>', 0)
-                    ->orWhereHas('sessionExercises', function ($exerciseQuery) {
-                        $exerciseQuery->where('duration_seconds', '>', 0);
-                    });
-            })
+            ->countsTowardActivity()
             ->where(function ($query) use ($today, $timezone) {
                 $startOfDayUtc = $today->copy()->timezone($timezone)->startOfDay()->timezone('UTC');
                 $endOfDayUtc = $today->copy()->timezone($timezone)->endOfDay()->timezone('UTC');
@@ -44,13 +38,7 @@ class UserActivityService
             $endOfDayUtc = $date->copy()->timezone($timezone)->endOfDay()->timezone('UTC');
 
             $hasSession = $user->sessions()
-                ->whereIn('status', ['completed', 'in_progress'])
-                ->where(function ($query) {
-                    $query->where('total_duration_seconds', '>', 0)
-                        ->orWhereHas('sessionExercises', function ($exerciseQuery) {
-                            $exerciseQuery->where('duration_seconds', '>', 0);
-                        });
-                })
+                ->countsTowardActivity()
                 ->where(function ($query) use ($startOfDayUtc, $endOfDayUtc) {
                     $query->whereBetween('completed_at', [$startOfDayUtc, $endOfDayUtc])
                         ->orWhereBetween('started_at', [$startOfDayUtc, $endOfDayUtc]);
@@ -76,13 +64,7 @@ class UserActivityService
         [$startDateUtc, $endDateUtc] = TimezoneConverter::convertDateRangeToUtc($startDate, $endDate, $user->timezone ?? 'America/Los_Angeles');
 
         $sessions = $user->sessions()
-            ->whereIn('status', ['completed', 'in_progress'])
-            ->where(function ($query) {
-                $query->where('total_duration_seconds', '>', 0)
-                    ->orWhereHas('sessionExercises', function ($exerciseQuery) {
-                        $exerciseQuery->where('duration_seconds', '>', 0);
-                    });
-            })
+            ->countsTowardActivity()
             ->where(function ($query) use ($startDateUtc, $endDateUtc) {
                 $query->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
                     ->orWhereBetween('started_at', [$startDateUtc, $endDateUtc]);
@@ -168,13 +150,7 @@ class UserActivityService
         [$startDateUtc, $endDateUtc] = TimezoneConverter::convertDateRangeToUtc($startDate, $endDate, $timezone);
 
         $sessions = $user->sessions()
-            ->whereIn('status', ['completed', 'in_progress'])
-            ->where(function ($query) {
-                $query->where('total_duration_seconds', '>', 0)
-                    ->orWhereHas('sessionExercises', function ($exerciseQuery) {
-                        $exerciseQuery->where('duration_seconds', '>', 0);
-                    });
-            })
+            ->countsTowardActivity()
             ->where(function ($query) use ($startDateUtc, $endDateUtc) {
                 $query->whereBetween('completed_at', [$startDateUtc, $endDateUtc])
                     ->orWhereBetween('started_at', [$startDateUtc, $endDateUtc]);

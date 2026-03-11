@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DisciplineController;
 use App\Http\Controllers\GoController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\JournalExerciseController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AssessmentResultController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateExerciseController;
+use App\Http\Controllers\TrainingProgramController;
 use App\Http\Controllers\UserGoalController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,9 +25,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/discipline', DisciplineController::class)->name('discipline.update');
 
     Route::get('/go', [GoController::class, 'index'])->name('go.index');
     Route::patch('/go/{session}/update', [GoController::class, 'update'])->name('go.update');
+
+    Route::post('/training-programs', [TrainingProgramController::class, 'store'])->name('training-programs.store');
+    Route::post('/training-programs/{enrollment}/skip', [TrainingProgramController::class, 'skip'])->name('training-programs.skip');
+    Route::post('/training-programs/{enrollment}/move', [TrainingProgramController::class, 'move'])->name('training-programs.move');
+    Route::post('/assessment-results', [AssessmentResultController::class, 'store'])->name('assessment-results.store');
 
     Route::post('/journal/entries', [JournalEntryController::class, 'store'])->name('journal.store');
     Route::patch('/journal/entries/{entry}', [JournalEntryController::class, 'update'])->name('journal.update');

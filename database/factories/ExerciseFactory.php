@@ -21,9 +21,13 @@ class ExerciseFactory extends Factory
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'instructions' => fake()->paragraph(),
+            'setup_text' => fake()->optional()->sentence(),
+            'field_layout_notes' => fake()->optional()->sentence(),
             'difficulty_level' => fake()->randomElement(['beginner', 'intermediate', 'advanced', 'expert']),
             'category' => fake()->randomElement(['push', 'pull', 'legs', 'core', 'full_body', 'cardio', 'flexibility']),
+            'discipline' => 'general',
             'default_duration_seconds' => fake()->randomElement([30, 45, 60, 90, 120]),
+            'media_url' => fake()->optional()->url(),
         ];
     }
 }

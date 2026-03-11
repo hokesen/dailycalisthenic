@@ -1,26 +1,47 @@
-@props(['user', 'hasPracticed', 'streak'])
+@props(['user', 'hasPracticed', 'streak', 'disciplines', 'selectedDiscipline'])
 
-<!-- Welcome Bar with Title, Streak, and User Dropdown -->
 <div class="app-panel sm:rounded-2xl mb-6" x-data="{ showUserMenu: false }">
     <div class="p-4 sm:p-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
-            <!-- Left: Title and Welcome -->
             <div class="flex items-center gap-4">
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white">Daily Calisthenics</h1>
-                    <p class="text-sm text-white/60">Welcome, {{ $user->name }}!</p>
+                <div class="dashboard-brand">
+                    <div class="dashboard-brand-lockup">
+                        <div class="dashboard-brand-mark" aria-hidden="true">
+                            <span class="dashboard-brand-kicker">Daily</span>
+                        </div>
+                        <form method="POST" action="{{ route('discipline.update') }}" class="dashboard-discipline-form">
+                            @csrf
+                            <label class="sr-only" for="discipline-switcher">Discipline</label>
+                            <div class="dashboard-discipline-shell">
+                                <select
+                                    id="discipline-switcher"
+                                    name="discipline"
+                                    onchange="this.form.submit()"
+                                    class="dashboard-discipline-select"
+                                >
+                                    @foreach ($disciplines as $discipline => $definition)
+                                        <option value="{{ $discipline }}" @selected($selectedDiscipline === $discipline) class="bg-slate-900 text-white">
+                                            {{ $definition['label'] }}{{ ($definition['status'] ?? 'planned') !== 'live' ? ' (Soon)' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <span class="dashboard-discipline-icon" aria-hidden="true">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M6 9l6 6 6-6" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                    <p class="text-sm text-white/60 sm:text-base">Welcome, {{ $user->name }}!</p>
                 </div>
             </div>
 
-            <!-- Right: Today Status, Streak, and User Menu -->
             <div class="flex items-center gap-3 sm:gap-4">
-                <!-- Today's Status -->
                 <x-today-status-badge :hasPracticed="$hasPracticed" />
 
-                <!-- Streak -->
                 <x-streak-badge :count="$streak" />
 
-                <!-- User Dropdown -->
                 <div class="relative" @click.outside="showUserMenu = false">
                     <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white bg-white/10 rounded-lg transition-colors border border-white/10">
                         <span class="hidden sm:inline">{{ $user->name }}</span>

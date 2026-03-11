@@ -4,6 +4,7 @@
     @php
         $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
         $isInProgress = $session->status?->value === 'in_progress' || $session->status === 'in_progress';
+        $totalSeconds = (int) ($session->total_duration_seconds ?? $session->sessionExercises->sum(fn ($exercise) => (int) ($exercise->duration_seconds ?? 0)));
     @endphp
 
     <div class="flex justify-between items-start mb-2">
@@ -12,7 +13,7 @@
                 {{ $session->name }}
             </h4>
             <p class="text-sm text-white/60">
-                {{ $activityAt?->format('g:i A') ?? '-' }} • <x-duration-display :seconds="$session->total_duration_seconds" /> total
+                {{ $activityAt?->format('g:i A') ?? '-' }} • <x-duration-display :seconds="$totalSeconds" /> total
                 @if($isInProgress)
                     <span class="text-white/50">• In progress</span>
                 @endif

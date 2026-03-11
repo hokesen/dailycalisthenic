@@ -85,9 +85,13 @@ class ExerciseRepository
                 $exercise->name = $data->name;
                 $exercise->description = $data->description;
                 $exercise->instructions = $data->instructions;
+                $exercise->setup_text = $data->setup_text;
+                $exercise->field_layout_notes = $data->field_layout_notes;
                 $exercise->difficulty_level = $data->difficulty_level;
                 $exercise->category = $data->category;
+                $exercise->discipline = $data->discipline;
                 $exercise->default_duration_seconds = $data->default_duration_seconds;
+                $exercise->media_url = $data->media_url;
                 $exercise->exists = false; // Mark as not persisted
                 $exercise->is_default = true;
 
@@ -183,9 +187,13 @@ class ExerciseRepository
             'name' => $default->name,
             'description' => $default->description,
             'instructions' => $default->instructions,
+            'setup_text' => $default->setup_text,
+            'field_layout_notes' => $default->field_layout_notes,
             'difficulty_level' => $default->difficulty_level,
             'category' => $default->category,
+            'discipline' => $default->discipline,
             'default_duration_seconds' => $default->default_duration_seconds,
+            'media_url' => $default->media_url,
         ]);
     }
 

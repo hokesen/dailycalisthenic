@@ -99,6 +99,23 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(UserExerciseProgress::class);
     }
 
+    public function trainingProgramEnrollments(): HasMany
+    {
+        return $this->hasMany(TrainingProgramEnrollment::class);
+    }
+
+    public function activeTrainingProgramEnrollment(): HasOne
+    {
+        return $this->hasOne(TrainingProgramEnrollment::class)
+            ->where('is_active', true)
+            ->latestOfMany();
+    }
+
+    public function assessmentResults(): HasMany
+    {
+        return $this->hasMany(AssessmentResult::class);
+    }
+
     public function currentExercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'user_exercise_progress')

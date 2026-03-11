@@ -129,8 +129,7 @@ class StreakService
         $timezone = $user->timezone ?? 'America/Los_Angeles';
 
         $sessionDates = $user->sessions()
-            ->whereIn('status', ['completed', 'in_progress'])
-            ->where('total_duration_seconds', '>', 0)
+            ->countsTowardActivity()
             ->where(function ($query) use ($lookbackDate) {
                 $utcLookback = $lookbackDate->copy()->timezone('UTC');
                 $query->where('completed_at', '>=', $utcLookback)

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ExerciseCategory;
 use App\Enums\ExerciseDifficulty;
+use App\Enums\TrainingDiscipline;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -79,13 +80,17 @@ class DefaultExerciseService
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'instructions' => $data['instructions'] ?? null,
+            'setup_text' => null,
+            'field_layout_notes' => null,
             'difficulty_level' => isset($data['difficulty_level'])
                 ? ExerciseDifficulty::tryFrom($data['difficulty_level'])
                 : null,
             'category' => isset($data['category'])
                 ? ExerciseCategory::tryFrom($data['category'])
                 : null,
+            'discipline' => TrainingDiscipline::General,
             'default_duration_seconds' => $data['default_duration_seconds'] ?? null,
+            'media_url' => null,
             'is_default' => true,
             'created_at' => null,
             'updated_at' => null,

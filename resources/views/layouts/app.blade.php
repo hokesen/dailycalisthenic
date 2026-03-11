@@ -18,14 +18,14 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="antialiased theme-nightfall" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
-        <div class="h-dvh flex flex-col app-shell overflow-hidden">
+    <body class="antialiased theme-nightfall dark:bg-gray-900 dark:text-gray-100" x-data="{ workoutRunning: false }" @workout-state-changed.window="workoutRunning = $event.detail.running">
+        <div class="h-dvh flex flex-col app-shell overflow-hidden dark:bg-gray-800">
 
             <!-- Page Heading -->
             @isset($header)
                 <header class="shrink-0 sticky top-0 z-30 border-b border-white/10 bg-[#0b1114]/75 backdrop-blur-xl">
                     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-                        <div class="app-panel rounded-2xl px-4 py-3 sm:px-6 sm:py-4">
+                        <div class="app-panel rounded-2xl px-4 py-3 sm:px-6 sm:py-4 dark:bg-gray-800">
                             {{ $header }}
                         </div>
                     </div>

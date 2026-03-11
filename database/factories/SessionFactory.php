@@ -19,6 +19,8 @@ class SessionFactory extends Factory
         return [
             'user_id' => \App\Models\User::factory(),
             'session_template_id' => null,
+            'training_program_enrollment_id' => null,
+            'program_day_key' => null,
             'name' => fake()->words(3, true),
             'notes' => fake()->optional()->paragraph(),
             'started_at' => null,

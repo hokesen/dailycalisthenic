@@ -18,51 +18,155 @@ Alpine.data('ganttChart', ganttChart);
 // Register workoutTimer component
 Alpine.data('workoutTimer', (config) => ({
     sessionId: config.sessionId || 0,
-    exercises: config.exercises || [],
-    currentExerciseIndex: 0,
+    items: config.items || config.exercises || [],
+    currentItemIndex: 0,
+    currentRepeat: 1,
     state: 'ready',
-    isResting: false,
+    phase: 'work',
+    restTarget: 'next_item',
     timeRemaining: 0,
+    currentSegmentElapsedSeconds: 0,
     totalElapsedSeconds: 0,
-    intervalId: null,
     timerHandle: null,
     lastFrameTime: null,
     currentSegmentMs: 0,
     remainingMs: 0,
+    currentSegmentElapsedMs: 0,
+    currentBlockElapsedMs: 0,
     totalElapsedMs: 0,
-    exerciseCompletionStatus: [],
+    completedItemStates: [],
     autosaveIntervalId: null,
     autosaveIntervalMs: 15000,
+    audioEnabled: false,
+    audioContext: null,
+    lastCountdownSecond: null,
 
-    get currentExercise() {
-        return this.exercises[this.currentExerciseIndex] || {};
+    get currentItem() {
+        return this.items[this.currentItemIndex] || null;
+    },
+
+    get isResting() {
+        return this.phase === 'rest';
+    },
+
+    get isCurrentSegmentManual() {
+        if (this.isResting || !this.currentItem) {
+            return false;
+        }
+
+        return this.currentItem.completion_mode === 'manual' || !this.currentItem.duration_seconds;
+    },
+
+    get displaySeconds() {
+        return this.isCurrentSegmentManual ? this.currentSegmentElapsedSeconds : this.timeRemaining;
     },
 
     get progress() {
-        if (this.currentSegmentMs === 0) {
+        if (!this.currentItem) {
             return 1;
         }
-        return 1 - (this.remainingMs / this.currentSegmentMs);
+
+        if (this.isResting) {
+            if (this.currentSegmentMs === 0) {
+                return 0;
+            }
+
+            return 1 - (this.remainingMs / this.currentSegmentMs);
+        }
+
+        const repeats = this.getRepeatCount(this.currentItem);
+        const completedRepeats = Math.max(0, this.currentRepeat - 1);
+
+        if (this.isCurrentSegmentManual || this.currentSegmentMs === 0) {
+            return repeats === 0 ? 0 : completedRepeats / repeats;
+        }
+
+        const repeatProgress = 1 - (this.remainingMs / this.currentSegmentMs);
+
+        return (completedRepeats + repeatProgress) / repeats;
     },
 
     get completedExercises() {
-        return this.exercises.filter((_, index) =>
-            this.exerciseCompletionStatus[index] === 'completed'
+        return this.items.filter((item, index) =>
+            this.completedItemStates[index] === 'completed' && item.track_completion !== false
         );
     },
 
+    get nextSegment() {
+        if (!this.currentItem) {
+            return null;
+        }
+
+        if (this.isResting) {
+            if (this.restTarget === 'next_repeat') {
+                return {
+                    label: `${this.currentItem.name} · Rep ${this.currentRepeat + 1} of ${this.getRepeatCount(this.currentItem)}`,
+                    detail: this.currentItem.distance_label || this.currentItem.target_cue || this.currentItem.linked_name || null,
+                };
+            }
+
+            const nextItem = this.items[this.currentItemIndex + 1] || null;
+            if (!nextItem) {
+                return null;
+            }
+
+            return {
+                label: nextItem.name,
+                detail: nextItem.linked_name || nextItem.distance_label || nextItem.target_cue || null,
+            };
+        }
+
+        if (this.currentRepeat < this.getRepeatCount(this.currentItem)) {
+            return {
+                label: `Rest`,
+                detail: this.currentItem.rest_after_seconds ? this.formatTime(this.currentItem.rest_after_seconds) : 'Transition',
+            };
+        }
+
+        if ((this.currentItem.rest_after_seconds || 0) > 0 && this.currentItemIndex < this.items.length - 1) {
+            return {
+                label: `Rest`,
+                detail: this.formatTime(this.currentItem.rest_after_seconds),
+            };
+        }
+
+        const nextItem = this.items[this.currentItemIndex + 1] || null;
+
+        return nextItem ? {
+            label: nextItem.name,
+            detail: nextItem.linked_name || nextItem.distance_label || nextItem.target_cue || null,
+        } : null;
+    },
+
+    get nextButtonLabel() {
+        if (this.isResting) {
+            return 'Skip Rest';
+        }
+
+        return this.isCurrentSegmentManual ? 'Complete Block' : 'Next';
+    },
+
+    get timerCaption() {
+        if (this.isResting) {
+            return 'Rest';
+        }
+
+        return this.isCurrentSegmentManual ? 'Count Up' : 'Remaining';
+    },
+
     init() {
-        this.setSegment(this.currentExercise.duration_seconds);
+        if (!this.items.length) {
+            return;
+        }
+
+        this.setWorkSegment(true);
         this.setupAutosaveListeners();
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Don't trigger shortcuts when typing in inputs
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                 return;
             }
 
-            // Space: pause/resume
             if (e.code === 'Space' && this.state !== 'completed' && this.state !== 'ready') {
                 e.preventDefault();
                 if (this.state === 'running') {
@@ -72,7 +176,6 @@ Alpine.data('workoutTimer', (config) => ({
                 }
             }
 
-            // Enter: start (when ready) or next (when running/paused)
             if (e.code === 'Enter') {
                 e.preventDefault();
                 if (this.state === 'ready') {
@@ -91,6 +194,10 @@ Alpine.data('workoutTimer', (config) => ({
     },
 
     start() {
+        if (!this.items.length) {
+            return;
+        }
+
         this.state = 'running';
         this.startTimer();
         this.updateSessionStatus('in_progress');
@@ -123,17 +230,31 @@ Alpine.data('workoutTimer', (config) => ({
                 const delta = now - this.lastFrameTime;
                 this.lastFrameTime = now;
 
-                this.remainingMs = Math.max(0, this.remainingMs - delta);
                 this.totalElapsedMs += delta;
-
-                this.timeRemaining = Math.max(0, Math.ceil(this.remainingMs / 1000));
                 this.totalElapsedSeconds = Math.floor(this.totalElapsedMs / 1000);
 
-                if (this.remainingMs <= 0) {
-                    this.remainingMs = 0;
-                    this.timeRemaining = 0;
-                    requestAnimationFrame(() => this.handleTimerComplete());
-                    return;
+                if (this.isCurrentSegmentManual && !this.isResting) {
+                    this.currentSegmentElapsedMs += delta;
+                    this.currentBlockElapsedMs += delta;
+                    this.currentSegmentElapsedSeconds = Math.floor(this.currentSegmentElapsedMs / 1000);
+                } else {
+                    this.remainingMs = Math.max(0, this.remainingMs - delta);
+                    this.currentSegmentElapsedMs = Math.max(0, this.currentSegmentMs - this.remainingMs);
+                    this.currentSegmentElapsedSeconds = Math.floor(this.currentSegmentElapsedMs / 1000);
+                    this.timeRemaining = Math.max(0, Math.ceil(this.remainingMs / 1000));
+
+                    if (!this.isResting) {
+                        this.currentBlockElapsedMs += delta;
+                    }
+
+                    this.maybePlayCountdownCue();
+
+                    if (this.remainingMs <= 0) {
+                        this.remainingMs = 0;
+                        this.timeRemaining = 0;
+                        requestAnimationFrame(() => this.handleSegmentComplete());
+                        return;
+                    }
                 }
 
                 this.timerHandle = requestAnimationFrame(this.tick);
@@ -152,18 +273,11 @@ Alpine.data('workoutTimer', (config) => ({
         this.lastFrameTime = null;
     },
 
-    handleTimerComplete() {
-        if (!this.isResting) {
-            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'completed';
-            this.updateExerciseCompletion(this.currentExerciseIndex, 'completed');
-            if (this.currentExercise.rest_after_seconds > 0 && this.currentExerciseIndex < this.exercises.length - 1) {
-                this.isResting = true;
-                this.setSegment(this.currentExercise.rest_after_seconds);
-            } else {
-                this.moveToNextExercise();
-            }
+    handleSegmentComplete() {
+        if (this.isResting) {
+            this.finishRest();
         } else {
-            this.moveToNextExercise();
+            this.finishCurrentWorkRep();
         }
 
         if (this.state === 'running') {
@@ -172,41 +286,47 @@ Alpine.data('workoutTimer', (config) => ({
         }
     },
 
-    moveToNextExercise() {
-        this.isResting = false;
-        this.currentExerciseIndex++;
+    moveToNextItem() {
+        this.phase = 'work';
+        this.currentItemIndex++;
+        this.currentRepeat = 1;
+        this.currentBlockElapsedMs = 0;
+        this.currentSegmentElapsedMs = 0;
+        this.currentSegmentElapsedSeconds = 0;
+        this.lastCountdownSecond = null;
 
-        if (this.currentExerciseIndex >= this.exercises.length) {
+        if (this.currentItemIndex >= this.items.length) {
             this.completeWorkout();
         } else {
-            this.setSegment(this.currentExercise.duration_seconds);
+            this.setWorkSegment(true);
         }
     },
 
     next() {
-        if (!this.isResting && !this.exerciseCompletionStatus[this.currentExerciseIndex]) {
-            this.exerciseCompletionStatus[this.currentExerciseIndex] = 'completed';
-            // Calculate actual time spent on this exercise
-            const actualDuration = this.currentExercise.duration_seconds - this.timeRemaining;
-            this.updateExerciseCompletion(this.currentExerciseIndex, 'completed', actualDuration);
+        if (this.state !== 'running' && this.state !== 'paused') {
+            return;
         }
-        this.isResting = false;
-        this.moveToNextExercise();
+
+        if (this.isResting) {
+            this.finishRest();
+            return;
+        }
+
+        this.finishCurrentWorkRep();
     },
 
-    updateExerciseCompletion(exerciseIndex, status, actualDuration = null) {
-        const exercise = this.exercises[exerciseIndex];
-        if (!exercise) {
+    updateExerciseCompletion(itemIndex, status, actualDuration = null) {
+        const item = this.items[itemIndex];
+        if (!item || !item.track_completion || !item.id) {
             return;
         }
 
         const exerciseData = {
-            exercise_id: exercise.id,
-            order: exercise.order,
+            exercise_id: item.id,
+            order: item.tracking_order || item.order,
             status: status
         };
 
-        // Include actual duration for skipped exercises
         if (actualDuration !== null) {
             exerciseData.duration_seconds = actualDuration;
         }
@@ -233,6 +353,9 @@ Alpine.data('workoutTimer', (config) => ({
         this.currentSegmentMs = duration * 1000;
         this.remainingMs = this.currentSegmentMs;
         this.timeRemaining = duration;
+        this.currentSegmentElapsedMs = 0;
+        this.currentSegmentElapsedSeconds = 0;
+        this.lastCountdownSecond = null;
     },
 
     startAutosave() {
@@ -282,6 +405,148 @@ Alpine.data('workoutTimer', (config) => ({
                 total_duration_seconds: this.totalElapsedSeconds
             })
         });
+    },
+
+    setWorkSegment(resetBlockElapsed = false) {
+        if (resetBlockElapsed) {
+            this.currentBlockElapsedMs = 0;
+        }
+
+        this.phase = 'work';
+        this.currentSegmentElapsedMs = 0;
+        this.currentSegmentElapsedSeconds = 0;
+
+        if (this.isCurrentSegmentManual) {
+            this.currentSegmentMs = 0;
+            this.remainingMs = 0;
+            this.timeRemaining = 0;
+            this.lastCountdownSecond = null;
+
+            return;
+        }
+
+        this.setSegment(this.currentItem?.duration_seconds || 0);
+    },
+
+    finishCurrentWorkRep() {
+        const item = this.currentItem;
+        if (!item) {
+            return;
+        }
+
+        const repeats = this.getRepeatCount(item);
+        const actualDuration = Math.floor(this.currentBlockElapsedMs / 1000);
+        const isFinalRepeat = this.currentRepeat >= repeats;
+
+        if (isFinalRepeat) {
+            this.completedItemStates[this.currentItemIndex] = 'completed';
+            this.updateExerciseCompletion(this.currentItemIndex, 'completed', actualDuration);
+            this.playCue('complete');
+        }
+
+        const hasTransitionRest = (item.rest_after_seconds || 0) > 0 &&
+            (this.currentRepeat < repeats || this.currentItemIndex < this.items.length - 1);
+
+        if (hasTransitionRest) {
+            this.phase = 'rest';
+            this.restTarget = this.currentRepeat < repeats ? 'next_repeat' : 'next_item';
+            this.setSegment(item.rest_after_seconds);
+            this.playCue('rest');
+
+            return;
+        }
+
+        if (this.currentRepeat < repeats) {
+            this.currentRepeat += 1;
+            this.setWorkSegment(false);
+
+            return;
+        }
+
+        this.moveToNextItem();
+    },
+
+    finishRest() {
+        if (this.restTarget === 'next_repeat') {
+            this.phase = 'work';
+            this.currentRepeat += 1;
+            this.setWorkSegment(false);
+
+            return;
+        }
+
+        this.moveToNextItem();
+    },
+
+    getRepeatCount(item) {
+        return Math.max(1, Number(item?.repeats || 1));
+    },
+
+    toggleAudio() {
+        this.audioEnabled = !this.audioEnabled;
+
+        if (this.audioEnabled) {
+            this.ensureAudioContext();
+        }
+    },
+
+    ensureAudioContext() {
+        if (this.audioContext) {
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+
+            return this.audioContext;
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return null;
+        }
+
+        this.audioContext = new AudioContextClass();
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        return this.audioContext;
+    },
+
+    playCue(kind) {
+        if (!this.audioEnabled) {
+            return;
+        }
+
+        const context = this.ensureAudioContext();
+        if (!context) {
+            return;
+        }
+
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.value = kind === 'countdown' ? 880 : kind === 'rest' ? 600 : 960;
+        gain.gain.value = 0.03;
+
+        const now = context.currentTime;
+        oscillator.start(now);
+        oscillator.stop(now + (kind === 'complete' ? 0.18 : 0.09));
+    },
+
+    maybePlayCountdownCue() {
+        if (!this.audioEnabled || this.isResting || this.isCurrentSegmentManual) {
+            return;
+        }
+
+        const secondsRemaining = Math.max(0, Math.ceil(this.remainingMs / 1000));
+        if (secondsRemaining > 0 && secondsRemaining <= 3 && this.lastCountdownSecond !== secondsRemaining) {
+            this.lastCountdownSecond = secondsRemaining;
+            this.playCue('countdown');
+        }
     }
 }));
 

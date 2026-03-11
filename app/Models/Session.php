@@ -19,6 +19,8 @@ class Session extends Model
     protected $fillable = [
         'user_id',
         'session_template_id',
+        'training_program_enrollment_id',
+        'program_day_key',
         'name',
         'notes',
         'started_at',
@@ -43,6 +45,11 @@ class Session extends Model
         return $this->belongsTo(SessionTemplate::class, 'session_template_id');
     }
 
+    public function trainingProgramEnrollment(): BelongsTo
+    {
+        return $this->belongsTo(TrainingProgramEnrollment::class);
+    }
+
     public function exercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'session_exercises')
@@ -59,6 +66,35 @@ class Session extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', SessionStatus::Completed)->whereNotNull('completed_at');
+    }
+
+    /**
+     * Scope sessions that should count as real activity.
+     *
+     * Completed sessions count even if older test data omitted durations.
+     * In-progress sessions only count once actual work has been recorded.
+     */
+    public function scopeCountsTowardActivity(Builder $query): Builder
+    {
+        return $query->where(function (Builder $activityQuery) {
+            $activityQuery
+                ->where(function (Builder $completedQuery) {
+                    $completedQuery
+                        ->where('status', SessionStatus::Completed)
+                        ->whereNotNull('completed_at');
+                })
+                ->orWhere(function (Builder $inProgressQuery) {
+                    $inProgressQuery
+                        ->where('status', SessionStatus::InProgress)
+                        ->where(function (Builder $workQuery) {
+                            $workQuery
+                                ->where('total_duration_seconds', '>', 0)
+                                ->orWhereHas('sessionExercises', function (Builder $exerciseQuery) {
+                                    $exerciseQuery->whereNotNull('completed_at');
+                                });
+                        });
+                });
+        });
     }
 
     public function scopeOnDate($query, $date, $timezone = 'America/Los_Angeles')

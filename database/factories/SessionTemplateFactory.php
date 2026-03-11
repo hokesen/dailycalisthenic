@@ -21,6 +21,7 @@ class SessionTemplateFactory extends Factory
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'notes' => fake()->optional()->paragraph(),
+            'discipline' => 'general',
             'default_rest_seconds' => fake()->randomElement([30, 45, 60, 90]),
             'is_public' => false,
         ];
