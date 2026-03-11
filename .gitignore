@@ -15,3 +15,4 @@ yarn-error.log
 test-results
 /.ai/mcp/mcp.json
 .DS_Store
+/.claude/worktrees/
