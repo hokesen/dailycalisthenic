@@ -5,7 +5,7 @@
         fetch($el.action, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -32,7 +32,7 @@
         fetch($el.action, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },

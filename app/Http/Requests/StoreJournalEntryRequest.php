@@ -21,7 +21,18 @@ class StoreJournalEntryRequest extends FormRequest
      */
     public function rules(): array
     {
+        $today = $this->user()?->now()->toDateString() ?? now()->toDateString();
+
         return [
+            'entry_date' => [
+                'nullable',
+                'date_format:Y-m-d',
+                function (string $attribute, mixed $value, \Closure $fail) use ($today): void {
+                    if ($value !== null && $value > $today) {
+                        $fail('Journal entries cannot be dated in the future.');
+                    }
+                },
+            ],
             'notes' => 'nullable|string|max:10000',
         ];
     }

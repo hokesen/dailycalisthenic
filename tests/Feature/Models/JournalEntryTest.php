@@ -110,21 +110,26 @@ class JournalEntryTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $entry->entry_date);
     }
 
-    public function test_unique_constraint_on_user_and_date(): void
+    public function test_multiple_entries_can_share_the_same_user_and_date(): void
     {
         $user = User::factory()->create();
         $date = Carbon::today();
 
-        JournalEntry::create([
+        $firstEntry = JournalEntry::create([
             'user_id' => $user->id,
             'entry_date' => $date,
         ]);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
-
-        JournalEntry::create([
+        $secondEntry = JournalEntry::create([
             'user_id' => $user->id,
             'entry_date' => $date,
         ]);
+
+        $this->assertNotNull($firstEntry->id);
+        $this->assertNotNull($secondEntry->id);
+        $this->assertSame(2, JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('entry_date', $date->toDateString())
+            ->count());
     }
 }

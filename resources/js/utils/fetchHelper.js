@@ -6,7 +6,9 @@
  * @returns {Promise<Response>}
  */
 export async function csrfFetch(url, options = {}) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const csrfToken = typeof window.getCurrentCsrfToken === 'function'
+        ? window.getCurrentCsrfToken()
+        : document.querySelector('meta[name="csrf-token"]')?.content;
 
     return fetch(url, {
         ...options,

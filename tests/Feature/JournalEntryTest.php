@@ -69,7 +69,7 @@ class JournalEntryTest extends TestCase
         $this->assertEquals('2026-02-01', $entry->fresh()->entry_date->toDateString());
     }
 
-    public function test_user_cannot_move_journal_entry_to_an_existing_date(): void
+    public function test_user_can_move_journal_entry_to_an_existing_date(): void
     {
         $user = User::factory()->create();
         $entry = JournalEntry::factory()->create([
@@ -83,14 +83,12 @@ class JournalEntryTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from(route('home'))
             ->patch(route('journal.update', $entry), [
                 'entry_date' => '2026-02-01',
             ]);
 
         $response->assertRedirect(route('home'));
-        $response->assertSessionHasErrors(['entry_date']);
-        $this->assertEquals('2026-02-03', $entry->fresh()->entry_date->toDateString());
+        $this->assertEquals('2026-02-01', $entry->fresh()->entry_date->toDateString());
     }
 
     public function test_user_can_add_exercise_to_journal(): void
@@ -193,7 +191,7 @@ class JournalEntryTest extends TestCase
         $this->assertEquals(2, $exercises[1]->order);
     }
 
-    public function test_creating_journal_entry_for_today_updates_existing_entry(): void
+    public function test_creating_journal_entry_for_today_adds_another_entry(): void
     {
         $user = User::factory()->create();
         $existingEntry = JournalEntry::factory()->create([
@@ -210,14 +208,62 @@ class JournalEntryTest extends TestCase
 
         $response->assertRedirect(route('home'));
 
-        $this->assertEquals(1, JournalEntry::where('user_id', $user->id)
+        $this->assertEquals(2, JournalEntry::where('user_id', $user->id)
             ->whereDate('entry_date', $user->now()->toDateString())
             ->count());
 
         $this->assertDatabaseHas('journal_entries', [
             'id' => $existingEntry->id,
-            'notes' => 'Updated notes',
+            'notes' => 'Original notes',
         ]);
+
+        $this->assertSame(1, JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('entry_date', $user->now()->toDateString())
+            ->where('notes', 'Updated notes')
+            ->count());
+    }
+
+    public function test_user_can_create_multiple_journal_entries_for_a_selected_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this
+            ->actingAs($user)
+            ->post(route('journal.store'), [
+                'entry_date' => '2026-03-01',
+                'notes' => 'Worked on shoulder mobility.',
+            ])
+            ->assertRedirect(route('home'));
+
+        $createdEntry = JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('entry_date', '2026-03-01')
+            ->first();
+
+        $this->assertNotNull($createdEntry);
+        $this->assertSame('Worked on shoulder mobility.', $createdEntry->notes);
+
+        $this
+            ->actingAs($user)
+            ->post(route('journal.store'), [
+                'entry_date' => '2026-03-01',
+                'notes' => 'Second note for the same day.',
+            ])
+            ->assertRedirect(route('home'));
+
+        $this->assertSame(2, JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('entry_date', '2026-03-01')
+            ->count());
+
+        $this->assertSame('Worked on shoulder mobility.', $createdEntry->fresh()->notes);
+
+        $this->assertSame(1, JournalEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('entry_date', '2026-03-01')
+            ->where('notes', 'Second note for the same day.')
+            ->count());
     }
 
     public function test_user_can_add_exercise_to_new_journal_entry(): void

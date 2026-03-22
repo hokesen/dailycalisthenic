@@ -13,22 +13,14 @@ class JournalEntryController extends Controller
 {
     public function store(StoreJournalEntryRequest $request): RedirectResponse
     {
-        $today = auth()->user()->now()->toDateString();
+        $entryDate = $request->validated('entry_date') ?? auth()->user()->now()->toDateString();
         $userId = auth()->id();
 
-        $entry = JournalEntry::where('user_id', $userId)
-            ->whereDate('entry_date', $today)
-            ->first();
-
-        if ($entry) {
-            $entry->update(['notes' => $request->notes]);
-        } else {
-            JournalEntry::create([
-                'user_id' => $userId,
-                'entry_date' => $today,
-                'notes' => $request->notes,
-            ]);
-        }
+        JournalEntry::create([
+            'user_id' => $userId,
+            'entry_date' => $entryDate,
+            'notes' => $request->notes,
+        ]);
 
         app(CachedStreakService::class)->invalidateUserCache($userId);
 

@@ -15,7 +15,6 @@ use App\Services\StarterTemplateService;
 use App\Services\StreakService;
 use App\Services\TrainingCatalogService;
 use App\Services\TrainingProgramService;
-use App\Services\UserActivityService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +27,6 @@ class DashboardController extends Controller
     public function __construct(
         private readonly ExerciseRepository $exerciseRepository,
         private readonly StreakService $streakService,
-        private readonly UserActivityService $activityService,
         private readonly StarterTemplateService $starterTemplateService,
         private readonly TrainingCatalogService $trainingCatalogService,
         private readonly TrainingProgramService $trainingProgramService,
@@ -121,21 +119,9 @@ class DashboardController extends Controller
             ])
             ->get();
 
-        $userCarouselData = $isGeneralDiscipline
-            ? $this->buildGeneralCarouselData($user, $authUserTemplates, $selectedDiscipline, $days, $startDateUtc, $endDateUtc)
+        $leaderboardEntries = $isGeneralDiscipline
+            ? $this->buildGeneralLeaderboardData($user)
             : collect();
-
-        $progressionGanttData = $isGeneralDiscipline
-            ? $user->getProgressionGanttData($days)
-            : [
-                'progressions' => [],
-                'standalone' => [],
-                'date_range' => ['start' => null, 'end' => null],
-                'dayColumns' => [],
-                'dailyMaxSeconds' => [60],
-                'today_index' => 0,
-                'dayLabels' => [],
-            ];
 
         $todayStartUtc = $userNow->copy()->startOfDay()->timezone('UTC');
         $todayEndUtc = $userNow->copy()->endOfDay()->timezone('UTC');
@@ -155,40 +141,35 @@ class DashboardController extends Controller
             }
         }
 
-        $timelineFeed = $this->getTimelineFeed($user, $days);
-        $recentHistory = $this->activityService->getRecentHistorySnapshot($user, 14);
-        $todayEntry = JournalEntry::query()
+        $journalEntries = JournalEntry::query()
             ->where('user_id', $user->id)
-            ->forDate($userNow)
-            ->with('journalExercises')
-            ->first();
+            ->whereNotNull('notes')
+            ->where('notes', '!=', '')
+            ->orderByDesc('entry_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(60)
+            ->get();
 
-        $currentUserGoal = $isGeneralDiscipline ? $user->goals()->active()->first() : null;
         $soccerDashboard = $isSoccerDiscipline ? $this->buildSoccerDashboardData($user, $userNow) : null;
-        $meditationDashboard = $isMeditationDiscipline ? $this->meditationDashboardService->buildDashboardData($user) : null;
-
         $isMeditationDiscipline = $selectedDiscipline === TrainingDiscipline::Meditation->value;
         $isLiftingDiscipline = $selectedDiscipline === TrainingDiscipline::Lifting->value;
         $meditationDashboard = $isMeditationDiscipline ? $this->meditationDashboardService->buildDashboardData($user, $userNow) : null;
         $liftingDashboard = $isLiftingDiscipline ? $this->liftingDashboardService->buildDashboardData($user, $userNow) : null;
 
         return view('dashboard', [
-            'userCarouselData' => $userCarouselData,
             'allExercises' => $allExercises,
             'authUserStreak' => $this->streakService->calculateStreak($user),
             'potentialStreak' => $this->streakService->calculatePotentialStreak($user),
-            'progressionGanttData' => $progressionGanttData,
             'initialTemplateIndex' => $initialTemplateIndex,
             'selectedTemplateId' => $selectedTemplateId,
             'hasPracticedToday' => $hasPracticedToday,
-            'timelineFeed' => $timelineFeed,
-            'recentHistory' => $recentHistory,
+            'journalEntries' => $journalEntries,
+            'leaderboardEntries' => $leaderboardEntries,
             'userTimezone' => $userTimezone,
             'userNow' => $userNow,
             'userTemplates' => $authUserTemplates,
-            'todayEntry' => $todayEntry,
             'days' => $days,
-            'currentUserGoal' => $currentUserGoal,
             'systemTemplates' => $systemTemplates,
             'disciplines' => $disciplines,
             'selectedDiscipline' => $selectedDiscipline,
@@ -218,68 +199,45 @@ class DashboardController extends Controller
         return $templateExercises->merge($sessionExercises)->unique('id');
     }
 
-    private function buildGeneralCarouselData(
-        User $user,
-        Collection $authUserTemplates,
-        string $discipline,
-        int $days,
-        Carbon $startDateUtc,
-        Carbon $endDateUtc
-    ): Collection {
-        $userCarouselData = collect();
-
-        if ($authUserTemplates->isNotEmpty()) {
-            $userCarouselData->push([
-                'user' => $user,
-                'templates' => $authUserTemplates,
-                'currentStreak' => $this->streakService->calculateStreak($user),
-                'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($user, $days),
-                'topTemplateId' => $authUserTemplates->first()->id ?? null,
-            ]);
-        }
-
-        $otherUsers = User::query()
+    private function buildGeneralLeaderboardData(User $user): Collection
+    {
+        $users = User::query()
             ->where('id', '!=', $user->id)
-            ->with('activeGoal')
-            ->whereHas('sessionTemplates', function ($query) use ($discipline) {
+            ->whereHas('sessionTemplates', function ($query) {
                 $query->where('is_public', true)
-                    ->where('discipline', $discipline);
+                    ->where('discipline', TrainingDiscipline::General->value);
             })
-            ->get();
+            ->get()
+            ->prepend($user)
+            ->unique('id')
+            ->values();
 
-        foreach ($otherUsers as $otherUser) {
-            $publicTemplates = SessionTemplate::query()
-                ->where('user_id', $otherUser->id)
-                ->where('is_public', true)
-                ->where('discipline', $discipline)
-                ->with([
-                    'user',
-                    'practiceBlocks.exercise',
-                    'exercises' => function ($query) {
-                        $query->with(['progression.easierExercise', 'progression.harderExercise'])
-                            ->orderByPivot('order');
-                    },
-                ])
-                ->withSum(['sessions' => function ($query) use ($otherUser, $startDateUtc, $endDateUtc) {
-                    $query->where('user_id', $otherUser->id)
-                        ->completed()
-                        ->whereBetween('completed_at', [$startDateUtc, $endDateUtc]);
-                }], 'total_duration_seconds')
-                ->orderByDesc('sessions_sum_total_duration_seconds')
-                ->get();
+        $entries = $users
+            ->map(function (User $candidate) use ($user) {
+                return [
+                    'user' => $candidate,
+                    'streak' => $this->streakService->calculateStreakAsOf($candidate, $candidate->now()->subDay()),
+                    'is_current_user' => $candidate->is($user),
+                ];
+            })
+            ->values();
 
-            if ($publicTemplates->isNotEmpty()) {
-                $userCarouselData->push([
-                    'user' => $otherUser,
-                    'templates' => $publicTemplates,
-                    'currentStreak' => $this->streakService->calculateStreak($otherUser),
-                    'weeklyBreakdown' => $this->activityService->getWeeklyExerciseBreakdown($otherUser, $days),
-                    'topTemplateId' => $publicTemplates->first()->id,
-                ]);
-            }
-        }
+        $currentUserEntry = $entries->firstWhere('is_current_user', true);
+        $otherEntries = $entries
+            ->reject(fn (array $entry) => $entry['is_current_user'])
+            ->sort(function (array $left, array $right): int {
+                if ($left['streak'] !== $right['streak']) {
+                    return $right['streak'] <=> $left['streak'];
+                }
 
-        return $userCarouselData;
+                return strcmp($left['user']->name, $right['user']->name);
+            })
+            ->values();
+
+        return collect()
+            ->when($currentUserEntry !== null, fn (Collection $collection) => $collection->push($currentUserEntry))
+            ->concat($otherEntries)
+            ->values();
     }
 
     private function buildSoccerDashboardData(User $user, Carbon $userNow): array
@@ -358,52 +316,6 @@ class DashboardController extends Controller
                 ->get(),
             'programs' => $programs->values()->all(),
         ];
-    }
-
-    private function getTimelineFeed(User $user, int $days): Collection
-    {
-        $startDate = $user->now()->subDays($days - 1)->startOfDay();
-        $endDate = $user->now()->endOfDay();
-
-        $timezone = $user->preferredTimezone();
-
-        $sessions = Session::query()
-            ->where('user_id', $user->id)
-            ->countsTowardActivity()
-            ->where(function ($query) use ($startDate, $endDate) {
-                $startUtc = $startDate->copy()->utc();
-                $endUtc = $endDate->copy()->utc();
-
-                $query->whereBetween('completed_at', [$startUtc, $endUtc])
-                    ->orWhereBetween('started_at', [$startUtc, $endUtc]);
-            })
-            ->with(['sessionExercises.exercise', 'template'])
-            ->get()
-            ->map(function ($session) use ($timezone) {
-                $activityAt = $session->completed_at ?? $session->started_at ?? $session->updated_at;
-                $activityAt = $activityAt?->copy()->setTimezone($timezone);
-
-                return [
-                    'type' => 'session',
-                    'date' => $activityAt,
-                    'data' => $session,
-                ];
-            });
-
-        $journals = JournalEntry::query()
-            ->where('user_id', $user->id)
-            ->whereBetween('entry_date', [$startDate, $endDate])
-            ->with('journalExercises')
-            ->get()
-            ->map(fn ($journal) => [
-                'type' => 'journal',
-                'date' => Carbon::parse($journal->entry_date->format('Y-m-d'), $timezone)->endOfDay(),
-                'data' => $journal,
-            ]);
-
-        return $sessions->toBase()->merge($journals->toBase())
-            ->sortByDesc('date')
-            ->groupBy(fn ($item) => $item['date']->copy()->setTimezone($timezone)->format('Y-m-d'));
     }
 
     private function disciplineSessionQuery(User $user, string $discipline): Builder

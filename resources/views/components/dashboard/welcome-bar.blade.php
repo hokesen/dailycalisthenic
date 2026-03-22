@@ -1,7 +1,7 @@
 @props(['user', 'hasPracticed', 'streak', 'disciplines', 'selectedDiscipline'])
 
-<div class="app-panel sm:rounded-2xl mb-6" x-data="{ showUserMenu: false }">
-    <div class="p-4 sm:p-6">
+<div class="mb-6" x-data="{ showUserMenu: false }">
+    <div class="px-1 py-2 sm:px-0 sm:py-0">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="dashboard-brand">
@@ -20,6 +20,8 @@
                                     class="dashboard-discipline-select"
                                 >
                                     @foreach ($disciplines as $discipline => $definition)
+                                        @continue(in_array($discipline, ['meditation', 'lifting'], true))
+
                                         <option value="{{ $discipline }}" @selected($selectedDiscipline === $discipline) class="bg-slate-900 text-white">
                                             {{ $definition['label'] }}{{ ($definition['status'] ?? 'planned') !== 'live' ? ' (Soon)' : '' }}
                                         </option>
@@ -33,14 +35,11 @@
                             </div>
                         </form>
                     </div>
-                    <p class="text-sm text-white/60 sm:text-base">Welcome, {{ $user->name }}!</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 sm:gap-4">
                 <x-today-status-badge :hasPracticed="$hasPracticed" />
-
-                <x-streak-badge :count="$streak" />
 
                 <div class="relative" @click.outside="showUserMenu = false">
                     <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white bg-white/10 rounded-lg transition-colors border border-white/10">

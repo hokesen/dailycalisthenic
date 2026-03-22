@@ -22,6 +22,30 @@
                 </div>
             @endif
 
+            @if (session('status'))
+                <div class="mb-6 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if ($selectedDiscipline === 'general')
+                <div class="space-y-6">
+                    <x-timeline.quick-actions
+                        :templates="$userTemplates"
+                        :userNow="$userNow"
+                        :allExercises="$allExercises"
+                        :systemTemplates="$systemTemplates"
+                        :selectedTemplateId="$selectedTemplateId"
+                    />
+
+                    <x-timeline.journal-list :journalEntries="$journalEntries" :userNow="$userNow" />
+
+                    <x-dashboard.general-practices
+                        :leaderboardEntries="$leaderboardEntries"
+                    />
+                </div>
+            @else
+
             <!-- Tab Navigation -->
             <div class="mb-6 app-reveal" x-data="{
                 activeTab: {{ Js::from(request()->input('tab', 'timeline')) }},
@@ -80,34 +104,17 @@
 
                 <!-- Timeline Tab Content -->
                 <div x-show="activeTab === 'timeline'" x-transition class="mt-6" role="tabpanel" id="timeline-panel" aria-labelledby="timeline-tab">
-                    <!-- Quick Actions -->
-                    <x-timeline.quick-actions :templates="$userTemplates" :todayEntry="$todayEntry" />
+                    <x-timeline.quick-actions
+                        :templates="$userTemplates"
+                        :userNow="$userNow"
+                        :allExercises="$allExercises"
+                        :systemTemplates="$systemTemplates"
+                        :selectedTemplateId="$selectedTemplateId"
+                    />
 
-                    <!-- Lightweight Recent History -->
-                    <x-timeline.recent-history :recentHistory="$recentHistory" />
-
-                    <!-- Filter Controls -->
-                    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <h3 class="app-section-title">Practice Log</h3>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm text-white/60">Range:</span>
-                            <div class="inline-flex rounded-full border border-white/10 bg-black/20 p-1">
-                                @foreach ([7, 14, 30, 90] as $range)
-                                    <button
-                                        type="button"
-                                        @click="goToDays({{ $range }}, 'timeline')"
-                                        class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors {{ $days === $range ? 'bg-emerald-500/30 text-emerald-200' : 'text-white/60 hover:text-white hover:bg-white/10' }}"
-                                    >
-                                        {{ $range }}d
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
+                    <div class="mt-6">
+                        <x-timeline.journal-list :journalEntries="$journalEntries" :userNow="$userNow" />
                     </div>
-
-                    <!-- Timeline Feed -->
-
-                    <x-timeline.feed :timelineFeed="$timelineFeed" :timezone="$userTimezone" :userNow="$userNow" />
                 </div>
 
                 <!-- Goals Tab Content -->
@@ -124,7 +131,7 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                                         'Accept': 'application/json'
                                     },
                                     body: JSON.stringify({
@@ -1252,7 +1259,7 @@
                                                         fetch('{{ route('templates.store') }}', {
                                                             method: 'POST',
                                                             headers: {
-                                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                                                                 'Accept': 'application/json'
                                                             }
                                                         })
@@ -1334,7 +1341,7 @@
                                                         fetch('{{ route('templates.store') }}', {
                                                             method: 'POST',
                                                             headers: {
-                                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                                                                 'Accept': 'application/json'
                                                             }
                                                         })
@@ -1423,6 +1430,7 @@
                     @endif
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

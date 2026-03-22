@@ -26,7 +26,7 @@
                         fetch('{{ route('templates.move-exercise-up', $template) }}', {
                             method: 'PATCH',
                             headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
                             },
@@ -65,7 +65,7 @@
                         fetch('{{ route('templates.move-exercise-down', $template) }}', {
                             method: 'PATCH',
                             headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-CSRF-TOKEN': window.getCurrentCsrfToken(),
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
                             },
@@ -161,7 +161,7 @@
                     const formData = new FormData($el);
                     fetch($el.action, {
                         method: 'PATCH',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                             body: JSON.stringify({
                                 exercise_id: {{ $exercise->id }},
                                 sets: formData.get('sets'),
@@ -216,7 +216,7 @@
                         <form action="{{ route('templates.swap-exercise', $template) }}" method="POST" @submit.prevent="
                             fetch($el.action, {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     exercise_id: {{ $exercise->id }},
                                     order: {{ $exercise->pivot->order }},
@@ -268,7 +268,7 @@
                         <button
                             @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     exercise_id: {{ $exercise->id }},
                                     order: {{ $exercise->pivot->order }},
@@ -284,7 +284,7 @@
                         <button
                             @click="fetch('{{ route('templates.swap-exercise', $template) }}', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     exercise_id: {{ $exercise->id }},
                                     order: {{ $exercise->pivot->order }},
@@ -301,7 +301,7 @@
                     if(confirm('Remove this exercise?')) {
                         fetch($el.action, {
                             method: 'DELETE',
-                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                             body: JSON.stringify({ exercise_id: {{ $exercise->id }} })
                         }).then(() => location.reload())
                     }

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\JournalEntry;
 use App\Models\SessionTemplate;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,7 +12,7 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_displays_welcome_message_with_user_name(): void
+    public function test_dashboard_displays_user_name_in_navigation(): void
     {
         $user = User::factory()->create(['name' => 'John Doe']);
 
@@ -22,81 +21,46 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Welcome, John Doe!');
+        $response->assertSee('John Doe');
     }
 
-    public function test_dashboard_displays_available_templates(): void
+    public function test_dashboard_displays_own_templates_and_leaderboard(): void
     {
         $user = User::factory()->create(['name' => 'John Doe']);
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
-        $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
         $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
         $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template', 'is_public' => true]);
-
-        // Create completed sessions to make users appear on dashboard
-        \App\Models\Session::factory()->create([
-            'user_id' => $user->id,
-            'session_template_id' => $userTemplate->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
-            'total_duration_seconds' => 300,
-        ]);
-
-        \App\Models\Session::factory()->create([
-            'user_id' => $otherUser->id,
-            'session_template_id' => $otherUserTemplate->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
-            'total_duration_seconds' => 300,
-        ]);
 
         $response = $this
             ->actingAs($user)
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Template');
+        $response->assertSee('Start Practice');
         $response->assertSee('User Template');
-        $response->assertSee('by John Doe');
-        $response->assertSee('Other Template');
-        $response->assertSee('by Jane Smith');
+        $response->assertSee('Jane Smith');
+        $response->assertDontSee('Other Template');
     }
 
-    public function test_dashboard_shows_copy_button_for_non_owned_templates(): void
+    public function test_dashboard_leaderboard_does_not_expose_other_users_templates(): void
     {
         $user = User::factory()->create(['name' => 'John Doe']);
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
-        $systemTemplate = SessionTemplate::factory()->create(['name' => 'System Template']);
         $userTemplate = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'User Template']);
         $otherUserTemplate = SessionTemplate::factory()->create(['user_id' => $otherUser->id, 'name' => 'Other Template', 'is_public' => true]);
-
-        // Create completed sessions to make users appear on dashboard
-        \App\Models\Session::factory()->create([
-            'user_id' => $user->id,
-            'session_template_id' => $userTemplate->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
-            'total_duration_seconds' => 300,
-        ]);
-
-        \App\Models\Session::factory()->create([
-            'user_id' => $otherUser->id,
-            'session_template_id' => $otherUserTemplate->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
-            'total_duration_seconds' => 300,
-        ]);
 
         $response = $this
             ->actingAs($user)
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee(route('templates.copy', $otherUserTemplate));
+        $response->assertSee('Jane Smith');
+        $response->assertDontSee('Other Template');
+        $response->assertDontSee(route('templates.copy', $otherUserTemplate));
         $response->assertDontSee(route('templates.copy', $userTemplate));
     }
 
-    public function test_dashboard_shows_message_when_no_templates_available(): void
+    public function test_dashboard_shows_new_practice_empty_state_when_no_templates_available(): void
     {
         $user = User::factory()->create();
 
@@ -105,7 +69,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Get Started with Daily Calisthenics');
+        $response->assertSee('No practice cards yet');
+        $response->assertSee('New Practice');
     }
 
     public function test_dashboard_displays_template_details(): void
@@ -183,17 +148,13 @@ class DashboardTest extends TestCase
         $response->assertSee('Practice');
     }
 
-    public function test_dashboard_displays_recent_history_panel(): void
+    public function test_dashboard_displays_journal_entries_panel(): void
     {
         $user = User::factory()->create();
-        $template = SessionTemplate::factory()->create(['user_id' => $user->id, 'name' => 'Test Template']);
-
-        \App\Models\Session::factory()->create([
+        JournalEntry::factory()->create([
             'user_id' => $user->id,
-            'session_template_id' => $template->id,
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => now(),
-            'total_duration_seconds' => 420,
+            'entry_date' => '2026-03-12',
+            'notes' => 'Focused on hollow holds.',
         ]);
 
         $response = $this
@@ -201,41 +162,26 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Recent History');
-        $response->assertSee('active days');
+        $response->assertSee('Journal Entries');
+        $response->assertSee('Focused on hollow holds.');
     }
 
-    public function test_dashboard_practice_log_renders_session_times_in_pacific_time(): void
+    public function test_dashboard_hides_meditation_and_lifting_from_discipline_switcher(): void
     {
-        $this->travelTo(Carbon::create(2026, 3, 11, 12, 0, 0, 'UTC'));
-
-        $user = User::factory()->create(['timezone' => User::DEFAULT_TIMEZONE]);
-        $template = SessionTemplate::factory()->create([
-            'user_id' => $user->id,
-            'name' => 'Soccer - SR22 (22yds)',
-            'discipline' => 'soccer',
-        ]);
-
-        \App\Models\Session::factory()->create([
-            'user_id' => $user->id,
-            'session_template_id' => $template->id,
-            'name' => 'Soccer - SR22 (22yds)',
-            'status' => \App\Enums\SessionStatus::Completed,
-            'completed_at' => Carbon::create(2026, 3, 11, 3, 42, 0, 'UTC'),
-            'total_duration_seconds' => 120,
-        ]);
+        $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('March 10, 2026');
-        $response->assertSee('8:42 PM');
-        $response->assertDontSee('3:42 AM');
+        $response->assertSee('Calisthenics');
+        $response->assertSee('Soccer');
+        $response->assertDontSee('Meditation');
+        $response->assertDontSee('Lifting');
     }
 
-    public function test_dashboard_allows_date_editing_for_todays_journal_entry(): void
+    public function test_dashboard_shows_quick_journal_form_with_preselected_today_date(): void
     {
         $user = User::factory()->create();
 
@@ -249,7 +195,9 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Change date');
+        $response->assertSee('name="entry_date"', false);
+        $response->assertSee('value="'.$user->now()->toDateString().'"', false);
+        $response->assertSee('Submit Journal Entry');
     }
 
     public function test_home_shows_marketing_page_for_guests(): void
@@ -323,10 +271,10 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($user->name);
-        $response->assertSee('Streak');
+        $response->assertSee('(You)');
     }
 
-    public function test_dashboard_displays_current_streak(): void
+    public function test_dashboard_displays_yesterday_based_streak_for_current_user(): void
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
@@ -347,11 +295,11 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('3');
-        $response->assertSee('Streak');
+        $response->assertSee('2 days');
+        $response->assertSee('(You)');
     }
 
-    public function test_dashboard_displays_zero_streak_when_no_recent_sessions(): void
+    public function test_dashboard_displays_zero_yesterday_streak_when_no_recent_sessions(): void
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
@@ -379,11 +327,11 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('0');
-        $response->assertSee('Streak');
+        $response->assertSee('0 days');
+        $response->assertSee('(You)');
     }
 
-    public function test_dashboard_displays_past_week_calendar(): void
+    public function test_dashboard_no_longer_renders_goals_tab_for_calisthenics(): void
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
@@ -408,12 +356,11 @@ class DashboardTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/?tab=progress');
+            ->get('/');
 
         $response->assertOk();
-        // Check that goals tab content is rendered (even if hidden by Alpine.js)
-        $response->assertSee('Goals', false);
-        $response->assertSee($exercise->name, false);
+        $response->assertDontSee('Goals');
+        $response->assertSee('Journal Entries');
     }
 
     public function test_weekly_exercise_breakdown_returns_correct_structure(): void
@@ -590,10 +537,10 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         // Check for the presence of the calendar grid
-        $response->assertSee('Streak');
+        $response->assertSee('(You)');
     }
 
-    public function test_homepage_displays_progressions_section_when_available(): void
+    public function test_homepage_keeps_journal_first_layout_when_progression_activity_exists(): void
     {
         $user = User::factory()->create();
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Kneeling Plank']);
@@ -618,7 +565,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Kneeling Plank');
+        $response->assertSee('Journal Entries');
+        $response->assertSee('Submit Journal Entry');
     }
 
     public function test_homepage_shows_no_activity_message_when_empty(): void
@@ -630,11 +578,11 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        // When user has no templates, the "get started" message is shown
-        $response->assertSee('Get Started with Daily Calisthenics');
+        $response->assertSee('No practice cards yet');
+        $response->assertSee('(You)');
     }
 
-    public function test_homepage_displays_standalone_exercises_in_progressions(): void
+    public function test_homepage_still_shows_practice_and_journal_sections_for_standalone_activity(): void
     {
         $user = User::factory()->create();
         $exercise = \App\Models\Exercise::factory()->create(['name' => 'Jumping Jacks']);
@@ -655,10 +603,11 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Jumping Jacks');
+        $response->assertSee('Start Practice');
+        $response->assertSee('Submit Journal Entry');
     }
 
-    public function test_homepage_displays_both_progressions_and_standalone_exercises(): void
+    public function test_homepage_no_longer_uses_progression_and_standalone_home_sections(): void
     {
         $user = User::factory()->create();
 
@@ -693,8 +642,8 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Plank');
-        $response->assertSee('Burpees');
+        $response->assertSee('Submit Journal Entry');
+        $response->assertDontSee('Goals');
     }
 
     public function test_standalone_exercises_not_shown_in_progression_section(): void
@@ -745,7 +694,7 @@ class DashboardTest extends TestCase
         $this->assertEquals(420, $standaloneExercises[0]['total_seconds']);
     }
 
-    public function test_dashboard_hides_private_templates_from_other_users(): void
+    public function test_dashboard_hides_private_templates_from_leaderboard_and_practice_area(): void
     {
         $user = User::factory()->create(['name' => 'John Doe']);
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
@@ -779,7 +728,7 @@ class DashboardTest extends TestCase
         $response->assertDontSee('Jane Smith');
     }
 
-    public function test_dashboard_shows_multiple_public_templates_from_same_user(): void
+    public function test_dashboard_leaderboard_shows_other_user_once_even_with_multiple_public_templates(): void
     {
         $user = User::factory()->create(['name' => 'John Doe']);
         $otherUser = User::factory()->create(['name' => 'Jane Smith']);
@@ -802,8 +751,9 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('Public Template 1');
-        $response->assertSee('Public Template 2');
+        $response->assertSee('Jane Smith');
+        $response->assertDontSee('Public Template 1');
+        $response->assertDontSee('Public Template 2');
         $response->assertDontSee('Private Template');
     }
 

@@ -11,6 +11,78 @@ window.csrfFetch = csrfFetch;
 window.submitForm = submitForm;
 window.deleteResource = deleteResource;
 window.updateResource = updateResource;
+window.getCurrentCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+window.refreshAppCsrfToken = async () => {
+    const refreshUrl = document.querySelector('meta[name="app-csrf-refresh"]')?.content;
+
+    if (!refreshUrl) {
+        return window.getCurrentCsrfToken();
+    }
+
+    const response = await fetch(refreshUrl, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    });
+
+    if (!response.ok || response.redirected) {
+        return null;
+    }
+
+    const payload = await response.json().catch(() => null);
+    const token = payload?.token;
+
+    if (!token) {
+        return null;
+    }
+
+    document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+    document.querySelectorAll('input[name="_token"]').forEach((input) => {
+        input.value = token;
+    });
+
+    return token;
+};
+
+const refreshTokenSilently = () => {
+    window.refreshAppCsrfToken().catch(() => null);
+};
+
+window.addEventListener('focus', refreshTokenSilently);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        refreshTokenSilently();
+    }
+});
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+
+    if (!(form instanceof HTMLFormElement) || !form.matches('[data-refresh-csrf]')) {
+        return;
+    }
+
+    if (form.dataset.csrfRefreshing === 'true') {
+        return;
+    }
+
+    event.preventDefault();
+    form.dataset.csrfRefreshing = 'true';
+
+    const token = await window.refreshAppCsrfToken().catch(() => null);
+
+    if (!token) {
+        form.dataset.csrfRefreshing = 'false';
+        window.location.reload();
+
+        return;
+    }
+
+    form.submit();
+});
 
 // Register ganttChart component
 Alpine.data('ganttChart', ganttChart);

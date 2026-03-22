@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\CarbonInterface;
 use App\Models\User;
 use App\Support\TimezoneConverter;
 
@@ -12,8 +13,13 @@ class StreakService
      */
     public function calculateStreak(User $user): int
     {
+        return $this->calculateStreakAsOf($user, $user->now());
+    }
+
+    public function calculateStreakAsOf(User $user, CarbonInterface $referenceDate): int
+    {
         $streak = 0;
-        $currentDate = $user->now()->startOfDay();
+        $currentDate = $referenceDate->copy()->startOfDay();
 
         // Fetch sessions from last 400 days to account for timezone conversions
         $lookbackDate = $currentDate->copy()->subDays(400);

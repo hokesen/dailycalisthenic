@@ -27,7 +27,7 @@
                 <form action="{{ route('templates.copy', $template) }}" method="POST" @submit.prevent="
                     fetch($el.action, {
                         method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                        headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 ">
                     @csrf
@@ -40,7 +40,7 @@
                 const formData = new FormData($el);
                 fetch($el.action, {
                     method: 'PATCH',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ name: formData.get('name') })
                 }).then(() => location.reload())
             ">
@@ -54,7 +54,7 @@
                 <form action="{{ route('templates.toggle-visibility', $template) }}" method="POST" @submit.prevent="
                     fetch($el.action, {
                         method: 'PATCH',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                        headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 ">
                     @csrf
@@ -69,7 +69,7 @@
                 if(confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
                     fetch($el.action, {
                         method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                        headers: { 'X-CSRF-TOKEN': window.getCurrentCsrfToken(), 'Accept': 'application/json' }
                     }).then(() => location.reload())
                 }
             ">
