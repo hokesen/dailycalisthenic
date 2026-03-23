@@ -274,7 +274,7 @@ class DashboardTest extends TestCase
         $response->assertSee('(You)');
     }
 
-    public function test_dashboard_displays_yesterday_based_streak_for_current_user(): void
+    public function test_dashboard_displays_today_based_streak_for_current_user(): void
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);
@@ -295,11 +295,11 @@ class DashboardTest extends TestCase
             ->get('/');
 
         $response->assertOk();
-        $response->assertSee('2 days');
+        $response->assertSee('3 days');
         $response->assertSee('(You)');
     }
 
-    public function test_dashboard_displays_zero_yesterday_streak_when_no_recent_sessions(): void
+    public function test_dashboard_displays_zero_today_streak_when_no_session_exists_for_today(): void
     {
         $user = User::factory()->create();
         $template = SessionTemplate::factory()->create(['user_id' => $user->id]);

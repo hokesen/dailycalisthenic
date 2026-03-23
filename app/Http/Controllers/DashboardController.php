@@ -216,7 +216,7 @@ class DashboardController extends Controller
             ->map(function (User $candidate) use ($user) {
                 return [
                     'user' => $candidate,
-                    'streak' => $this->streakService->calculateStreakAsOf($candidate, $candidate->now()->subDay()),
+                    'streak' => $this->streakService->calculateStreak($candidate),
                     'is_current_user' => $candidate->is($user),
                 ];
             })
